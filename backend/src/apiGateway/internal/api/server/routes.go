@@ -1,28 +1,32 @@
-package routes
+package server
 
 import (
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
-	"log"
+	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetUpRoutes(){
-	app:= fiber.New()
+func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
+	if authHandler == nil {
+		utils.Log.Fatal("AuthHandler is nil in SetupAuthRoutes, cannot set up auth routes.")
+	}
+
+	api := app.Group("/api/v1")
+	utils.Log.Info("Configuring /api/v1 routes")
+
+	registerGrouop := api.Group("/register")
+	utils.Log.Info("Configuring /api/v1/register routes")
+	registerGrouop.Post("/user", authHandler.RegisterUser)
+
+	authGroup := api.Group("/auth")
+	utils.Log.Info("Configuring /api/v1/auth routes")
+	authGroup.Post("/login", middleware.AuthUser, authHandler.LoginUser)
 
 	app.Use(middleware.CorsMiddleware())
+	utils.Log.Info("CORS middleware applied")
 
-	apiGroup:= app.Group("/api/v1")
-
-	registerGroup:= apiGroup.Group("/register")
-	registerGroup.Post("/user", handler.RegisterUser)
-
-	authGroup:= apiGroup.Group("/auth")
-	authGroup.Post("/login", middleware.authUser ,handler.LoginUser)
-
-	port:="127.0.0.1:8080"
-
-	log.Fatal(app.Listen(port))
+	return nil
 
 }
