@@ -7,6 +7,4 @@ func InitLogger()error{
 	var err error
 	Log, err =zap.NewProduction()
 	return err
-
-
 }

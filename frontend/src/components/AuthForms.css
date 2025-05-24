@@ -1,97 +1,102 @@
-/* auth-container برای کانتینر اصلی فرم */
+/* AuthForms.css */
 .auth-container {
-  max-width: 450px; /* عرض فرم را کمی بیشتر کردیم */
-  margin: 80px auto; /* فاصله از بالا را بیشتر کردیم */
+  max-width: 450px;
   padding: 35px;
   border: 1px solid #e0e0e0;
-  border-radius: 10px; /* گوشه‌های گردتر */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* سایه عمیق‌تر */
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
   background-color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* فونت بهتر */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
 }
 
-/* عنوان فرم */
 .auth-container .auth-title {
   text-align: center;
   margin-bottom: 30px;
   color: #333;
-  font-size: 1.8em; /* اندازه بزرگتر */
+  font-size: 1.8em;
   font-weight: 600;
-  border-bottom: 2px solid #f3d250; /* خط زیر عنوان */
+  border-bottom: 2px solid #f3d250;
   padding-bottom: 10px;
 }
 
-/* گروه هر فیلد (برچسب + ورودی) */
 .auth-form .form-group {
-  margin-bottom: 25px; /* فاصله بیشتر بین فیلدها */
+  margin-bottom: 25px;
 }
 
-/* برچسب فیلد */
 .auth-form label {
   display: block;
   margin-bottom: 10px;
-  font-weight: 500; /* کمی پررنگ‌تر */
+  font-weight: 500;
   color: #555;
   font-size: 0.95em;
+  text-align: right; /* راست‌چین کردن برچسب */
 }
 
-/* ورودی‌های متن و پسورد */
 .auth-form input[type="text"],
 .auth-form input[type="password"] {
   width: 100%;
-  padding: 14px 15px; /* پدینگ بیشتر */
+  padding: 14px 15px;
   border: 1px solid #ccc;
-  border-radius: 6px; /* گوشه‌های گردتر */
+  border-radius: 6px;
   box-sizing: border-box;
-  font-size: 1.05em; /* فونت کمی بزرگتر */
+  font-size: 1.05em;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  text-align: right; /* راست‌چین کردن متن داخل فیلد */
+  direction: rtl; /* تنظیم جهت متن برای زبان فارسی */
 }
 
-/* استایل فیلد در حالت فوکوس */
 .auth-form input:focus {
-  border-color: #f3d250; /* رنگ طلایی/زرد */
+  border-color: #f3d250;
   outline: none;
-  box-shadow: 0 0 0 4px rgba(243, 210, 80, 0.3); /* سایه طلایی */
+  box-shadow: 0 0 0 4px rgba(243, 210, 80, 0.3);
 }
 
-/* دکمه سابمیت */
 .submit-button {
   width: 100%;
-  padding: 15px; /* پدینگ بیشتر */
-  background-color: #f3d250; /* رنگ طلایی */
-  color: #333; /* رنگ متن تیره روی طلایی */
+  padding: 15px;
+  background-color: #f3d250;
+  color: #333;
   border: none;
   border-radius: 6px;
-  font-size: 1.1em; /* فونت بزرگتر */
+  font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .submit-button:hover {
-  background-color: #e0b400; /* طلایی تیره‌تر در هاور */
-  transform: translateY(-2px); /* کمی به بالا حرکت کند */
+  background-color: #e0b400;
+  transform: translateY(-2px);
 }
 
-/* پیام‌های موفقیت و خطا */
-.success-message {
+.message-display {
   margin-top: 25px;
   padding: 12px;
   border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out, max-height 0.4s ease-out; /* max-height اضافه شد به transition */
+  max-height: 0;
+  overflow: hidden;
+}
+
+.message-display.show {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 100px; /* ارتفاع مناسب برای نمایش کامل پیام */
+}
+
+.success-message {
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
-  text-align: center;
-  font-weight: 500;
 }
 
 .error-message {
-  margin-top: 25px;
-  padding: 12px;
-  border-radius: 6px;
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
-  text-align: center;
-  font-weight: 500;
 }
