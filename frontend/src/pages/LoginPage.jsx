@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AuthForms.css';
+import loginPageImage from '../assets/login.jpg'; // Assuming your image is at src/assets/login.jpg
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -35,6 +36,7 @@ function LoginPage() {
     if (username === 'admin' && password === 'admin') {
       setMessage('ورود موقت ادمین موفقیت‌آمیز بود!');
       setIsError(false);
+      localStorage.setItem('authToken', 'dummy-admin-token'); // Set a dummy token for admin
       console.log('Temporary admin login successful');
       setTimeout(() => navigate('/dashboard'), 1500);
       return;
@@ -71,37 +73,44 @@ function LoginPage() {
   };
 
   return (
-    <div className="auth-container">
-      <h2 className="auth-title">ورود به سیستم حسابداری طلا و جواهر</h2>
-      <form onSubmit={handleLogin} className="auth-form">
-        <div className="form-group">
-          <label htmlFor="username">نام کاربری:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            aria-label="نام کاربری"
-          />
+    <div className="login-page-container">
+      <div className="login-form-section">
+        <div className="auth-container">
+          <h2 className="auth-title">ورود به سیستم حسابداری زرفولیو</h2>
+          <form onSubmit={handleLogin} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="username">نام کاربری:</label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                aria-label="نام کاربری"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">رمز عبور:</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                aria-label="رمز عبور"
+              />
+            </div>
+            <button type="submit" className="submit-button">ورود</button>
+          </form>
+          <div
+            className={`message-display ${isError ? 'error-message' : 'success-message'} ${showMessage ? 'show' : ''}`}
+          >
+            {message}
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">رمز عبور:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            aria-label="رمز عبور"
-          />
-        </div>
-        <button type="submit" className="submit-button">ورود</button>
-      </form>
-      <div
-        className={`message-display ${isError ? 'error-message' : 'success-message'} ${showMessage ? 'show' : ''}`}
-      >
-        {message}
+      </div>
+      <div className="login-image-section">
+        <img src={loginPageImage} alt="نمای کلی برنامه زرفولیو" />
       </div>
     </div>
   );
