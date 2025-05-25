@@ -1,0 +1,20 @@
+/* src/App.css */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  padding: 0; /* Let child components manage their own padding if needed */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the start for pages like dashboard */
+  flex-grow: 1; /* Allow content to grow and take available space */
+  padding: 0; /* Padding will be handled by page components */
+}

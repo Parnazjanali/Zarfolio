@@ -1,0 +1,91 @@
+/* src/index.css */
+:root {
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.7;
+  font-weight: 400;
+  color: #2c3e50; /* A darker, more readable base text color */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #FAF8F3; /* Creamy white background for general pages */
+}
+
+.login-page-background {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+a {
+  font-weight: 500;
+  color: #2980b9; /* Adjusted link color for better contrast */
+  text-decoration: none; /* Common practice to remove underline by default */
+}
+a:hover {
+  color: #1f618d;
+  text-decoration: underline;
+}
+
+button {
+  border-radius: 6px; /* Slightly less rounded for a more modern feel */
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 0.95em; /* Adjusted base button font size */
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #e0e0e0; /* Neutral button background */
+  color: #2c3e50; /* Dark text on neutral button */
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
+}
+
+button:hover {
+  border-color: #bdc3c7;
+  background-color: #d5d9dc;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px auto -webkit-focus-ring-color; /* Slightly thinner outline */
+  outline-offset: 1px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #1f2c38; /* Darker color for headings for emphasis */
+  font-weight: 600; /* Ensure headings are bold enough */
+}
+
+h1 {
+  font-size: 2.2em; /* Adjusted heading sizes for better hierarchy */
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.8em;
+}
+h3 {
+  font-size: 1.4em;
+}
