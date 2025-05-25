@@ -1,20 +1,24 @@
 /* src/App.css */
-.app-container {
+.main-layout {
   display: flex;
-  flex-direction: column;
+  direction: rtl;
   min-height: 100vh;
-  justify-content: center;
-  align-items: center;
-  padding: 0; /* Let child components manage their own padding if needed */
-  box-sizing: border-box;
-  width: 100%;
 }
 
-.content {
+.main-content-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #FAF8F3;
+  position: relative;
+}
+
+.login-page-wrapper {
+  display: flex; /* Takes full width/height from login-page-background */
   width: 100%;
-  display: flex;
+  min-height: 100vh; /* Ensure it takes full viewport height */
   justify-content: center;
-  align-items: flex-start; /* Align items to the start for pages like dashboard */
-  flex-grow: 1; /* Allow content to grow and take available space */
-  padding: 0; /* Padding will be handled by page components */
+  align-items: center;
+  /* padding: 20px; /* Padding can be on login-page-container instead */
+  box-sizing: border-box;
 }
