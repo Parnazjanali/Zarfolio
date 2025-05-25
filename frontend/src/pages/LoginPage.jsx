@@ -2,7 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AuthForms.css';
+<<<<<<< HEAD
 import loginPageImage from '../assets/login.jpg'; // Assuming your image is at src/assets/login.jpg
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -36,7 +39,10 @@ function LoginPage() {
     if (username === 'admin' && password === 'admin') {
       setMessage('ورود موقت ادمین موفقیت‌آمیز بود!');
       setIsError(false);
+<<<<<<< HEAD
       localStorage.setItem('authToken', 'dummy-admin-token'); // Set a dummy token for admin
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
       console.log('Temporary admin login successful');
       setTimeout(() => navigate('/dashboard'), 1500);
       return;
@@ -73,6 +79,7 @@ function LoginPage() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="login-page-container">
       <div className="login-form-section">
         <div className="auth-container">
@@ -111,6 +118,39 @@ function LoginPage() {
       </div>
       <div className="login-image-section">
         <img src={loginPageImage} alt="نمای کلی برنامه زرفولیو" />
+=======
+    <div className="auth-container">
+      <h2 className="auth-title">ورود به سیستم حسابداری طلا و جواهر</h2>
+      <form onSubmit={handleLogin} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="username">نام کاربری:</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            aria-label="نام کاربری"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">رمز عبور:</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            aria-label="رمز عبور"
+          />
+        </div>
+        <button type="submit" className="submit-button">ورود</button>
+      </form>
+      <div
+        className={`message-display ${isError ? 'error-message' : 'success-message'} ${showMessage ? 'show' : ''}`}
+      >
+        {message}
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
       </div>
     </div>
   );

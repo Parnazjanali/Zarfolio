@@ -3,7 +3,11 @@
   font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.7;
   font-weight: 400;
+<<<<<<< HEAD
   color: #2c3e50;
+=======
+  color: #2c3e50; /* A darker, more readable base text color */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -47,8 +51,13 @@ body {
 
 a {
   font-weight: 500;
+<<<<<<< HEAD
   color: #2980b9;
   text-decoration: none;
+=======
+  color: #2980b9; /* Adjusted link color for better contrast */
+  text-decoration: none; /* Common practice to remove underline by default */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 a:hover {
   color: #1f618d;
@@ -56,6 +65,7 @@ a:hover {
 }
 
 button {
+<<<<<<< HEAD
   border-radius: 6px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -64,6 +74,16 @@ button {
   font-family: inherit;
   background-color: #e0e0e0;
   color: #2c3e50;
+=======
+  border-radius: 6px; /* Slightly less rounded for a more modern feel */
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 0.95em; /* Adjusted base button font size */
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #e0e0e0; /* Neutral button background */
+  color: #2c3e50; /* Dark text on neutral button */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
 }
@@ -75,17 +95,30 @@ button:hover {
 
 button:focus,
 button:focus-visible {
+<<<<<<< HEAD
   outline: 3px auto -webkit-focus-ring-color;
+=======
+  outline: 3px auto -webkit-focus-ring-color; /* Slightly thinner outline */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   outline-offset: 1px;
 }
 
 h1, h2, h3, h4, h5, h6 {
+<<<<<<< HEAD
   color: #1f2c38;
   font-weight: 600;
 }
 
 h1 {
   font-size: 2.2em;
+=======
+  color: #1f2c38; /* Darker color for headings for emphasis */
+  font-weight: 600; /* Ensure headings are bold enough */
+}
+
+h1 {
+  font-size: 2.2em; /* Adjusted heading sizes for better hierarchy */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   line-height: 1.2;
 }
 h2 {
@@ -93,10 +126,13 @@ h2 {
 }
 h3 {
   font-size: 1.4em;
+<<<<<<< HEAD
 }
 
 /* Portal root styling (optional, usually for absolute positioning context if needed) */
 #portal-root {
   position: relative;
   z-index: 1050; /* Ensure portals are above most content */
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }

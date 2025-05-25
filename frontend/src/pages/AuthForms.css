@@ -1,4 +1,5 @@
 /* src/pages/AuthForms.css */
+<<<<<<< HEAD
 .login-page-container {
   display: flex;
   width: 100%;
@@ -51,10 +52,24 @@
   box-shadow: none; /* Shadow is on .login-page-container */
   background-color: transparent; /* Background is on .login-page-container */
   margin: 0;
+=======
+.auth-container {
+  max-width: 450px;
+  padding: 40px; /* Increased padding */
+  border: none; /* Removed border for a flatter look, relying on shadow */
+  border-radius: 12px; /* Softer radius */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer, more diffuse shadow */
+  background-color: #ffffff;
+  font-family: 'Vazirmatn', sans-serif; /* Ensure Vazirmatn is used */
+  width: 100%;
+  margin: 20px; /* Add some margin for smaller screens if not centered by parent */
+  direction: rtl; /* Right-to-left for Persian */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 
 .auth-container .auth-title {
   text-align: center;
+<<<<<<< HEAD
   margin-bottom: 25px; /* Adjusted margin */
   color: #1f2c38;
   font-size: 1.8em; /* Adjusted size */
@@ -65,20 +80,40 @@
 
 .auth-form .form-group {
   margin-bottom: 25px;
+=======
+  margin-bottom: 30px;
+  color: #1f2c38; /* Darker title color */
+  font-size: 1.9em;
+  font-weight: 700; /* Bolder title */
+  border-bottom: 2px solid #f3d250;
+  padding-bottom: 15px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 28px; /* Slightly more space */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 
 .auth-form label {
   display: block;
+<<<<<<< HEAD
   margin-bottom: 8px; /* Adjusted margin */
   font-weight: 500;
   color: #4a5568;
   font-size: 0.9em; /* Adjusted size */
+=======
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #4a5568; /* Softer label color */
+  font-size: 0.95em;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   text-align: right;
 }
 
 .auth-form input[type="text"],
 .auth-form input[type="password"] {
   width: 100%;
+<<<<<<< HEAD
   padding: 14px; /* Adjusted padding */
   border: 1px solid #cbd5e0;
   border-radius: 8px;
@@ -89,28 +124,55 @@
   direction: rtl;
   background-color: #f8f9fa; /* Slightly different input background */
   font-family: inherit;
+=======
+  padding: 15px; /* Increased padding for better touch on mobile */
+  border: 1px solid #cbd5e0; /* Lighter border color */
+  border-radius: 8px; /* Softer radius */
+  box-sizing: border-box;
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: right;
+  direction: rtl;
+  background-color: #f7fafc; /* Slight off-white background for inputs */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 
 .auth-form input:focus {
   border-color: #f3d250;
   outline: none;
+<<<<<<< HEAD
   box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4);
+=======
+  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4); /* Adjusted focus shadow */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   background-color: #fff;
 }
 
 .submit-button {
   width: 100%;
+<<<<<<< HEAD
   padding: 14px; /* Adjusted padding */
   background-color: #f3d250;
   color: #202020;
   border: none;
   border-radius: 8px;
   font-size: 1em; /* Adjusted size */
+=======
+  padding: 15px;
+  background-color: #f3d250;
+  color: #202020; /* Darker text on button for better contrast */
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05em;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+<<<<<<< HEAD
   font-family: inherit;
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 
 .submit-button:hover {
@@ -124,8 +186,13 @@
 }
 
 .message-display {
+<<<<<<< HEAD
   margin-top: 20px; /* Adjusted margin */
   padding: 12px; /* Adjusted padding */
+=======
+  margin-top: 25px;
+  padding: 14px; /* Increased padding */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
@@ -134,22 +201,36 @@
   transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out;
   max-height: 0;
   overflow: hidden;
+<<<<<<< HEAD
   font-size: 0.85em; /* Adjusted size */
+=======
+  font-size: 0.9em;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
 
 .message-display.show {
   opacity: 1;
   transform: translateY(0);
+<<<<<<< HEAD
   max-height: 120px;
 }
 
 .success-message {
   background-color: #e6fffa;
   color: #1a7f4f;
+=======
+  max-height: 120px; /* Adjust as needed */
+}
+
+.success-message {
+  background-color: #e6fffa; /* Lighter success background */
+  color: #1a7f4f; /* Darker success text */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   border: 1px solid #a8dbce;
 }
 
 .error-message {
+<<<<<<< HEAD
   background-color: #fff5f5;
   color: #c53030;
   border: 1px solid #f7baba;
@@ -192,4 +273,9 @@
   .auth-container .auth-title {
     font-size: 1.6em;
   }
+=======
+  background-color: #fff5f5; /* Lighter error background */
+  color: #c53030; /* Darker error text */
+  border: 1px solid #f7baba;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }

@@ -1,4 +1,5 @@
 /* src/pages/DashboardPage.css */
+<<<<<<< HEAD
 /* Styles for .dashboard-header, .toolbar, .icon-button etc. are removed as header is gone */
 /* Only keep styles relevant to the content of the DashboardPage itself */
 
@@ -94,6 +95,255 @@
 @media (max-width: 1200px) {
   .dashboard-columns {
     grid-template-columns: 1fr 1.8fr;
+=======
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  padding: 25px 30px; /* Adjusted padding */
+  min-height: 100vh; /* Ensure it takes full viewport height */
+  color: #34495e; /* Main text color with good contrast on cream */
+  width: 100%;
+  max-width: 1600px; /* Wider max-width for dashboards */
+  margin: 0 auto;
+  box-sizing: border-box;
+  direction: rtl;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dfe4ea; /* Softer border color */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  color: #2c3e50; /* Darker, distinct color for main title */
+  font-size: 1.9em; /* Slightly adjusted size */
+  font-weight: 700;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button {
+  background-color: transparent;
+  border: none;
+  color: #52616B; /* Icon color with good contrast */
+  font-size: 1.4em; /* Slightly larger icons */
+  padding: 10px; /* More clickable area */
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  position: relative;
+}
+
+.icon-button:hover {
+  background-color: #e4e7ea; /* Softer hover background */
+  color: #2c3e50;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px; /* Adjusted position */
+  left: 4px; /* Adjusted for RTL, will appear on the 'start' side */
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 0.55em; /* Smaller badge font */
+  font-weight: bold;
+  line-height: 1;
+  pointer-events: none; /* Badge should not interfere with click */
+}
+
+.profile-menu {
+  position: relative; /* For potential dropdown */
+}
+
+.user-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px; /* Adjusted padding */
+  border-radius: 25px; /* Pill shape */
+  font-size: 1em;
+  color: #34495e; /* Text color for profile button */
+}
+
+.user-profile-button:hover {
+  background-color: #dfe4ea;
+}
+
+.user-profile-button span {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #34495e; /* Consistent text color */
+}
+
+.logout-button {
+  background-color: #f3d250;
+  color: #2c3e50; /* Darker text for better contrast */
+  border: none;
+  padding: 9px 16px; /* Adjusted padding */
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.logout-button:hover {
+  background-color: #e0b400;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.logout-button svg {
+  font-size: 1.1em;
+}
+
+.dashboard-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.summary-cards-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Slightly larger min card width */
+  gap: 25px;
+}
+
+.summary-card {
+  background-color: #ffffff;
+  padding: 25px; /* Increased padding */
+  border-radius: 10px; /* Softer radius */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07); /* Softer shadow */
+  text-align: right;
+  border-left: 4px solid #f3d250; /* Accent border */
+}
+
+.summary-card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1em;
+  font-weight: 600; /* Bolder card titles */
+  color: #4a5568; /* Softer title color */
+}
+
+.summary-card p {
+  font-size: 1.7em; /* Larger numbers */
+  font-weight: 700;
+  color: #2c3e50; /* Darker numbers */
+  margin-bottom: 0;
+}
+
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr; /* Adjusted column ratio */
+  gap: 30px;
+}
+
+.card-style {
+  background-color: #ffffff;
+  padding: 30px; /* Increased padding */
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+  text-align: right;
+}
+
+.card-style h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.5em; /* Larger section titles */
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 1px solid #e8ecef;
+  padding-bottom: 15px;
+}
+
+.quick-actions-section .action-button {
+  display: flex; /* To align icon and text */
+  align-items: center;
+  gap: 10px; /* Space between icon and text */
+  width: 100%;
+  padding: 14px 18px; /* Increased padding */
+  margin-bottom: 12px;
+  background-color: #3498db; /* A distinct blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  text-align: right;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.quick-actions-section .action-button:hover {
+  background-color: #2980b9; /* Darker blue */
+  transform: translateY(-1px);
+}
+.action-icon {
+  font-size: 1.2em; /* Adjust icon size within button */
+}
+
+
+.recent-transactions-section table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+}
+
+.recent-transactions-section th,
+.recent-transactions-section td {
+  padding: 12px 15px; /* Increased padding */
+  border-bottom: 1px solid #f1f3f5; /* Lighter border */
+  text-align: right;
+  font-size: 0.9em;
+}
+
+.recent-transactions-section th {
+  background-color: #f8f9fa; /* Very light grey for table header */
+  font-weight: 600;
+  color: #495057;
+}
+
+.recent-transactions-section tbody tr:hover {
+  background-color: #fcfcfd; /* Very subtle hover */
+}
+
+.no-data-message {
+  color: #718096; /* Softer color for no data message */
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-columns {
+    grid-template-columns: 1fr 2fr; /* Adjust ratio for medium screens */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   }
 }
 
@@ -101,15 +351,25 @@
   .dashboard-columns {
     grid-template-columns: 1fr;
   }
+<<<<<<< HEAD
   .summary-cards-section {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
    .dashboard-page-content {
     padding: 20px 15px; /* Adjust padding for smaller screens */
+=======
+  .dashboard-header {
+    padding-right: 15px; /* Add some padding for RTL on smaller screens */
+    padding-left: 15px;
+  }
+  .dashboard-container {
+    padding: 20px 15px;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
   }
 }
 
 @media (max-width: 768px) {
+<<<<<<< HEAD
   .summary-card {
     flex-direction: column;
     align-items: flex-end;
@@ -138,4 +398,51 @@
     font-size: 0.8em;
     padding: 8px;
   }
+=======
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .dashboard-header h1 {
+    font-size: 1.7em;
+  }
+  .summary-cards-section {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .summary-card p {
+    font-size: 1.5em;
+  }
+  .card-style h2 {
+    font-size: 1.3em;
+  }
+  .quick-actions-section .action-button,
+  .recent-transactions-section th,
+  .recent-transactions-section td {
+    font-size: 0.85em;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    gap: 2px; /* Reduce gap for very small screens */
+  }
+  .icon-button {
+    font-size: 1.2em;
+    padding: 8px;
+  }
+  .user-profile-button span {
+    display: none; /* Hide username text on very small screens */
+  }
+  .logout-button span {
+    display: none; /* Hide logout text on very small screens */
+  }
+  .logout-button {
+    padding: 8px; /* Make it more icon-like */
+  }
+  .summary-cards-section {
+    grid-template-columns: 1fr; /* Stack all cards on smallest screens */
+  }
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
 }
