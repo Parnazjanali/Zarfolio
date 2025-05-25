@@ -1,73 +1,116 @@
 /* src/pages/AuthForms.css */
-.auth-container {
-  max-width: 450px;
-  padding: 40px; /* Increased padding */
-  border: none; /* Removed border for a flatter look, relying on shadow */
-  border-radius: 12px; /* Softer radius */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer, more diffuse shadow */
-  background-color: #ffffff;
-  font-family: 'Vazirmatn', sans-serif; /* Ensure Vazirmatn is used */
+.login-page-container {
+  display: flex;
   width: 100%;
-  margin: 20px; /* Add some margin for smaller screens if not centered by parent */
-  direction: rtl; /* Right-to-left for Persian */
+  /* min-height: 100vh; /* This is now handled by .login-page-wrapper in App.css via body background */
+  /* The login page container itself might not need to be 100vh if its parent (.login-page-wrapper) is centered */
+  align-items: stretch;
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+  background-color: #fff; /* Give it a solid background for the card effect */
+  border-radius: 12px; /* Rounded corners for the overall login card */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); /* Shadow for the overall card */
+  max-width: 1000px; /* Max width for the login card */
+  margin: auto; /* Center the card if login-page-wrapper doesn't do it */
+  overflow: hidden; /* Ensure rounded corners clip child elements */
+  max-height: 700px; /* Max height for the login card */
+}
+
+.login-form-section {
+  flex: 1 1 55%; /* Slightly more space for the form */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 40px; /* More padding */
+  box-sizing: border-box;
+  /* background-color: #fff; /* Moved to parent .login-page-container */
+}
+
+.login-image-section {
+  flex: 1 1 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* background-color: #f0f2f5; /* Can be removed if image covers fully */
+}
+
+.login-image-section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-container {
+  max-width: 400px; /* Slightly adjusted max-width for form content */
+  width: 100%;
+  padding: 0; /* Padding is now on .login-form-section */
+  border: none; /* Border is on .login-page-container */
+  border-radius: 0; /* Rounded corners are on .login-page-container */
+  box-shadow: none; /* Shadow is on .login-page-container */
+  background-color: transparent; /* Background is on .login-page-container */
+  margin: 0;
 }
 
 .auth-container .auth-title {
   text-align: center;
-  margin-bottom: 30px;
-  color: #1f2c38; /* Darker title color */
-  font-size: 1.9em;
-  font-weight: 700; /* Bolder title */
+  margin-bottom: 25px; /* Adjusted margin */
+  color: #1f2c38;
+  font-size: 1.8em; /* Adjusted size */
+  font-weight: 700;
   border-bottom: 2px solid #f3d250;
-  padding-bottom: 15px;
+  padding-bottom: 12px; /* Adjusted padding */
 }
 
 .auth-form .form-group {
-  margin-bottom: 28px; /* Slightly more space */
+  margin-bottom: 25px;
 }
 
 .auth-form label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px; /* Adjusted margin */
   font-weight: 500;
-  color: #4a5568; /* Softer label color */
-  font-size: 0.95em;
+  color: #4a5568;
+  font-size: 0.9em; /* Adjusted size */
   text-align: right;
 }
 
 .auth-form input[type="text"],
 .auth-form input[type="password"] {
   width: 100%;
-  padding: 15px; /* Increased padding for better touch on mobile */
-  border: 1px solid #cbd5e0; /* Lighter border color */
-  border-radius: 8px; /* Softer radius */
+  padding: 14px; /* Adjusted padding */
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
   box-sizing: border-box;
-  font-size: 1em;
+  font-size: 0.95em; /* Adjusted size */
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   text-align: right;
   direction: rtl;
-  background-color: #f7fafc; /* Slight off-white background for inputs */
+  background-color: #f8f9fa; /* Slightly different input background */
+  font-family: inherit;
 }
 
 .auth-form input:focus {
   border-color: #f3d250;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4); /* Adjusted focus shadow */
+  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4);
   background-color: #fff;
 }
 
 .submit-button {
   width: 100%;
-  padding: 15px;
+  padding: 14px; /* Adjusted padding */
   background-color: #f3d250;
-  color: #202020; /* Darker text on button for better contrast */
+  color: #202020;
   border: none;
   border-radius: 8px;
-  font-size: 1.05em;
+  font-size: 1em; /* Adjusted size */
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-family: inherit;
 }
 
 .submit-button:hover {
@@ -81,8 +124,8 @@
 }
 
 .message-display {
-  margin-top: 25px;
-  padding: 14px; /* Increased padding */
+  margin-top: 20px; /* Adjusted margin */
+  padding: 12px; /* Adjusted padding */
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
@@ -91,23 +134,62 @@
   transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out;
   max-height: 0;
   overflow: hidden;
-  font-size: 0.9em;
+  font-size: 0.85em; /* Adjusted size */
 }
 
 .message-display.show {
   opacity: 1;
   transform: translateY(0);
-  max-height: 120px; /* Adjust as needed */
+  max-height: 120px;
 }
 
 .success-message {
-  background-color: #e6fffa; /* Lighter success background */
-  color: #1a7f4f; /* Darker success text */
+  background-color: #e6fffa;
+  color: #1a7f4f;
   border: 1px solid #a8dbce;
 }
 
 .error-message {
-  background-color: #fff5f5; /* Lighter error background */
-  color: #c53030; /* Darker error text */
+  background-color: #fff5f5;
+  color: #c53030;
   border: 1px solid #f7baba;
+}
+
+@media (max-width: 992px) {
+  .login-page-container {
+    flex-direction: column;
+    max-width: 500px; /* Limit width on tablet for stacked view */
+    max-height: none; /* Allow content to determine height */
+    margin: 30px auto; /* Centering for stacked view */
+  }
+  .login-image-section {
+    min-height: 250px;
+    max-height: 35vh;
+    order: -1;
+    border-top-left-radius: 12px; /* Keep rounded corners */
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .login-form-section {
+    min-height: auto; /* Adjust height */
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page-container {
+    margin: 20px; /* More margin for small screens */
+    box-shadow: none; /* Remove shadow on very small screens */
+    border: 1px solid #e0e0e0; /* Add a light border instead */
+  }
+  .login-image-section {
+    display: none;
+  }
+  .login-form-section {
+    padding: 25px;
+  }
+  .auth-container .auth-title {
+    font-size: 1.6em;
+  }
 }
