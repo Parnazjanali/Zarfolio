@@ -1,8 +1,20 @@
 /* src/App.css */
+<<<<<<< HEAD
 .main-layout {
+=======
+.app-container {
+>>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
   display: flex;
   direction: rtl;
   min-height: 100vh;
+<<<<<<< HEAD
+=======
+  justify-content: center;
+  align-items: center;
+  padding: 0; /* Let child components manage their own padding if needed */
+  box-sizing: border-box;
+  width: 100%;
+>>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 }
 
 .main-content-area {
@@ -18,7 +30,13 @@
   width: 100%;
   min-height: 100vh; /* Ensure it takes full viewport height */
   justify-content: center;
+<<<<<<< HEAD
   align-items: center;
   /* padding: 20px; /* Padding can be on login-page-container instead */
   box-sizing: border-box;
+=======
+  align-items: flex-start; /* Align items to the start for pages like dashboard */
+  flex-grow: 1; /* Allow content to grow and take available space */
+  padding: 0; /* Padding will be handled by page components */
+>>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 }
