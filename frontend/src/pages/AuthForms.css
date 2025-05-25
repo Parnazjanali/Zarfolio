@@ -1,0 +1,113 @@
+/* src/pages/AuthForms.css */
+.auth-container {
+  max-width: 450px;
+  padding: 40px; /* Increased padding */
+  border: none; /* Removed border for a flatter look, relying on shadow */
+  border-radius: 12px; /* Softer radius */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer, more diffuse shadow */
+  background-color: #ffffff;
+  font-family: 'Vazirmatn', sans-serif; /* Ensure Vazirmatn is used */
+  width: 100%;
+  margin: 20px; /* Add some margin for smaller screens if not centered by parent */
+  direction: rtl; /* Right-to-left for Persian */
+}
+
+.auth-container .auth-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1f2c38; /* Darker title color */
+  font-size: 1.9em;
+  font-weight: 700; /* Bolder title */
+  border-bottom: 2px solid #f3d250;
+  padding-bottom: 15px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 28px; /* Slightly more space */
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #4a5568; /* Softer label color */
+  font-size: 0.95em;
+  text-align: right;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+  width: 100%;
+  padding: 15px; /* Increased padding for better touch on mobile */
+  border: 1px solid #cbd5e0; /* Lighter border color */
+  border-radius: 8px; /* Softer radius */
+  box-sizing: border-box;
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: right;
+  direction: rtl;
+  background-color: #f7fafc; /* Slight off-white background for inputs */
+}
+
+.auth-form input:focus {
+  border-color: #f3d250;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4); /* Adjusted focus shadow */
+  background-color: #fff;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #f3d250;
+  color: #202020; /* Darker text on button for better contrast */
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.submit-button:hover {
+  background-color: #e0b400;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.submit-button:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.message-display {
+  margin-top: 25px;
+  padding: 14px; /* Increased padding */
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out;
+  max-height: 0;
+  overflow: hidden;
+  font-size: 0.9em;
+}
+
+.message-display.show {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 120px; /* Adjust as needed */
+}
+
+.success-message {
+  background-color: #e6fffa; /* Lighter success background */
+  color: #1a7f4f; /* Darker success text */
+  border: 1px solid #a8dbce;
+}
+
+.error-message {
+  background-color: #fff5f5; /* Lighter error background */
+  color: #c53030; /* Darker error text */
+  border: 1px solid #f7baba;
+}
