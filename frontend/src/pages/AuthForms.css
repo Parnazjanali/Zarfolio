@@ -1,57 +1,69 @@
+<<<<<<< HEAD
 /* src/pages/AuthForms.css */
 <<<<<<< HEAD
 .login-page-container {
+=======
+/* frontend/src/pages/AuthForms.css */
+.login-page-container { /* This class is on the wrapper in App.jsx if used */
+>>>>>>> main
   display: flex;
   width: 100%;
-  /* min-height: 100vh; /* This is now handled by .login-page-wrapper in App.css via body background */
-  /* The login page container itself might not need to be 100vh if its parent (.login-page-wrapper) is centered */
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
-  background-color: #fff; /* Give it a solid background for the card effect */
-  border-radius: 12px; /* Rounded corners for the overall login card */
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); /* Shadow for the overall card */
-  max-width: 1000px; /* Max width for the login card */
-  margin: auto; /* Center the card if login-page-wrapper doesn't do it */
-  overflow: hidden; /* Ensure rounded corners clip child elements */
-  max-height: 700px; /* Max height for the login card */
+  min-height: 100vh;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.login-card {
+  display: flex;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+  max-width: 780px; /* Overall card width */
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  max-height: 550px; /* Overall card height */
 }
 
 .login-form-section {
-  flex: 1 1 55%; /* Slightly more space for the form */
+  flex: 1 1 50%; /* Adjust basis as needed */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 30px 40px; /* More padding */
+  padding: 20px 30px; /* Padding for form content */
   box-sizing: border-box;
-  /* background-color: #fff; /* Moved to parent .login-page-container */
+  /* overflow-y: auto; /* Removed to prevent internal scrollbar */
+  background-color: #ffffff;
 }
 
 .login-image-section {
-  flex: 1 1 45%;
+  flex: 1 1 50%; /* Adjust basis as needed */
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f8f9fa;
   overflow: hidden;
-  /* background-color: #f0f2f5; /* Can be removed if image covers fully */
+  padding: 0; /* Edge-to-edge image */
 }
 
 .login-image-section img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Fills the container, may crop */
 }
 
 .auth-container {
-  max-width: 400px; /* Slightly adjusted max-width for form content */
+  max-width: 300px; /* Form content width */
   width: 100%;
-  padding: 0; /* Padding is now on .login-form-section */
-  border: none; /* Border is on .login-page-container */
-  border-radius: 0; /* Rounded corners are on .login-page-container */
-  box-shadow: none; /* Shadow is on .login-page-container */
-  background-color: transparent; /* Background is on .login-page-container */
+  padding: 0;
   margin: 0;
+<<<<<<< HEAD
 =======
 .auth-container {
   max-width: 450px;
@@ -65,20 +77,36 @@
   margin: 20px; /* Add some margin for smaller screens if not centered by parent */
   direction: rtl; /* Right-to-left for Persian */
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+>>>>>>> main
 }
 
 .auth-container .auth-title {
   text-align: center;
 <<<<<<< HEAD
+<<<<<<< HEAD
   margin-bottom: 25px; /* Adjusted margin */
+=======
+  margin-bottom: 18px;
+>>>>>>> main
   color: #1f2c38;
-  font-size: 1.8em; /* Adjusted size */
-  font-weight: 700;
+  font-size: 1.4em;
+  font-weight: 600;
   border-bottom: 2px solid #f3d250;
-  padding-bottom: 12px; /* Adjusted padding */
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+.auth-form {
+    width: 100%;
 }
 
 .auth-form .form-group {
+<<<<<<< HEAD
   margin-bottom: 25px;
 =======
   margin-bottom: 30px;
@@ -92,10 +120,14 @@
 .auth-form .form-group {
   margin-bottom: 28px; /* Slightly more space */
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  margin-bottom: 16px;
+>>>>>>> main
 }
 
 .auth-form label {
   display: block;
+<<<<<<< HEAD
 <<<<<<< HEAD
   margin-bottom: 8px; /* Adjusted margin */
   font-weight: 500;
@@ -107,6 +139,12 @@
   color: #4a5568; /* Softer label color */
   font-size: 0.95em;
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.7em;
+>>>>>>> main
   text-align: right;
 }
 
@@ -114,15 +152,21 @@
 .auth-form input[type="password"] {
   width: 100%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   padding: 14px; /* Adjusted padding */
   border: 1px solid #cbd5e0;
   border-radius: 8px;
+=======
+  padding: 9px 10px;
+  border: 1px solid #d2d6dc;
+  border-radius: 5px;
+>>>>>>> main
   box-sizing: border-box;
-  font-size: 0.95em; /* Adjusted size */
+  font-size: 0.8em;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   text-align: right;
   direction: rtl;
-  background-color: #f8f9fa; /* Slightly different input background */
+  background-color: #f9fafb;
   font-family: inherit;
 =======
   padding: 15px; /* Increased padding for better touch on mobile */
@@ -141,20 +185,29 @@
   border-color: #f3d250;
   outline: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4);
 =======
   box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4); /* Adjusted focus shadow */
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  box-shadow: 0 0 0 2px rgba(243, 210, 80, 0.3);
+>>>>>>> main
   background-color: #fff;
 }
 
 .submit-button {
   width: 100%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   padding: 14px; /* Adjusted padding */
+=======
+  padding: 9px;
+>>>>>>> main
   background-color: #f3d250;
-  color: #202020;
+  color: #1f2c38;
   border: none;
+<<<<<<< HEAD
   border-radius: 8px;
   font-size: 1em; /* Adjusted size */
 =======
@@ -173,19 +226,30 @@
   font-family: inherit;
 =======
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  border-radius: 5px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  font-family: inherit;
+  margin-top: 6px;
+>>>>>>> main
 }
 
 .submit-button:hover {
   background-color: #e0b400;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
   transform: translateY(-1px);
 }
 .submit-button:active {
   transform: translateY(0px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .message-display {
+<<<<<<< HEAD
 <<<<<<< HEAD
   margin-top: 20px; /* Adjusted margin */
   padding: 12px; /* Adjusted padding */
@@ -194,25 +258,39 @@
   padding: 14px; /* Increased padding */
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
   border-radius: 8px;
+=======
+  margin-top: 12px;
+  padding: 7px 9px;
+  border-radius: 5px;
+>>>>>>> main
   text-align: center;
   font-weight: 500;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
   transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out;
   max-height: 0;
   overflow: hidden;
+<<<<<<< HEAD
 <<<<<<< HEAD
   font-size: 0.85em; /* Adjusted size */
 =======
   font-size: 0.9em;
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  font-size: 0.7em;
+  width: 100%;
+>>>>>>> main
 }
 
 .message-display.show {
   opacity: 1;
   transform: translateY(0);
 <<<<<<< HEAD
+<<<<<<< HEAD
   max-height: 120px;
+=======
+  max-height: 80px;
+>>>>>>> main
 }
 
 .success-message {
@@ -236,46 +314,202 @@
   border: 1px solid #f7baba;
 }
 
-@media (max-width: 992px) {
-  .login-page-container {
+/* Contact Us Section */
+.contact-us-section {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef; /* Optional: separator line */
+  width: 100%;
+  text-align: center;
+}
+
+.contact-us-title {
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-bottom: 15px; /* Increased space below title */
+  font-weight: 500;
+}
+
+.social-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px; /* << Increased gap between social buttons */
+  margin-top: 0px;
+  width: 100%;
+  /* margin-bottom is removed, .made-with-love will handle its top margin */
+}
+
+.social-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px; /* Padding for the smaller button */
+  border-radius: 50%;
+  color: #fff; /* Icon color */
+  background-color: var(--social-color, #777);
+  text-decoration: none;
+  font-size: 1.1em; /* Smaller base icon size */
+  width: 38px;  /* Smaller button width */
+  height: 38px; /* Smaller button height */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: width 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+              background-color 0.2s ease,
+              padding 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+              transform 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+.social-button:hover {
+    transform: translateY(-2px) scale(1.03);
+    background-color: var(--social-hover-color, var(--social-color));
+    box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+}
+
+.social-button .social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  flex-shrink: 0;
+  color: #fff; /* Ensure icon is white against button background */
+}
+
+.social-button .social-text {
+  font-size: 0.65em;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.3s ease-out 0.05s, opacity 0.2s ease-out 0.1s, margin-right 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  direction: ltr;
+  margin-right: 0;
+}
+
+.social-button.hovered {
+  width: auto;
+  min-width: 38px;
+  border-radius: 19px; /* Half of new height */
+  padding: 7px 10px; /* Adjusted padding for expanded state */
+}
+
+.social-button.hovered .social-icon {
+  transform: translateX(8px); /* RTL: Move icon further to the right */
+}
+
+.social-button.hovered .social-text {
+  max-width: 180px;
+  opacity: 1;
+  margin-right: 10px; /* RTL: Increased space between icon and text */
+}
+
+/* Made with Love Section */
+.made-with-love {
+  margin-top: 25px; /* Space above this text, after social buttons */
+  padding-bottom: 10px; /* Space at the very bottom of the form container */
+  text-align: center;
+  font-size: 0.85em;
+  color: #868e96;
+  font-family: 'Vazirmatn', 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.heart-icon {
+  color: #e74c3c;
+  animation: pulse 1.5s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  display: inline-block; /* Prevents descender space issues */
+  font-size: 1em; /* Relative to parent text */
+  line-height: 1; /* Ensure it aligns well with text */
+  vertical-align: middle; /* Better vertical alignment with text */
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.app-version {
+  margin-top: 8px;
+  padding-bottom: 15px;
+  text-align: center;
+  font-size: 0.75em;
+  color: #adb5bd;
+  font-family: 'Vazirmatn', 'Segoe UI', sans-serif;
+  width: 100%;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 800px) {
+  .login-card {
     flex-direction: column;
-    max-width: 500px; /* Limit width on tablet for stacked view */
-    max-height: none; /* Allow content to determine height */
-    margin: 30px auto; /* Centering for stacked view */
+    max-width: 420px;
+    max-height: none;
+    margin: 20px auto;
+    height: auto;
+  }
+  .login-form-section,
+  .login-image-section {
+    flex-basis: auto;
+    width: 100%;
   }
   .login-image-section {
-    min-height: 250px;
+    min-height: 180px;
     max-height: 35vh;
     order: -1;
-    border-top-left-radius: 12px; /* Keep rounded corners */
-    border-top-right-radius: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    padding: 0;
   }
   .login-form-section {
-    min-height: auto; /* Adjust height */
-    padding: 30px;
+    min-height: auto;
+    padding: 25px 20px;
+    flex-grow: 1;
+    /* overflow-y: visible; /* On smaller stacked view, allow content to determine height */
   }
+  .auth-container {
+    max-width: 100%;
+  }
+  .contact-us-section { margin-top: 20px; padding-top: 10px; }
+  .contact-us-title { font-size: 0.85em; margin-bottom: 12px; }
+  .social-buttons-container { gap: 15px; }
+  .social-button { width: 36px; height: 36px; font-size: 1em; }
+  .social-button.hovered { min-width: 36px; border-radius: 18px; padding: 7px 9px; }
+  .social-button.hovered .social-text { font-size: 0.5em; margin-right: 5px; }
+  .social-button.hovered .social-icon { transform: translateX(3px); }
+  .made-with-love { font-size: 0.8em; margin-top: 20px; }
+  .app-version { font-size: 0.7em; margin-top: 6px; }
 }
 
 @media (max-width: 480px) {
-  .login-page-container {
-    margin: 20px; /* More margin for small screens */
-    box-shadow: none; /* Remove shadow on very small screens */
-    border: 1px solid #e0e0e0; /* Add a light border instead */
+  .login-page-container { padding: 0; }
+  .login-card {
+    margin: 0; border-radius: 0; box-shadow: none; border: none;
+    max-height: none; min-height: 100vh; width: 100%;
   }
-  .login-image-section {
-    display: none;
-  }
+  .login-image-section { display: none; }
   .login-form-section {
-    padding: 25px;
+    padding: 20px 15px; justify-content: center; min-height: 100vh;
+    /* overflow-y: auto; /* Allow scroll on very small screens if content overflows */
   }
-  .auth-container .auth-title {
-    font-size: 1.6em;
-  }
+<<<<<<< HEAD
 =======
   background-color: #fff5f5; /* Lighter error background */
   color: #c53030; /* Darker error text */
   border: 1px solid #f7baba;
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+  .auth-container .auth-title { font-size: 1.4em; margin-bottom: 15px; }
+  .made-with-love { font-size: 0.75em; margin-top: 15px; padding-bottom: 10px; }
+  .app-version { font-size: 0.65em; margin-top: 5px; padding-bottom: 8px; }
+>>>>>>> main
 }

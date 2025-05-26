@@ -2,10 +2,10 @@
 <<<<<<< HEAD
 import React from 'react'; // Removed useState, useEffect, useRef as they are now in Sidebar
 import './DashboardPage.css';
-// Icons for summary cards are still needed if not passed as props
+import ReleaseNotesModal from '../components/ReleaseNotesModal'; // Import the modal
 import {
   FaBalanceScale, FaMoneyBillWave, FaFileAlt, FaTag,
-  FaFileInvoiceDollar, FaUserPlus, FaChartPie, FaCog // Icons for quick actions
+  FaFileInvoiceDollar, FaUserPlus, FaChartPie, FaCog
 } from 'react-icons/fa';
 
 
@@ -152,38 +152,39 @@ function DashboardPage() {
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
           </section>
 
-          <section className="recent-transactions-section card-style">
-            <h2>آخرین تراکنش‌ها</h2>
-            {recentTransactions.length > 0 ? (
-              <table>
-                <thead>
-                  <tr>
-                    <th>ردیف</th>
-                    <th>نوع</th>
-                    <th>تاریخ</th>
-                    <th>مقدار/مبلغ</th>
-                    <th>مشتری</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentTransactions.map((tx, index) => (
-                    <tr key={tx.id}>
-                      <td>{(index + 1).toLocaleString('fa-IR')}</td>
-                      <td>{tx.type}</td>
-                      <td>{tx.date}</td>
-                      <td>{tx.amount}</td>
-                      <td>{tx.customer}</td>
+            <section className="recent-transactions-section card-style">
+              <h2>آخرین تراکنش‌ها</h2>
+              {recentTransactions.length > 0 ? (
+                <table>
+                   <thead>
+                    <tr>
+                      <th>ردیف</th>
+                      <th>نوع</th>
+                      <th>تاریخ</th>
+                      <th>مقدار/مبلغ</th>
+                      <th>مشتری</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p className="no-data-message">تراکنشی برای نمایش وجود ندارد.</p>
-            )}
-          </section>
-        </div>
-      </main>
-    </div>
+                  </thead>
+                  <tbody>
+                    {recentTransactions.map((tx, index) => (
+                      <tr key={tx.id}>
+                        <td>{(index + 1).toLocaleString('fa-IR')}</td>
+                        <td>{tx.type}</td>
+                        <td>{tx.date}</td>
+                        <td>{tx.amount}</td>
+                        <td>{tx.customer}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="no-data-message">تراکنشی برای نمایش وجود ندارد.</p>
+              )}
+            </section>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
 
