@@ -64,6 +64,9 @@
   padding: 0;
   margin: 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 =======
 .auth-container {
   max-width: 450px;
@@ -76,6 +79,7 @@
   width: 100%;
   margin: 20px; /* Add some margin for smaller screens if not centered by parent */
   direction: rtl; /* Right-to-left for Persian */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 =======
   font-family: inherit;
@@ -83,12 +87,18 @@
   flex-direction: column;
   align-items: center;
 >>>>>>> main
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .auth-container .auth-title {
   text-align: center;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   margin-bottom: 25px; /* Adjusted margin */
 =======
   margin-bottom: 18px;
@@ -119,16 +129,23 @@
 
 .auth-form .form-group {
   margin-bottom: 28px; /* Slightly more space */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 =======
   margin-bottom: 16px;
 >>>>>>> main
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .auth-form label {
   display: block;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   margin-bottom: 8px; /* Adjusted margin */
   font-weight: 500;
   color: #4a5568;
@@ -138,6 +155,7 @@
   font-weight: 500;
   color: #4a5568; /* Softer label color */
   font-size: 0.95em;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 =======
   margin-bottom: 4px;
@@ -145,6 +163,9 @@
   color: #4a5568;
   font-size: 0.7em;
 >>>>>>> main
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   text-align: right;
 }
 
@@ -153,6 +174,9 @@
   width: 100%;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   padding: 14px; /* Adjusted padding */
   border: 1px solid #cbd5e0;
   border-radius: 8px;
@@ -178,12 +202,17 @@
   text-align: right;
   direction: rtl;
   background-color: #f7fafc; /* Slight off-white background for inputs */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .auth-form input:focus {
   border-color: #f3d250;
   outline: none;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4);
@@ -193,6 +222,12 @@
 =======
   box-shadow: 0 0 0 2px rgba(243, 210, 80, 0.3);
 >>>>>>> main
+=======
+  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4);
+=======
+  box-shadow: 0 0 0 3px rgba(243, 210, 80, 0.4); /* Adjusted focus shadow */
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   background-color: #fff;
 }
 
@@ -200,6 +235,9 @@
   width: 100%;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   padding: 14px; /* Adjusted padding */
 =======
   padding: 9px;
@@ -217,7 +255,11 @@
   border: none;
   border-radius: 8px;
   font-size: 1.05em;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
@@ -225,6 +267,7 @@
 <<<<<<< HEAD
   font-family: inherit;
 =======
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 =======
   border-radius: 5px;
@@ -236,6 +279,9 @@
   font-family: inherit;
   margin-top: 6px;
 >>>>>>> main
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .submit-button:hover {
@@ -251,12 +297,19 @@
 .message-display {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   margin-top: 20px; /* Adjusted margin */
   padding: 12px; /* Adjusted padding */
 =======
   margin-top: 25px;
   padding: 14px; /* Increased padding */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   border-radius: 8px;
 =======
   margin-top: 12px;
@@ -272,6 +325,7 @@
   overflow: hidden;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   font-size: 0.85em; /* Adjusted size */
 =======
   font-size: 0.9em;
@@ -280,6 +334,12 @@
   font-size: 0.7em;
   width: 100%;
 >>>>>>> main
+=======
+  font-size: 0.85em; /* Adjusted size */
+=======
+  font-size: 0.9em;
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .message-display.show {
@@ -287,6 +347,9 @@
   transform: translateY(0);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   max-height: 120px;
 =======
   max-height: 80px;
@@ -303,7 +366,11 @@
 .success-message {
   background-color: #e6fffa; /* Lighter success background */
   color: #1a7f4f; /* Darker success text */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   border: 1px solid #a8dbce;
 }
 
@@ -502,14 +569,21 @@
     /* overflow-y: auto; /* Allow scroll on very small screens if content overflows */
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 =======
   background-color: #fff5f5; /* Lighter error background */
   color: #c53030; /* Darker error text */
   border: 1px solid #f7baba;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
 =======
   .auth-container .auth-title { font-size: 1.4em; margin-bottom: 15px; }
   .made-with-love { font-size: 0.75em; margin-top: 15px; padding-bottom: 10px; }
   .app-version { font-size: 0.65em; margin-top: 5px; padding-bottom: 8px; }
 >>>>>>> main
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }

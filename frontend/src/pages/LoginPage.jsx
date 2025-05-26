@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './AuthForms.css';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import loginPageImage from '../assets/login.jpg'; // Assuming your image is at src/assets/login.jpg
 =======
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
@@ -11,6 +12,11 @@ import loginPageImage from '../assets/login.jpg'; // Assuming your image is at s
 import loginPageImage from '../assets/login.jpg'; // Ensure this path is correct
 import { FaInstagram, FaTelegramPlane, FaWhatsapp, FaHeart } from 'react-icons/fa';
 >>>>>>> main
+=======
+import loginPageImage from '../assets/login.jpg'; // Assuming your image is at src/assets/login.jpg
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -69,6 +75,7 @@ function LoginPage() {
       setIsError(false);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       localStorage.setItem('authToken', 'dummy-admin-token'); // Set a dummy token for admin
 =======
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
@@ -76,6 +83,11 @@ function LoginPage() {
       localStorage.setItem('authToken', 'dummy-admin-token');
       localStorage.setItem('showReleaseNotes', 'true'); // Flag to show release notes on dashboard
 >>>>>>> main
+=======
+      localStorage.setItem('authToken', 'dummy-admin-token'); // Set a dummy token for admin
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
       console.log('Temporary admin login successful');
       setTimeout(() => navigate('/dashboard'), 1500);
       return;
@@ -120,6 +132,9 @@ function LoginPage() {
   return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
     <div className="login-page-container">
 =======
     <div className="login-card">
@@ -228,7 +243,11 @@ function LoginPage() {
         className={`message-display ${isError ? 'error-message' : 'success-message'} ${showMessage ? 'show' : ''}`}
       >
         {message}
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
       </div>
     </div>
   );

@@ -81,7 +81,11 @@ function BackgroundManager() {
   }, [location.pathname]);
 
   return null;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 function App() {
@@ -91,6 +95,9 @@ function App() {
   return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
     <> {/* Use Fragment to avoid unnecessary div if App itself is not the main flex container */}
 =======
     <>
@@ -147,7 +154,11 @@ function App() {
         </div>
       </div>
     </Router>
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   );
 }
 

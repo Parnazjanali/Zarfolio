@@ -3,7 +3,11 @@
 .main-layout {
 =======
 .app-container {
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   display: flex;
   direction: rtl;
   min-height: 100vh;
@@ -14,7 +18,11 @@
   padding: 0; /* Let child components manage their own padding if needed */
   box-sizing: border-box;
   width: 100%;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 
 .main-content-area {
@@ -38,5 +46,9 @@
   align-items: flex-start; /* Align items to the start for pages like dashboard */
   flex-grow: 1; /* Allow content to grow and take available space */
   padding: 0; /* Padding will be handled by page components */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }

@@ -343,7 +343,11 @@
 @media (max-width: 1200px) {
   .dashboard-columns {
     grid-template-columns: 1fr 2fr; /* Adjust ratio for medium screens */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   }
 }
 
@@ -364,7 +368,11 @@
   }
   .dashboard-container {
     padding: 20px 15px;
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   }
 }
 
@@ -444,5 +452,9 @@
   .summary-cards-section {
     grid-template-columns: 1fr; /* Stack all cards on smallest screens */
   }
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }

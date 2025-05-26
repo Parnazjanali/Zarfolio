@@ -17,7 +17,11 @@ import './DashboardPage.css';
 import { FaBell, FaCog, FaUserCircle, FaSignOutAlt, FaSearch, FaPlusCircle, FaUsers, FaChartBar, FaWrench } from 'react-icons/fa'; // Added more icons
 
 function DashboardPage() {
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   const summaryData = {
     goldBalance: 1250.75,
     estimatedValue: 4500000000,
@@ -77,7 +81,11 @@ function DashboardPage() {
           </button>
         </div>
       </header>
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 
       <main className="dashboard-main-content">
         <section className="summary-cards-section">
@@ -132,7 +140,11 @@ function DashboardPage() {
           <div className="summary-card">
             <h3>آخرین قیمت طلا (هر گرم)</h3>
             <p>{summaryData.lastGoldPrice.toLocaleString('fa-IR')} ریال</p>
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
           </div>
         </section>
 
@@ -149,7 +161,11 @@ function DashboardPage() {
             <button className="action-button"><FaUsers className="action-icon" /> افزودن / مدیریت مشتریان</button>
             <button className="action-button"><FaChartBar className="action-icon" /> مشاهده گزارشات</button>
             <button className="action-button"><FaWrench className="action-icon" /> تنظیمات سیستم</button>
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
           </section>
 
             <section className="recent-transactions-section card-style">

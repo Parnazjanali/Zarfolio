@@ -7,7 +7,11 @@
   color: #2c3e50;
 =======
   color: #2c3e50; /* A darker, more readable base text color */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -57,7 +61,11 @@ a {
 =======
   color: #2980b9; /* Adjusted link color for better contrast */
   text-decoration: none; /* Common practice to remove underline by default */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
 a:hover {
   color: #1f618d;
@@ -83,7 +91,11 @@ button {
   font-family: inherit;
   background-color: #e0e0e0; /* Neutral button background */
   color: #2c3e50; /* Dark text on neutral button */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
 }
@@ -99,7 +111,11 @@ button:focus-visible {
   outline: 3px auto -webkit-focus-ring-color;
 =======
   outline: 3px auto -webkit-focus-ring-color; /* Slightly thinner outline */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   outline-offset: 1px;
 }
 
@@ -118,7 +134,11 @@ h1 {
 
 h1 {
   font-size: 2.2em; /* Adjusted heading sizes for better hierarchy */
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
   line-height: 1.2;
 }
 h2 {
@@ -134,5 +154,9 @@ h3 {
   position: relative;
   z-index: 1050; /* Ensure portals are above most content */
 =======
+<<<<<<< HEAD
 >>>>>>> a0c457fcc9f4770fe83ca040921b7f15e882437c
+=======
+>>>>>>> a0c457f (refactor: Improve UI/UX, implement full Persian localization, and update dashboard layout)
+>>>>>>> 7c04bbdbbb22c35ea0871755fa922b3bad335f08
 }
