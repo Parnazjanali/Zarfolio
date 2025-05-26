@@ -16,18 +16,28 @@ function BackgroundManager() {
   useEffect(() => {
     if (location.pathname === '/login') {
       document.body.classList.add('login-page-background');
-      document.body.style.backgroundColor = ''; // Clear default body background
+      document.body.style.backgroundColor = '';
     } else {
       document.body.classList.remove('login-page-background');
-      document.body.style.backgroundColor = '#FAF8F3'; // Set cream background
+      document.body.style.backgroundColor = '#FAF8F3';
     }
     return () => {
       document.body.classList.remove('login-page-background');
-      document.body.style.backgroundColor = ''; // Reset on unmount (optional)
+      document.body.style.backgroundColor = '';
     };
   }, [location.pathname]);
   return null;
 }
+
+// ProtectedRoute component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    // User not authenticated, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 function MainLayout({ children }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -49,53 +59,53 @@ function MainLayout({ children }) {
 }
 
 function App() {
-  // For simplicity, assuming user is logged in if not on /login
-  // Replace with actual authentication logic
-  const location = useLocation(); // For conditional rendering of MainLayout
-  const isLoggedIn = location.pathname !== '/login'; // Example auth check
+  // isLoggedIn will now be determined by ProtectedRoute
+  // We might need a way to refresh app state on login/logout if using a global auth context
 
   return (
-    <> {/* Use Fragment to avoid unnecessary div if App itself is not the main flex container */}
+    <>
       <BackgroundManager />
       <Routes>
-        <Route path="/login" element={<div className="login-page-wrapper"><LoginPage /></div>} />
+        <Route path="/login" element={<LoginPage />} /> {/* LoginPage handles its own redirection if already logged in */}
 
+        {/* Protected Routes wrapped with MainLayout */}
         <Route
           path="/dashboard"
-          element={isLoggedIn ? <MainLayout><DashboardPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/invoices"
-          element={isLoggedIn ? <MainLayout><InvoicesPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/inventory"
-          element={isLoggedIn ? <MainLayout><InventoryPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/customers"
-          element={isLoggedIn ? <MainLayout><CustomersPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/reports"
-          element={isLoggedIn ? <MainLayout><ReportsPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/settings"
-          element={isLoggedIn ? <MainLayout><SettingsPage /></MainLayout> : <Navigate to="/login" replace />}
+          element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>}
         />
 
+        {/* Default route */}
         <Route
           path="/"
-          element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+          element={<Navigate to={localStorage.getItem('authToken') ? "/dashboard" : "/login"} replace />}
         />
-        <Route path="*" element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />} />
+        {/* Fallback for any other route */}
+        <Route path="*" element={<Navigate to={localStorage.getItem('authToken') ? "/dashboard" : "/login"} replace />} />
       </Routes>
     </>
   );
 }
 
-// Wrap App with Router if it's not already the top-level Router provider
 function AppWrapper() {
     return (
         <Router>
@@ -104,4 +114,4 @@ function AppWrapper() {
     );
 }
 
-export default AppWrapper; // Export AppWrapper if Router is here, otherwise export App
+export default AppWrapper;
