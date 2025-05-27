@@ -1,0 +1,196 @@
+/* src/components/DashboardCustomizeModal.css */
+.customize-dashboard-modal-overlay .modal-content {
+  max-width: 700px; /* عرض بیشتر برای نمایش بهتر تاگل ها */
+}
+
+.customize-dashboard-modal-overlay .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 15px; /* کاهش فاصله */
+}
+
+.customize-dashboard-modal-overlay .modal-header h2 {
+  margin: 0;
+  font-size: 1.4em; /* کمی کوچکتر */
+  color: #343a40;
+}
+
+.customize-dashboard-modal-overlay .modal-body {
+  padding: 5px 0; /* کاهش padding */
+  min-height: auto; /* ارتفاع خودکار بر اساس محتوا */
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.customize-dashboard-modal-overlay .modal-body > p {
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.customize-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* چیدمان ۲ یا ۳ ستونی */
+  gap: 20px; /* فاصله بین آیتم های تاگل */
+}
+
+.toggle-switch-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: box-shadow 0.2s ease;
+}
+.toggle-switch-container:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.toggle-switch-label {
+  font-size: 0.95em;
+  color: #333;
+  margin-left: 10px; /* فاصله از خود تاگل */
+  cursor: pointer;
+  user-select: none;
+}
+
+/* استایل های تاگل سوییچ */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px; /* عرض تاگل */
+  height: 28px; /* ارتفاع تاگل */
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; /* اندازه دایره داخلی */
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #28a745; /* رنگ سبز برای حالت روشن */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #28a745;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px); /* حرکت دایره داخلی */
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.customize-dashboard-modal-overlay .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  margin-top: 25px; /* افزایش فاصله */
+}
+
+.customize-dashboard-modal-overlay .modal-action-button {
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customize-dashboard-modal-overlay .modal-action-button.primary {
+  background-color: #007bff;
+  color: white;
+}
+.customize-dashboard-modal-overlay .modal-action-button.primary:hover {
+  background-color: #0056b3;
+}
+
+.customize-dashboard-modal-overlay .modal-action-button.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+.customize-dashboard-modal-overlay .modal-action-button.secondary:hover {
+  background-color: #5a6268;
+}
+
+/* استایل های عمومی مودال (اگر در فایل دیگری تعریف نشده اند) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  direction: rtl;
+  opacity: 0;
+  animation: fadeInOverlay 0.3s forwards;
+}
+
+@keyframes fadeInOverlay {
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 550px; /* این توسط کلاس خاص مودال بازنویسی می شود */
+  position: relative;
+  transform: scale(0.95);
+  opacity: 0;
+  animation: zoomInModal 0.3s 0.1s forwards cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes zoomInModal {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
