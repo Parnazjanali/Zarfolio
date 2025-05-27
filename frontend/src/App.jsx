@@ -1,4 +1,5 @@
 // src/App.jsx
+// ... (imports بدون تغییر)
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage.jsx';
@@ -11,6 +12,7 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import './App.css';
 
+
 function BackgroundManager() {
   const location = useLocation();
   useEffect(() => {
@@ -19,30 +21,43 @@ function BackgroundManager() {
       document.body.style.backgroundColor = '';
     } else {
       document.body.classList.remove('login-page-background');
-      document.body.style.backgroundColor = '#FAF8F3';
+      // رنگ پس‌زمینه اصلی صفحات داخلی از App.css (.main-content-area) یا index.css (body) کنترل می‌شود.
+      // document.body.style.backgroundColor = '#FAF8F3'; // این خط دیگر اینجا ضروری نیست
     }
     return () => {
       document.body.classList.remove('login-page-background');
-      document.body.style.backgroundColor = '';
+      // document.body.style.backgroundColor = ''; // این هم
     };
   }, [location.pathname]);
   return null;
 }
 
-// ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('authToken');
   if (!token) {
-    // User not authenticated, redirect to login
     return <Navigate to="/login" replace />;
   }
   return children;
 };
 
+// MainLayout کمی تغییر کرد تا کلاس sidebar-is-collapsed-globally را به والدش بدهد
 function MainLayout({ children }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    localStorage.getItem('sidebarCollapsed') === 'true' // خواندن حالت اولیه از localStorage
+  );
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed); // ذخیره حالت در localStorage
+    // اضافه یا حذف کلاس به body یا یک المان والد دیگر اگر لازم است استایل‌های سراسری تغییر کنند
+    if (isSidebarCollapsed) {
+      document.documentElement.classList.add('sidebar-is-collapsed-for-global-styles');
+    } else {
+      document.documentElement.classList.remove('sidebar-is-collapsed-for-global-styles');
+    }
+  }, [isSidebarCollapsed]);
 
   return (
+    // کلاس sidebar-is-collapsed-globally برای اعمال margin صحیح به main-content-area استفاده می‌شود
     <div className={`main-layout ${isSidebarCollapsed ? 'sidebar-is-collapsed-globally' : ''}`}>
       <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
       <main className="main-content-area">
@@ -59,16 +74,12 @@ function MainLayout({ children }) {
 }
 
 function App() {
-  // isLoggedIn will now be determined by ProtectedRoute
-  // We might need a way to refresh app state on login/logout if using a global auth context
-
   return (
     <>
       <BackgroundManager />
       <Routes>
-        <Route path="/login" element={<LoginPage />} /> {/* LoginPage handles its own redirection if already logged in */}
+        <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Routes wrapped with MainLayout */}
         <Route
           path="/dashboard"
           element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>}
@@ -94,12 +105,10 @@ function App() {
           element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>}
         />
 
-        {/* Default route */}
         <Route
           path="/"
           element={<Navigate to={localStorage.getItem('authToken') ? "/dashboard" : "/login"} replace />}
         />
-        {/* Fallback for any other route */}
         <Route path="*" element={<Navigate to={localStorage.getItem('authToken') ? "/dashboard" : "/login"} replace />} />
       </Routes>
     </>
