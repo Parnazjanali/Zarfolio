@@ -6,476 +6,573 @@ import DashboardCustomizeModal from '../components/DashboardCustomizeModal';
 import DigitalClock from '../components/DigitalClock';
 import JalaliCalendar from '../components/JalaliCalendar';
 import DigitalClockSettingsModal, { CLOCK_STYLES_CONFIG } from '../components/DigitalClockSettingsModal';
-import JalaliCalendarSettingsModal, { CALENDAR_STYLES_CONFIG } from '../components/JalaliCalendarSettingsModal'; // Import جدید
+import JalaliCalendarSettingsModal, { CALENDAR_STYLES_CONFIG, CALENDAR_THEME_CONFIG } from '../components/JalaliCalendarSettingsModal';
 
 import {
   FaBalanceScale, FaMoneyBillWave, FaFileAlt, FaTag,
   FaFileInvoiceDollar, FaUserPlus, FaChartPie, FaCog,
   FaEdit, FaGripVertical, FaCompressArrowsAlt, FaExpandArrowsAlt,
   FaThLarge as FaThLargeIcon, FaTh, FaThList, FaChevronDown, FaLock, FaLockOpen,
-  FaBorderAll, FaEyeSlash
+  FaBorderAll, FaEyeSlash, FaRegCalendarAlt, FaRegClock,
+  FaMoneyCheckAlt, // برای چک
+  FaCoins,         // برای سکه و طلب/بدهی طلایی
+  FaArchive,       // برای آبشده
+  FaShapes,        // برای متفرقه
+  FaArrowUp,       // برای طلب (مثبت)
+  FaArrowDown     // برای بدهی (منفی)
 } from 'react-icons/fa';
 
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
+// کامپوننت جدید برای ویجت چک (موقتا در همین فایل)
+const ChequeAlertWidget = () => {
+  // داده‌های نمونه
+  const upcomingCheques = [
+    { id: 1, amount: '۵,۰۰۰,۰۰۰ تومان', dueDate: '۱۴۰۳/۰۳/۱۰', party: 'شرکت الف' },
+    { id: 2, amount: '۱۲,۳۰۰,۰۰۰ تومان', dueDate: '۱۴۰۳/۰۳/۱۵', party: 'فروشگاه ب' },
+  ];
+
+  return (
+    <div className="cheque-alert-widget">
+      <h4><FaMoneyCheckAlt style={{ marginLeft: '8px', color: '#e67e22' }} />چک‌های نزدیک به سررسید</h4>
+      {upcomingCheques.length > 0 ? (
+        <ul>
+          {upcomingCheques.map(cheque => (
+            <li key={cheque.id}>
+              <span className="cheque-amount">{cheque.amount}</span> -
+              <span className="cheque-party"> {cheque.party}</span> -
+              <span className="cheque-due-date"> سررسید: {cheque.dueDate}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>چک نزدیک به سررسیدی وجود ندارد.</p>
+      )}
+      <style jsx>{`
+        .cheque-alert-widget {
+          padding: 10px;
+          font-size: 0.9em;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .cheque-alert-widget h4 {
+          margin-top: 0;
+          margin-bottom: 10px;
+          font-size: 1em;
+          font-weight: 600;
+          color: #333;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 5px;
+          display: flex;
+          align-items: center;
+        }
+        .cheque-alert-widget ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          overflow-y: auto;
+          flex-grow: 1;
+        }
+        .cheque-alert-widget li {
+          padding: 6px 2px;
+          border-bottom: 1px solid #f5f5f5;
+          font-size: 0.9em;
+        }
+        .cheque-alert-widget li:last-child {
+          border-bottom: none;
+        }
+        .cheque-amount {
+          font-weight: 500;
+          color: #2c3e50;
+        }
+        .cheque-party {
+          color: #3498db;
+        }
+        .cheque-due-date {
+          float: left; /* یا display: inline-block و margin-right: auto */
+          font-size: 0.85em;
+          color: #7f8c8d;
+        }
+        .cheque-alert-widget p {
+          text-align: center;
+          color: #7f8c8d;
+          margin-top: 15px;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
+const APP_VERSION = '1.0.2'; // نسخه را به‌روز کنید
+
 const DASHBOARD_ELEMENTS_CONFIG = [
-  { key: 'summaryCardGold', label: 'کارت موجودی طلا', type: 'summaryCard', defaultVisible: true },
-  { key: 'summaryCardValue', label: 'کارت ارزش تخمینی', type: 'summaryCard', defaultVisible: true },
-  { key: 'summaryCardInvoices', label: 'کارت فاکتورهای امروز', type: 'summaryCard', defaultVisible: true },
-  { key: 'summaryCardPrice', label: 'کارت آخرین قیمت طلا', type: 'summaryCard', defaultVisible: true },
-  { key: 'digitalClockWidget', label: 'ویجت ساعت', type: 'widget', defaultVisible: false },
-  { key: 'jalaliCalendarWidget', label: 'ویجت تقویم جلالی', type: 'widget', defaultVisible: false },
-  { key: 'quickActionsSection', label: 'بخش دسترسی سریع', type: 'section', defaultVisible: true },
-  { key: 'recentTransactionsSection', label: 'بخش آخرین تراکنش‌ها', type: 'section', defaultVisible: true },
+  { key: 'summaryCardGold', label: 'موجودی طلا (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaBalanceScale /> },
+  { key: 'summaryCardCash', label: 'موجودی نقدی (تومان)', type: 'summaryCard', defaultVisible: true, icon: <FaMoneyBillWave /> },
+  { key: 'summaryCardTransactions', label: 'تعداد تراکنش‌ها (ماه)', type: 'summaryCard', defaultVisible: true, icon: <FaFileAlt /> },
+  { key: 'summaryCardCustomers', label: 'تعداد مشتریان', type: 'summaryCard', defaultVisible: true, icon: <FaUserPlus /> },
+  
+  // المان‌های جدید
+  { key: 'chequeAlertWidget', label: 'چک‌های نزدیک به سررسید', type: 'widget', defaultVisible: true, icon: <FaMoneyCheckAlt /> },
+  { key: 'summaryCardGoldReceivable', label: 'مجموع طلب طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowUp style={{color: '#27ae60'}}/> },
+  { key: 'summaryCardGoldPayable', label: 'مجموع بدهی طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowDown style={{color: '#c0392b'}}/> },
+  { key: 'summaryCardMeltedGoldInSafe', label: 'آبشده موجود در صندوق (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArchive /> },
+  { key: 'summaryCardCoinsInSafe', label: 'سکه موجود در صندوق (عدد)', type: 'summaryCard', defaultVisible: true, icon: <FaCoins /> },
+  { key: 'summaryCardMiscInSafe', label: 'متفرقه موجود در صندوق', type: 'summaryCard', defaultVisible: true, icon: <FaShapes /> },
+
+  // ویجت‌های قبلی
+  { key: 'digitalClockWidget', label: 'ساعت دیجیتال', type: 'widget', defaultVisible: true, icon: <FaRegClock /> },
+  { key: 'jalaliCalendarWidget', label: 'تقویم جلالی', type: 'widget', defaultVisible: true, icon: <FaRegCalendarAlt /> },
+  
+  // سکشن‌های قبلی
+  { key: 'quickActionsSection', label: 'دسترسی سریع', type: 'section', defaultVisible: true, icon: <FaThLargeIcon /> },
+  { key: 'recentTransactionsSection', label: 'آخرین تراکنش‌ها', type: 'section', defaultVisible: true, icon: <FaThList /> },
 ];
 
-const getDefaultVisibility = () => {
-  const defaults = {};
-  if (Array.isArray(DASHBOARD_ELEMENTS_CONFIG)) {
-    DASHBOARD_ELEMENTS_CONFIG.forEach(el => {
-      if (el && el.key) {
-        defaults[el.key] = el.defaultVisible;
-      }
-    });
-  }
-  return defaults;
-};
-
-const BASE_UNIT_HEIGHT = 100;
-const SUBDIVISIONS_PER_UNIT_HEIGHT = 4;
-const ROW_HEIGHT = BASE_UNIT_HEIGHT / SUBDIVISIONS_PER_UNIT_HEIGHT;
-
 const GRID_SUBDIVISION_FACTOR = 4;
-const GRID_MARGIN = 4;
+const MAIN_COL_COUNT_FOR_LAYOUT = 4; // این را برای getBaseLayoutForItem استفاده کنید
+const ROW_HEIGHT = 25;
+const SUBDIVISIONS_PER_UNIT_HEIGHT = 4;
 
-const RGL_BREAKPOINTS_CONFIG = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+const getBaseLayoutForItem = (itemKey, mainColCountForBreakpoint) => { // mainColCountForBreakpoint در اینجا استفاده نمی‌شود اما می‌تواند مفید باشد
+  let wMainFinal = 1, hMainFinal = 1;
 
-const getBaseLayoutForItem = (itemKey, mainColCount) => {
-  const itemConfig = DASHBOARD_ELEMENTS_CONFIG.find(el => el && el.key === itemKey);
-  const effectiveTotalCols = mainColCount * GRID_SUBDIVISION_FACTOR;
-  let wMainFinal, hMainFinal;
-
-  if (!itemConfig) {
-    wMainFinal = 1; hMainFinal = 1;
-  } else {
-    switch (itemConfig.type) {
-      case 'summaryCard':
-        wMainFinal = 1; hMainFinal = 1.5;
-        break;
-      case 'widget':
-        switch (itemKey) {
-          case 'digitalClockWidget':
-            wMainFinal = 1;
-            hMainFinal = 1.25; // ارتفاع 5 ردیف RGL (125px)
-            break;
-          case 'jalaliCalendarWidget':
-            wMainFinal = 2; hMainFinal = 3.8;
-            break;
-          default:
-            wMainFinal = 1; hMainFinal = 1;
-            break;
-        }
-        break;
-      default:
-        wMainFinal = 1; hMainFinal = 1;
-        break;
-    }
+  switch (itemKey) {
+    case 'summaryCardGold':
+    case 'summaryCardCash':
+    case 'summaryCardTransactions':
+    case 'summaryCardCustomers':
+    // کارت‌های خلاصه جدید
+    case 'summaryCardGoldReceivable':
+    case 'summaryCardGoldPayable':
+    case 'summaryCardMeltedGoldInSafe':
+    case 'summaryCardCoinsInSafe':
+    case 'summaryCardMiscInSafe':
+      wMainFinal = 1;
+      hMainFinal = 0.75; 
+      break;
+    case 'digitalClockWidget':
+      wMainFinal = 1.25; 
+      hMainFinal = 1.25; 
+      break;
+    case 'jalaliCalendarWidget':
+      wMainFinal = 1.5; 
+      hMainFinal = 2.5; 
+      break;
+    case 'chequeAlertWidget': // ابعاد برای ویجت چک
+      wMainFinal = 2; // پهن‌تر برای نمایش لیست
+      hMainFinal = 2; // ارتفاع بیشتر
+      break;
+    default:
+      wMainFinal = 1; hMainFinal = 1;
   }
-  const w = Math.min(Math.round(wMainFinal * GRID_SUBDIVISION_FACTOR), effectiveTotalCols);
-  const h = Math.round(hMainFinal * SUBDIVISIONS_PER_UNIT_HEIGHT);
-  return { w, h, minW: w, maxW: w, minH: h, maxH: h };
+  return {
+    w: Math.round(wMainFinal * GRID_SUBDIVISION_FACTOR),
+    h: Math.round(hMainFinal * SUBDIVISIONS_PER_UNIT_HEIGHT),
+    minW: Math.max(1, Math.floor(0.5 * GRID_SUBDIVISION_FACTOR)),
+    minH: Math.max(1, Math.floor(0.5 * SUBDIVISIONS_PER_UNIT_HEIGHT)),
+  };
 };
 
-const generateBaseLayouts = (colsConfig) => {
-  const layouts = {};
-  for (const bp in colsConfig) {
-    const totalSubColsForBp = colsConfig[bp];
-    const mainNumCols = Math.max(1, Math.round(totalSubColsForBp / GRID_SUBDIVISION_FACTOR));
-    layouts[bp] = [];
-    let currentX = 0; let currentY = 0; let maxYinRow = 0;
-    if (Array.isArray(DASHBOARD_ELEMENTS_CONFIG)) {
-      DASHBOARD_ELEMENTS_CONFIG.forEach(elConfig => {
-        if (elConfig && elConfig.key && (elConfig.type === 'summaryCard' || elConfig.type === 'widget')) {
-          const itemBaseConfig = getBaseLayoutForItem(elConfig.key, mainNumCols);
-          let itemW = Math.min(itemBaseConfig.w, totalSubColsForBp);
-          if (currentX + itemW > totalSubColsForBp && currentX !== 0) {
-            currentX = 0; currentY += maxYinRow; maxYinRow = 0;
-          }
-          if (itemW > totalSubColsForBp) itemW = totalSubColsForBp;
-          layouts[bp].push({ i: elConfig.key, x: currentX, y: currentY, ...itemBaseConfig });
-          currentX += itemW; maxYinRow = Math.max(maxYinRow, itemBaseConfig.h);
-        }
-      });
-    }
-  }
-  return layouts;
-};
 
 function DashboardPage({ isSidebarCollapsed }) {
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [gridColsDropdownOpen, setGridColsDropdownOpen] = useState(false);
-  const gridColsDropdownRef = useRef(null);
+  const [blurContent, setBlurContent] = useState(false);
   const dashboardContentRef = useRef(null);
-  const [showGridLines, setShowGridLines] = useState(true);
 
   const [elementVisibility, setElementVisibility] = useState(() => {
     try {
-      const savedVisibility = sessionStorage.getItem('dashboardElementVisibility');
-      const defaultVis = getDefaultVisibility();
+      const savedVisibility = localStorage.getItem('dashboardElementVisibility');
       if (savedVisibility) {
-        const parsedVisibility = JSON.parse(savedVisibility);
-        const completeVisibility = { ...defaultVis };
-        if (Array.isArray(DASHBOARD_ELEMENTS_CONFIG)) {
-          DASHBOARD_ELEMENTS_CONFIG.forEach(config => {
-            if (config && config.key && parsedVisibility.hasOwnProperty(config.key)) {
-              completeVisibility[config.key] = parsedVisibility[config.key];
-            }
-          });
-        }
-        return completeVisibility;
-      } return defaultVis;
-    } catch (error) { console.error("Error reading/parsing sessionStorage for visibility:", error); return getDefaultVisibility(); }
+        const parsed = JSON.parse(savedVisibility);
+        const currentConfigKeys = DASHBOARD_ELEMENTS_CONFIG.map(el => el.key);
+        let updated = false;
+        currentConfigKeys.forEach(key => {
+          if (typeof parsed[key] === 'undefined') {
+            const defaultConfig = DASHBOARD_ELEMENTS_CONFIG.find(el => el.key === key);
+            parsed[key] = defaultConfig ? defaultConfig.defaultVisible : true;
+            updated = true;
+          }
+        });
+        if (updated) localStorage.setItem('dashboardElementVisibility', JSON.stringify(parsed));
+        return parsed;
+      }
+    } catch (error) {
+      console.error("Error reading/parsing visibility from localStorage:", error);
+    }
+    const initialVisibility = {};
+    DASHBOARD_ELEMENTS_CONFIG.forEach(el => initialVisibility[el.key] = el.defaultVisible);
+    return initialVisibility;
   });
 
-  const [autoCompact, setAutoCompact] = useState(() => {
-    const savedCompact = sessionStorage.getItem('dashboardAutoCompact');
-    return savedCompact ? JSON.parse(savedCompact) === true : true;
+  const [layouts, setLayouts] = useState(() => {
+    try {
+      const savedLayouts = localStorage.getItem('dashboardLayouts');
+      // Ensure saved layouts are valid and contain all necessary properties
+      if (savedLayouts) {
+        const parsedLayouts = JSON.parse(savedLayouts);
+        // Basic validation/migration could be added here if layout structure changes
+        return parsedLayouts;
+      }
+      return {}; // Start with empty layouts if nothing is saved
+    } catch (error) {
+      console.error("Error reading/parsing layouts from localStorage:", error);
+      return {};
+    }
   });
 
-  const [gridColumnCountLg, setGridColumnCountLg] = useState(() => {
-    const savedCols = sessionStorage.getItem('dashboardGridColsLg');
-    const parsedCols = parseInt(savedCols, 10);
-    return !isNaN(parsedCols) && [2, 3, 4, 5].includes(parsedCols) ? parsedCols : 4;
+
+  const [lockedItems, setLockedItems] = useState(() => {
+    try {
+      const savedLocks = localStorage.getItem('dashboardLockedItems');
+      return savedLocks ? JSON.parse(savedLocks) : {};
+    } catch (error) {
+      console.error("Error reading/parsing locked items from localStorage:", error);
+      return {};
+    }
   });
 
-  const [userLayouts, setUserLayouts] = useState(() => {
-    try { const savedUserLayouts = localStorage.getItem('dashboardUserLayouts'); return savedUserLayouts ? JSON.parse(savedUserLayouts) : {}; }
-    catch (error) { console.error("Error reading/parsing localStorage for user layouts:", error); return {}; }
-  });
-
-  const [itemLockStatus, setItemLockStatus] = useState(() => {
-    try { const savedLocks = localStorage.getItem('dashboardItemLocks'); return savedLocks ? JSON.parse(savedLocks) : {}; }
-    catch (error) { console.error("Error reading item locks from localStorage:", error); return {}; }
-  });
-
+  // ... (بقیه state ها و توابع بدون تغییر زیاد) ...
   const [isClockSettingsModalOpen, setIsClockSettingsModalOpen] = useState(false);
   const [digitalClockConfig, setDigitalClockConfig] = useState(() => {
-    const primaryDefaultStyle = 'styleHMS';
+    const defaultClockStyle = CLOCK_STYLES_CONFIG.find(s => s.id === 'minimal_seconds')?.id || CLOCK_STYLES_CONFIG[0].id;
     try {
       const savedConfig = localStorage.getItem('digitalClockWidgetConfig');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
-        if (CLOCK_STYLES_CONFIG && CLOCK_STYLES_CONFIG.some(s => s.id === parsed.styleId)) {
+        if (CLOCK_STYLES_CONFIG.some(s => s.id === parsed.styleId)) {
           return parsed;
         }
-        console.warn("Saved clock style ID not found or invalid, reverting to primary default.");
-        return { styleId: primaryDefaultStyle };
+        console.warn("Saved clock style ID not found or invalid, reverting to default.");
+        return { styleId: defaultClockStyle };
       }
-      return { styleId: primaryDefaultStyle };
+      return { styleId: defaultClockStyle };
     } catch (error) {
       console.error("Error reading/parsing clock config from localStorage:", error);
-      return { styleId: primaryDefaultStyle };
+      return { styleId: defaultClockStyle };
     }
   });
 
   const [isCalendarSettingsModalOpen, setIsCalendarSettingsModalOpen] = useState(false);
   const [jalaliCalendarConfig, setJalaliCalendarConfig] = useState(() => {
-    const defaultCalendarStyle = CALENDAR_STYLES_CONFIG[0].id; // Usually 'full'
+    const defaultCalendarStyle = CALENDAR_STYLES_CONFIG[0].id; 
+    const defaultCalendarTheme = CALENDAR_THEME_CONFIG[0].id; 
     try {
       const savedConfig = localStorage.getItem('jalaliCalendarWidgetConfig');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
-        if (CALENDAR_STYLES_CONFIG.some(s => s.id === parsed.styleId)) {
-          return parsed;
+        const styleId = CALENDAR_STYLES_CONFIG.some(s => s.id === parsed.styleId) ? parsed.styleId : defaultCalendarStyle;
+        const themeId = CALENDAR_THEME_CONFIG.some(t => t.id === parsed.themeId) ? parsed.themeId : defaultCalendarTheme;
+        if (styleId !== parsed.styleId || themeId !== parsed.themeId) {
+             console.warn("Saved calendar style/theme ID not found or invalid, reverting to default for missing part.");
         }
-        console.warn("Saved calendar style ID not found or invalid, reverting to default.");
-        return { styleId: defaultCalendarStyle };
+        return { styleId, themeId };
       }
-      return { styleId: defaultCalendarStyle };
+      return { styleId: defaultCalendarStyle, themeId: defaultCalendarTheme };
     } catch (error) {
       console.error("Error reading/parsing calendar config from localStorage:", error);
-      return { styleId: defaultCalendarStyle };
+      return { styleId: defaultCalendarStyle, themeId: defaultCalendarTheme };
     }
   });
 
   useEffect(() => {
-    localStorage.setItem('digitalClockWidgetConfig', JSON.stringify(digitalClockConfig));
-    localStorage.setItem('jalaliCalendarWidgetConfig', JSON.stringify(jalaliCalendarConfig));
-  }, [digitalClockConfig, jalaliCalendarConfig]);
+    const lastVersion = localStorage.getItem('appVersion');
+    const currentVersion = APP_VERSION; 
+    if (lastVersion !== currentVersion) {
+      setShowReleaseNotes(true);
+      setBlurContent(true);
+      localStorage.setItem('appVersion', currentVersion);
+    }
+  }, []);
 
-  const dynamicGridColsOptions = useMemo(() => {
-    if (!isSidebarCollapsed) {
-      return [
-        { value: 2, label: '۲ ستونی', icon: <FaTh /> }, { value: 3, label: '۳ ستونی', icon: <FaThList /> }
-      ];
-    } else {
-      return [
-        { value: 3, label: '۳ ستونی', icon: <FaThList /> }, { value: 4, label: '۴ ستونی', icon: <FaTh /> }, { value: 5, label: '۵ ستونی', icon: <FaThLargeIcon /> }
-      ];
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const timer = setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 300);
+        return () => clearTimeout(timer);
     }
   }, [isSidebarCollapsed]);
 
   useEffect(() => {
-    const isValidCurrentSelection = dynamicGridColsOptions.some(opt => opt.value === gridColumnCountLg);
-    if (!isValidCurrentSelection) {
-      let newColumnCount = isSidebarCollapsed ? 3 : 3;
-      setGridColumnCountLg(newColumnCount);
-      setUserLayouts({});
+    localStorage.setItem('dashboardElementVisibility', JSON.stringify(elementVisibility));
+    // فقط در صورتی layouts را ذخیره کنید که تغییر کرده باشد و خالی نباشد (برای جلوگیری از بازنویسی با آبجکت خالی در اولین بار)
+    if (Object.keys(layouts).length > 0) {
+        localStorage.setItem('dashboardLayouts', JSON.stringify(layouts));
     }
-  }, [dynamicGridColsOptions, isSidebarCollapsed, gridColumnCountLg, setGridColumnCountLg]);
+    localStorage.setItem('dashboardLockedItems', JSON.stringify(lockedItems));
+    localStorage.setItem('digitalClockWidgetConfig', JSON.stringify(digitalClockConfig));
+    localStorage.setItem('jalaliCalendarWidgetConfig', JSON.stringify(jalaliCalendarConfig));
+  }, [elementVisibility, layouts, lockedItems, digitalClockConfig, jalaliCalendarConfig]);
 
-  useEffect(() => {
-    sessionStorage.setItem('dashboardElementVisibility', JSON.stringify(elementVisibility));
-    sessionStorage.setItem('dashboardAutoCompact', JSON.stringify(autoCompact));
-    sessionStorage.setItem('dashboardGridColsLg', gridColumnCountLg.toString());
-    localStorage.setItem('dashboardUserLayouts', JSON.stringify(userLayouts));
-    localStorage.setItem('dashboardItemLocks', JSON.stringify(itemLockStatus));
-    const shouldShow = localStorage.getItem('showReleaseNotes');
-    if (shouldShow === 'true') { setShowReleaseNotes(true); localStorage.removeItem('showReleaseNotes'); }
-  }, [elementVisibility, autoCompact, userLayouts, gridColumnCountLg, itemLockStatus]);
-
-  useEffect(() => {
-    if (dashboardContentRef.current) {
-      dashboardContentRef.current.style.setProperty('--current-grid-cols', (gridColumnCountLg * GRID_SUBDIVISION_FACTOR).toString());
-      dashboardContentRef.current.style.setProperty('--grid-row-height-for-lines', `${ROW_HEIGHT}px`);
-      dashboardContentRef.current.style.setProperty('--grid-margin', `${GRID_MARGIN}px`);
-    }
-  }, [gridColumnCountLg]);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (gridColsDropdownRef.current && !gridColsDropdownRef.current.contains(event.target)) {
-        setGridColsDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [gridColsDropdownRef]);
-
-  const handleCloseReleaseNotes = () => setShowReleaseNotes(false);
-  const handleOpenCustomizeModal = () => setShowCustomizeModal(true);
-  const handleCloseCustomizeModal = () => setShowCustomizeModal(false);
-
-  const handleSaveCustomizeSettings = (newVisibilitySettings) => {
-    setElementVisibility(newVisibilitySettings);
-    const newLayouts = { ...userLayouts }; const newLocks = { ...itemLockStatus };
-    Object.keys(newVisibilitySettings).forEach(key => {
-      if (!newVisibilitySettings[key]) {
-        for (const bp in newLayouts) { if (newLayouts[bp]) { newLayouts[bp] = newLayouts[bp].filter(item => item.i !== key); } }
-        delete newLocks[key];
-      } else {
-        for (const bp in RGL_BREAKPOINTS_CONFIG) {
-          if (!newLayouts[bp] || !newLayouts[bp].find(item => item.i === key)) {
-            const totalSubColsForBp = colsForRGL[bp] || colsForRGL.lg;
-            const mainColsForBp = Math.max(1, Math.round(totalSubColsForBp / GRID_SUBDIVISION_FACTOR));
-            const baseItemConfig = getBaseLayoutForItem(key, mainColsForBp);
-            if (!newLayouts[bp]) newLayouts[bp] = []; let newY = 0;
-            if (newLayouts[bp].length > 0) { newY = Math.max(...newLayouts[bp].map(item => item.y + item.h), 0); }
-            newLayouts[bp].push({ i: key, x: 0, y: newY, ...baseItemConfig });
-          }
-        }
-      }
-    });
-    setUserLayouts(newLayouts); setItemLockStatus(newLocks); setShowCustomizeModal(false);
+  const handleCloseReleaseNotes = () => { setShowReleaseNotes(false); setBlurContent(false); };
+  const handleOpenCustomizeModal = () => { setShowCustomizeModal(true); setBlurContent(true); };
+  const handleCloseCustomizeModal = () => { setShowCustomizeModal(false); setBlurContent(false); };
+  const handleSaveCustomizeSettings = (newVisibility) => {
+    setElementVisibility(newVisibility);
+    // وقتی المان‌ها تغییر می‌کنند، ممکن است بخواهید چیدمان‌های ذخیره شده را برای المان‌های مخفی شده حذف کنید
+    // یا اجازه دهید RGL خودش چیدمان را بازآرایی کند.
+    // برای سادگی، فعلا چیدمان را تغییر نمی‌دهیم مگر اینکه کاربر خودش جابجا کند.
   };
-
-  const toggleAutoCompact = () => { setAutoCompact(prev => !prev); };
-  const handleGridColumnCountChange = (mainCols) => { setGridColumnCountLg(mainCols); setUserLayouts({}); setGridColsDropdownOpen(false); };
-  const toggleItemLock = (itemKey) => { setItemLockStatus(prevLocks => ({ ...prevLocks, [itemKey]: !prevLocks[itemKey] })); };
-
-  const handleOpenDigitalClockSettings = () => { setIsClockSettingsModalOpen(true); };
+  const handleOpenClockSettings = () => setIsClockSettingsModalOpen(true);
   const handleSaveClockStyle = (newStyleId) => {
     setDigitalClockConfig(prevConfig => ({ ...prevConfig, styleId: newStyleId }));
     setIsClockSettingsModalOpen(false);
   };
-
-  const handleOpenCalendarSettings = () => { setIsCalendarSettingsModalOpen(true); };
-  const handleSaveCalendarStyle = (newStyleId) => {
-    setJalaliCalendarConfig(prevConfig => ({ ...prevConfig, styleId: newStyleId }));
+  const handleOpenCalendarSettings = () => setIsCalendarSettingsModalOpen(true);
+  const handleSaveCalendarSettings = (newSettings) => {
+    setJalaliCalendarConfig(prevConfig => ({ ...prevConfig, ...newSettings }));
     setIsCalendarSettingsModalOpen(false);
   };
+  const toggleLockItem = (itemKey) => setLockedItems(prev => ({ ...prev, [itemKey]: !prev[itemKey] }));
 
-  const summaryData = {
-    summaryCardGold: { title: 'موجودی طلا', value: '0 گرم', icon: <FaBalanceScale />, iconBg: 'gold' },
-    summaryCardValue: { title: 'ارزش تخمینی', value: '0 تومان', icon: <FaMoneyBillWave />, iconBg: 'value' },
-    summaryCardInvoices: { title: 'فاکتورهای امروز', value: '0 عدد', icon: <FaFileAlt />, iconBg: 'invoices' },
-    summaryCardPrice: { title: 'آخرین قیمت طلا', value: '0 تومان', icon: <FaTag />, iconBg: 'price' },
+  const onLayoutChange = (newLayout, allLayouts) => {
+    const currentBreakpointLayout = allLayouts.lg || []; // فرض بر اینکه lg اصلی است
+    // فقط چیدمان بریک‌پوینت فعلی را ذخیره کنید
+    setLayouts(prevLayouts => ({
+        ...prevLayouts,
+        lg: currentBreakpointLayout.map(item => {
+            // اگر آیتم قفل شده است، x, y, w, h آن را از چیدمان قبلی برگردانید
+            if (lockedItems[item.i] && prevLayouts.lg) {
+                const prevItem = prevLayouts.lg.find(pi => pi.i === item.i);
+                if (prevItem) {
+                    return { ...item, x: prevItem.x, y: prevItem.y, w: prevItem.w, h: prevItem.h, static: true };
+                }
+            }
+            return { ...item, static: !!lockedItems[item.i] };
+        })
+    }));
   };
 
-  const colsForRGL = useMemo(() => {
-    const mdCols = !isSidebarCollapsed ? 2 : 3;
-    return {
-      lg: gridColumnCountLg * GRID_SUBDIVISION_FACTOR, md: mdCols * GRID_SUBDIVISION_FACTOR,
-      sm: 1 * GRID_SUBDIVISION_FACTOR, xs: 1 * GRID_SUBDIVISION_FACTOR, xxs: 1 * GRID_SUBDIVISION_FACTOR,
-    };
-  }, [gridColumnCountLg, isSidebarCollapsed]);
 
-  const baseLayoutsDynamic = useMemo(() => generateBaseLayouts(colsForRGL), [colsForRGL]);
-  const layoutsToUse = useMemo(() => {
-    const processedLayouts = {};
-    for (const breakpoint in RGL_BREAKPOINTS_CONFIG) {
-      const totalSubColsForBp = colsForRGL[breakpoint] || colsForRGL.lg;
-      const mainColsForBp = Math.max(1, Math.round(totalSubColsForBp / GRID_SUBDIVISION_FACTOR));
-      let sourceLayoutForBp = (!autoCompact && userLayouts[breakpoint] && userLayouts[breakpoint].length > 0) ? userLayouts[breakpoint] : (baseLayoutsDynamic[breakpoint] || []);
-      const finalBpLayout = []; const visibleKeys = new Set();
-      DASHBOARD_ELEMENTS_CONFIG.forEach(elConfig => {
-        if (elConfig && elConfig.key && elementVisibility[elConfig.key] && (elConfig.type === 'summaryCard' || elConfig.type === 'widget')) {
-          visibleKeys.add(elConfig.key);
-          const baseConfig = getBaseLayoutForItem(elConfig.key, mainColsForBp);
-          let layoutItem = sourceLayoutForBp.find(item => item.i === elConfig.key);
-          if (layoutItem) {
-            finalBpLayout.push({
-              i: elConfig.key, x: layoutItem.x, y: layoutItem.y,
-              w: baseConfig.w, h: baseConfig.h, minW: baseConfig.minW, maxW: baseConfig.maxW,
-              minH: baseConfig.minH, maxH: baseConfig.maxH, static: itemLockStatus[elConfig.key] === true,
-            });
-          } else {
-            let initialBaseItem = (baseLayoutsDynamic[breakpoint] || []).find(item => item.i === elConfig.key);
-            if (initialBaseItem) { finalBpLayout.push({ ...initialBaseItem, static: itemLockStatus[elConfig.key] === true }); }
-            else { finalBpLayout.push({ i: elConfig.key, x: 0, y: Infinity, ...baseConfig, static: itemLockStatus[elConfig.key] === true, }); }
-          }
-        }
-      });
-      processedLayouts[breakpoint] = finalBpLayout.filter(item => visibleKeys.has(item.i));
-    } return processedLayouts;
-  }, [elementVisibility, userLayouts, autoCompact, baseLayoutsDynamic, colsForRGL, itemLockStatus]);
-
-  const onLayoutChange = (currentLayout, allLayouts) => {
-    if (!autoCompact) {
-      const updatedUserLayouts = { ...userLayouts };
-      for (const bp in allLayouts) {
-        if (allLayouts[bp]) {
-          updatedUserLayouts[bp] = allLayouts[bp].map(l => {
-            const mainColsForBp = Math.max(1, Math.round((colsForRGL[bp] || colsForRGL.lg) / GRID_SUBDIVISION_FACTOR));
-            const baseDims = getBaseLayoutForItem(l.i, mainColsForBp);
-            return { i: l.i, x: l.x, y: l.y, w: baseDims.w, h: baseDims.h, minW: baseDims.minW, maxW: baseDims.maxW, minH: baseDims.minH, maxH: baseDims.maxH };
-          });
-        }
-      } setUserLayouts(updatedUserLayouts);
-    }
-  };
-
-  const getCurrentBreakpoint = (breakpoints, width) => {
-    const sorted = Object.keys(breakpoints).sort((a, b) => breakpoints[b] - breakpoints[a]);
-    for (let i = 0; i < sorted.length; i++) { const breakpointName = sorted[i]; if (width >= breakpoints[breakpointName]) return breakpointName; }
-    return sorted[sorted.length - 1] || 'lg';
-  };
-
-  const visibleGridElements = Array.isArray(DASHBOARD_ELEMENTS_CONFIG) ? DASHBOARD_ELEMENTS_CONFIG.filter(el => el && el.key && (el.type === 'summaryCard' || el.type === 'widget') && elementVisibility && typeof elementVisibility === 'object' && elementVisibility[el.key] === true) : [];
-  const recentTransactions = [];
-
-  const ItemControls = ({ itemKey }) => {
-    const isLocked = itemLockStatus[itemKey] === true;
-    const isDigitalClock = itemKey === 'digitalClockWidget';
-    const isJalaliCalendar = itemKey === 'jalaliCalendarWidget';
-    return (
-      <div className="item-controls">
-        {!isLocked && <div className="drag-handle" title="جابجایی"><FaGripVertical /></div>}
-        <button type="button" className={`lock-toggle-button item-control-button ${isLocked ? 'item-locked' : ''}`} title={isLocked ? "باز کردن قفل" : "قفل کردن المان"} onClick={(e) => { e.stopPropagation(); toggleItemLock(itemKey); }}>
-          {isLocked ? <FaLock /> : <FaLockOpen />}
+  const ItemControls = ({ itemKey }) => (
+    <div className="item-controls">
+      {itemKey === 'digitalClockWidget' && (
+        <button type="button" onClick={handleOpenClockSettings} className="item-control-button" aria-label="تنظیمات ساعت">
+          <FaCog />
         </button>
-        {isDigitalClock && !isLocked && (
-          <button type="button" className="item-control-button digital-clock-specific-settings-button" title="تنظیمات نمایش ساعت" onClick={(e) => { e.stopPropagation(); handleOpenDigitalClockSettings(); }}>
-            <FaCog />
-          </button>
-        )}
-        {isJalaliCalendar && !isLocked && (
-          <button type="button" className="item-control-button jalali-calendar-specific-settings-button" title="تنظیمات نمایش تقویم" onClick={(e) => { e.stopPropagation(); handleOpenCalendarSettings(); }}>
-            <FaCog />
-          </button>
-        )}
+      )}
+      {itemKey === 'jalaliCalendarWidget' && (
+        <button type="button" onClick={handleOpenCalendarSettings} className="item-control-button" aria-label="تنظیمات تقویم">
+          <FaCog />
+        </button>
+      )}
+      {/* برای ویجت‌های دیگر هم می‌توان دکمه تنظیمات اضافه کرد */}
+      <button type="button" onClick={() => toggleLockItem(itemKey)} className={`item-control-button ${lockedItems[itemKey] ? 'item-locked' : ''}`} aria-label={lockedItems[itemKey] ? "باز کردن قفل" : "قفل کردن موقعیت"}>
+        {lockedItems[itemKey] ? <FaLock /> : <FaLockOpen />}
+      </button>
+      <div className="drag-handle item-control-button" aria-label="جابجایی ویجت">
+        <FaGripVertical />
       </div>
-    );
+    </div>
+  );
+
+  const visibleGridElements = useMemo(() =>
+    DASHBOARD_ELEMENTS_CONFIG.filter(el => el.type !== 'section' && elementVisibility[el.key]),
+    [elementVisibility]
+  );
+
+  // تولید چیدمان پیش‌فرض برای المان‌هایی که چیدمان ذخیره شده ندارند
+  const generateDefaultLayouts = (elements, currentSavedLayouts) => {
+    const newLayout = [];
+    let currentY = 0;
+    let currentX = 0;
+    const colsPerBreakpoint = MAIN_COL_COUNT_FOR_LAYOUT * GRID_SUBDIVISION_FACTOR;
+
+    elements.forEach(elConfig => {
+        if (currentSavedLayouts.lg && currentSavedLayouts.lg.find(l => l.i === elConfig.key)) {
+            // اگر چیدمان ذخیره شده وجود دارد، از آن استفاده کن
+            newLayout.push(currentSavedLayouts.lg.find(l => l.i === elConfig.key));
+            return;
+        }
+        // در غیر این صورت، چیدمان پیش‌فرض بساز
+        const baseDim = getBaseLayoutForItem(elConfig.key, MAIN_COL_COUNT_FOR_LAYOUT);
+        if (currentX + baseDim.w > colsPerBreakpoint) {
+            currentX = 0;
+            currentY++; // به سطر بعدی برو (این Y تقریبی است، RGL خودش مدیریت می‌کند)
+        }
+        newLayout.push({
+            i: elConfig.key,
+            x: currentX,
+            y: currentY, // RGL y را بر اساس compactType تنظیم می‌کند
+            ...baseDim,
+            static: !!lockedItems[elConfig.key]
+        });
+        currentX += baseDim.w;
+    });
+    return { lg: newLayout };
+  };
+  
+  const currentGridLayouts = useMemo(() => {
+    const generated = generateDefaultLayouts(visibleGridElements, layouts);
+    // اطمینان از اینکه همه آیتم‌ها ویژگی static را بر اساس lockedItems دارند
+    if (generated.lg) {
+        generated.lg = generated.lg.map(item => ({
+            ...item,
+            static: !!lockedItems[item.i]
+        }));
+    }
+    return generated;
+  }, [visibleGridElements, layouts, lockedItems]);
+
+
+  const summaryCardsData = {
+    summaryCardGold: { title: "موجودی طلا (گرم)", value: "۱۲۳.۴۵", icon: <FaBalanceScale />, iconBg: 'gold' },
+    summaryCardCash: { title: "موجودی نقدی (تومان)", value: "۱۵,۲۵۰,۰۰۰", icon: <FaMoneyBillWave />, iconBg: 'value' },
+    summaryCardTransactions: { title: "تعداد تراکنش‌ها (ماه)", value: "۷۸", icon: <FaFileAlt />, iconBg: 'invoices' },
+    summaryCardCustomers: { title: "تعداد مشتریان", value: "۴۲", icon: <FaUserPlus />, iconBg: 'price' },
+    // داده‌های نمونه برای کارت‌های جدید
+    summaryCardGoldReceivable: { title: "مجموع طلب طلایی (گرم)", value: "۲۵۰.۷۵", icon: <FaArrowUp style={{color: '#27ae60'}}/>, iconBg: 'gold-receivable' },
+    summaryCardGoldPayable: { title: "مجموع بدهی طلایی (گرم)", value: "۸۵.۱۰", icon: <FaArrowDown style={{color: '#c0392b'}}/>, iconBg: 'gold-payable' },
+    summaryCardMeltedGoldInSafe: { title: "آبشده موجود در صندوق (گرم)", value: "۱,۲۵۰.۰۰", icon: <FaArchive />, iconBg: 'melted-gold' },
+    summaryCardCoinsInSafe: { title: "سکه موجود در صندوق (عدد)", value: "۱۵ عدد تمام", icon: <FaCoins />, iconBg: 'coins' },
+    summaryCardMiscInSafe: { title: "متفرقه موجود در صندوق", value: "ارزش: ۳,۵۰۰,۰۰۰ ت", icon: <FaShapes />, iconBg: 'misc' },
   };
 
-  const currentGridOption = useMemo(() => {
-    if (!Array.isArray(dynamicGridColsOptions) || dynamicGridColsOptions.length === 0) {
-      return { value: isSidebarCollapsed ? 4 : 3, label: isSidebarCollapsed ? '۴ ستونی' : '۳ ستونی', icon: <FaTh /> };
-    }
-    const currentColCount = Number(gridColumnCountLg);
-    const found = dynamicGridColsOptions.find(opt => opt && typeof opt.value !== 'undefined' && opt.value === currentColCount);
-    return found || dynamicGridColsOptions[0];
-  }, [gridColumnCountLg, dynamicGridColsOptions, isSidebarCollapsed]);
+  const recentTransactions = [
+    { id: 1, type: "فروش طلا", date: "۱۴۰۲/۱۲/۰۵", amount: "۲۵,۵۰۰,۰۰۰ تومان", customer: "آقای احمدی" },
+    { id: 2, type: "خرید سکه", date: "۱۴۰۲/۱۲/۰۳", amount: "۲ عدد", customer: "خانم رضایی" },
+  ];
 
-  const blurContent = showReleaseNotes || showCustomizeModal || isClockSettingsModalOpen || isCalendarSettingsModalOpen;
+  useEffect(() => {
+    setBlurContent(showReleaseNotes || showCustomizeModal || isClockSettingsModalOpen || isCalendarSettingsModalOpen);
+  }, [showReleaseNotes, showCustomizeModal, isClockSettingsModalOpen, isCalendarSettingsModalOpen]);
+
 
   return (
     <>
       {showReleaseNotes && <ReleaseNotesModal onClose={handleCloseReleaseNotes} />}
       <DashboardCustomizeModal isOpen={showCustomizeModal} onClose={handleCloseCustomizeModal} onSave={handleSaveCustomizeSettings} initialVisibility={elementVisibility} dashboardElements={DASHBOARD_ELEMENTS_CONFIG} />
       <DigitalClockSettingsModal isOpen={isClockSettingsModalOpen} onClose={() => setIsClockSettingsModalOpen(false)} initialStyleId={digitalClockConfig.styleId} onSaveStyle={handleSaveClockStyle} />
-      <JalaliCalendarSettingsModal isOpen={isCalendarSettingsModalOpen} onClose={() => setIsCalendarSettingsModalOpen(false)} initialStyleId={jalaliCalendarConfig.styleId} onSaveStyle={handleSaveCalendarStyle} />
+      <JalaliCalendarSettingsModal isOpen={isCalendarSettingsModalOpen} onClose={() => setIsCalendarSettingsModalOpen(false)} initialSettings={jalaliCalendarConfig} onSaveSettings={handleSaveCalendarSettings} />
 
       <div ref={dashboardContentRef} className={`dashboard-page-content ${blurContent ? 'content-blurred' : ''}`}>
         <main className="dashboard-main-content">
           <div className="dashboard-header-actions">
-            <div className="grid-cols-dropdown-container" ref={gridColsDropdownRef}>
-              <button type="button" className={`grid-cols-dropdown-button ${gridColsDropdownOpen ? 'open' : ''}`} onClick={() => setGridColsDropdownOpen(prev => !prev)} aria-haspopup="true" aria-expanded={gridColsDropdownOpen}>
-                <span> {currentGridOption.icon} <span className="button-text" style={{ marginRight: '6px' }}> {currentGridOption.label} </span></span> <FaChevronDown className="dropdown-arrow-icon" />
-              </button>
-              <div className={`grid-cols-dropdown-content ${gridColsDropdownOpen ? 'show' : ''}`}>
-                {Array.isArray(dynamicGridColsOptions) && dynamicGridColsOptions.map(opt => (opt && typeof opt.value !== 'undefined' && <button key={opt.value} type="button" className={gridColumnCountLg === opt.value ? 'active' : ''} onClick={() => handleGridColumnCountChange(opt.value)}> {opt.icon} {opt.label} </button>))}
-              </div>
-            </div>
-            <button type="button" className={`dashboard-action-toggle-button ${autoCompact ? 'active' : ''}`} onClick={toggleAutoCompact} title={autoCompact ? "غیرفعال کردن مرتب‌سازی خودکار" : "فعال کردن مرتب‌سازی خودکار"}> {autoCompact ? <FaCompressArrowsAlt /> : <FaExpandArrowsAlt />} <span className="button-text">{autoCompact ? "چیدمان خودکار" : "چیدمان آزاد"}</span> </button>
-            <button type="button" className={`dashboard-action-toggle-button ${showGridLines ? 'active' : ''}`} onClick={() => setShowGridLines(prev => !prev)} title={showGridLines ? "پنهان کردن خطوط گرید" : "نمایش خطوط گرید"}> {showGridLines ? <FaEyeSlash /> : <FaBorderAll />} <span className="button-text">{showGridLines ? "مخفی کردن خطوط" : "نمایش خطوط"}</span> </button>
-            <button type="button" className="dashboard-customize-button" onClick={handleOpenCustomizeModal}> <FaEdit /> <span className="button-text">شخصی سازی</span> </button>
+            <button type="button" onClick={handleOpenCustomizeModal} className="dashboard-customize-button">
+              <FaEdit /> <span className="button-text">سفارشی‌سازی داشبورد</span>
+            </button>
           </div>
 
           {visibleGridElements.length > 0 ? (
             <ResponsiveGridLayout
-              className={`summary-cards-grid-layout ${showGridLines ? 'grid-lines-active' : ''}`}
-              layouts={layoutsToUse} breakpoints={RGL_BREAKPOINTS_CONFIG} cols={colsForRGL}
-              rowHeight={ROW_HEIGHT} onLayoutChange={onLayoutChange} containerPadding={[0, 0]} margin={[GRID_MARGIN, GRID_MARGIN]}
-              key={`dashboard-layout-${isSidebarCollapsed}-${autoCompact}-${gridColumnCountLg}-${JSON.stringify(elementVisibility)}-${JSON.stringify(itemLockStatus)}`}
-              isResizable={false} isDraggable={!autoCompact} draggableHandle=".drag-handle"
-              compactType={autoCompact ? 'vertical' : null} preventCollision={!autoCompact} measureBeforeMount={false}
+              className="summary-cards-grid-layout" // تغییر نام کلاس برای وضوح
+              layouts={currentGridLayouts} // استفاده از چیدمان تولید شده یا ذخیره شده
+              onLayoutChange={onLayoutChange}
+              breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+              cols={{ 
+                  lg: MAIN_COL_COUNT_FOR_LAYOUT * GRID_SUBDIVISION_FACTOR, 
+                  md: 3 * GRID_SUBDIVISION_FACTOR, 
+                  sm: 2 * GRID_SUBDIVISION_FACTOR, 
+                  xs: 1 * GRID_SUBDIVISION_FACTOR, 
+                  xxs: 1 * GRID_SUBDIVISION_FACTOR 
+              }}
+              rowHeight={ROW_HEIGHT}
+              margin={[8, 8]} 
+              draggableHandle=".drag-handle"
+              compactType="vertical"
+              key={`dashboard-grid-${isSidebarCollapsed}-${JSON.stringify(elementVisibility)}-${Object.keys(layouts.lg || {}).length}`} // برای اطمینان از رندر مجدد در تغییرات مهم
             >
-              {visibleGridElements.map(elementConfig => {
-                const isLocked = itemLockStatus[elementConfig.key] === true;
-                const currentBP = getCurrentBreakpoint(RGL_BREAKPOINTS_CONFIG, typeof window !== 'undefined' ? window.innerWidth : RGL_BREAKPOINTS_CONFIG.lg);
-                const bpLayouts = layoutsToUse[currentBP] || []; let itemLayout = bpLayouts.find(l => l.i === elementConfig.key);
-                if (!itemLayout) {
-                  const mainColsForCurrentBp = Math.max(1, Math.round((colsForRGL[currentBP] || colsForRGL.lg) / GRID_SUBDIVISION_FACTOR));
-                  itemLayout = getBaseLayoutForItem(elementConfig.key, mainColsForCurrentBp); itemLayout.x = 0; itemLayout.y = Infinity;
-                }
-                const itemProps = { isDraggable: !isLocked && !autoCompact, isResizable: false, };
-
+              {/* رندر کردن المان‌ها بر اساس currentGridLayouts.lg */}
+              {(currentGridLayouts.lg || []).map(itemLayout => {
+                const elementConfig = DASHBOARD_ELEMENTS_CONFIG.find(el => el.key === itemLayout.i);
+                if (!elementConfig || !elementVisibility[elementConfig.key]) return null;
+                
+                const isLocked = !!lockedItems[elementConfig.key];
+                
                 if (elementConfig.type === 'summaryCard') {
-                  const card = summaryData[elementConfig.key]; if (!card) return null;
+                  const cardData = summaryCardsData[elementConfig.key];
+                  if (!cardData) return <div key={elementConfig.key} className="grid-item-card"><ItemControls itemKey={elementConfig.key} />{elementConfig.label} (داده یافت نشد)</div>;
                   return (
-                    <div key={elementConfig.key} data-grid={{ ...itemLayout, ...itemProps }} className={`grid-item-card summary-card ${isLocked ? 'locked' : ''}`}>
+                    <div key={elementConfig.key} className={`grid-item-card summary-card ${isLocked ? 'locked' : ''}`}>
                       <ItemControls itemKey={elementConfig.key} />
-                      <div className="summary-card-inner-content"> <div className={`card-icon-container ${card.iconBg}`}>{card.icon}</div> <div className="card-content"> <h3>{card.title}</h3> <p>{card.value}</p> </div> </div>
-                    </div>);
-                } else if (elementConfig.key === 'digitalClockWidget' && elementConfig.type === 'widget') {
+                      <div className="summary-card-inner-content">
+                        <div className={`card-icon-container ${cardData.iconBg || elementConfig.key.toLowerCase().replace(/summarycard|insafe/g, '')}`}>{cardData.icon}</div>
+                        <div className="card-content">
+                          <h3>{cardData.title}</h3>
+                          <p>{cardData.value}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                } else if (elementConfig.key === 'digitalClockWidget') {
                   return (
-                    <div key={elementConfig.key} data-grid={{ ...itemLayout, ...itemProps }} className={`grid-item-card digital-clock-grid-item ${isLocked ? 'locked' : ''}`}>
+                    <div key={elementConfig.key} className={`grid-item-card digital-clock-grid-item ${isLocked ? 'locked' : ''}`}>
                       <ItemControls itemKey={elementConfig.key} />
                       <DigitalClock styleId={digitalClockConfig.styleId} />
                     </div>
                   );
-                } else if (elementConfig.key === 'jalaliCalendarWidget' && elementConfig.type === 'widget') {
+                } else if (elementConfig.key === 'jalaliCalendarWidget') {
                   return (
-                    <div key={elementConfig.key} data-grid={{ ...itemLayout, ...itemProps }} className={`grid-item-card jalali-calendar-grid-item ${isLocked ? 'locked' : ''}`}>
+                    <div key={elementConfig.key} className={`grid-item-card jalali-calendar-grid-item ${isLocked ? 'locked' : ''}`}>
                       <ItemControls itemKey={elementConfig.key} />
-                      <JalaliCalendar styleId={jalaliCalendarConfig.styleId} />
+                      <JalaliCalendar styleId={jalaliCalendarConfig.styleId} themeId={jalaliCalendarConfig.themeId} />
                     </div>
                   );
-                } return null;
+                } else if (elementConfig.key === 'chequeAlertWidget') {
+                    return (
+                      <div key={elementConfig.key} className={`grid-item-card cheque-alert-grid-item ${isLocked ? 'locked' : ''}`}>
+                        <ItemControls itemKey={elementConfig.key} />
+                        <ChequeAlertWidget />
+                      </div>
+                    );
+                }
+                // Placeholder برای انواع دیگر ویجت‌ها
+                return <div key={elementConfig.key} className={`grid-item-card ${isLocked ? 'locked' : ''}`}><ItemControls itemKey={elementConfig.key} />{elementConfig.label}</div>;
               })}
             </ResponsiveGridLayout>
-          ) : (!showCustomizeModal && (<div className="no-cards-placeholder"> <p>هیچ المان گرید (کارت یا ویجت) برای نمایش انتخاب نشده است. برای نمایش، از دکمه "شخصی سازی داشبورد" استفاده کنید.</p> </div>))}
-          <div className="dashboard-columns">
-            {elementVisibility.quickActionsSection && (<section className="quick-actions-section card-style"> <h2>دسترسی سریع</h2> <button type="button" className="action-button"><FaFileInvoiceDollar className="action-icon" /> ثبت فاکتور جدید</button> <button type="button" className="action-button"><FaUserPlus className="action-icon" /> افزودن مشتری</button> <button type="button" className="action-button"><FaChartPie className="action-icon" /> مشاهده گزارشات</button> <button type="button" className="action-button"><FaCog className="action-icon" /> تنظیمات سیستم</button> </section>)}
-            {elementVisibility.recentTransactionsSection && (<section className="recent-transactions-section card-style"> <h2>آخرین تراکنش‌ها</h2> {recentTransactions.length > 0 ? (<table><thead><tr><th>ردیف</th><th>نوع</th><th>تاریخ</th><th>مقدار/مبلغ</th><th>مشتری</th></tr></thead><tbody>{recentTransactions.map((tx, index) => (<tr key={tx.id}><td>{(index + 1).toLocaleString('fa-IR')}</td><td>{tx.type}</td><td>{tx.date}</td><td>{tx.amount}</td><td>{tx.customer}</td></tr>))}</tbody></table>) : (<p className="no-data-message">تراکنشی برای نمایش وجود ندارد.</p>)} </section>)}
+          ) : (
+             <div className="no-cards-placeholder">
+                <p>هیچ ویجتی برای نمایش انتخاب نشده است. از "سفارشی‌سازی داشبورد" ویجت‌ها را اضافه کنید.</p>
+            </div>
+          )}
+
+          <div className="dashboard-sections-container">
+            {elementVisibility.quickActionsSection && (
+              <section className="quick-actions-section card-style">
+                <h2>دسترسی سریع</h2>
+                <button type="button" className="action-button"><FaFileInvoiceDollar className="action-icon" /> ثبت فاکتور جدید</button>
+                <button type="button" className="action-button"><FaUserPlus className="action-icon" /> افزودن مشتری</button>
+                <button type="button" className="action-button"><FaChartPie className="action-icon" /> مشاهده گزارشات</button>
+                <button type="button" className="action-button"><FaCog className="action-icon" /> تنظیمات سیستم</button>
+              </section>
+            )}
+            {elementVisibility.recentTransactionsSection && (
+              <section className="recent-transactions-section card-style">
+                <h2>آخرین تراکنش‌ها</h2>
+                {recentTransactions.length > 0 ? (
+                  <table>
+                    <thead><tr><th>ردیف</th><th>نوع</th><th>تاریخ</th><th>مقدار/مبلغ</th><th>مشتری</th></tr></thead>
+                    <tbody>
+                      {recentTransactions.map((tx, index) => (
+                        <tr key={tx.id}>
+                          <td>{(index + 1).toLocaleString('fa-IR')}</td>
+                          <td>{tx.type}</td><td>{tx.date}</td>
+                          <td>{tx.amount.toLocaleString ? tx.amount.toLocaleString('fa-IR') : tx.amount}</td>
+                          <td>{tx.customer}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="no-data-message">تراکنشی برای نمایش وجود ندارد.</p>
+                )}
+              </section>
+            )}
           </div>
-          {(!elementVisibility.quickActionsSection && !elementVisibility.recentTransactionsSection && !showCustomizeModal && visibleGridElements.length === 0) && (<div className="no-sections-placeholder"> <p>هیچ بخشی برای نمایش در داشبورد انتخاب نشده است.</p> </div>)}
+          {(!elementVisibility.quickActionsSection && !elementVisibility.recentTransactionsSection && !showCustomizeModal && visibleGridElements.length === 0) && (
+             <div className="no-sections-placeholder">
+                <FaEyeSlash />
+                <p>هیچ بخشی برای نمایش در داشبورد انتخاب نشده است.</p>
+                <button type="button" onClick={handleOpenCustomizeModal}>سفارشی سازی داشبورد</button>
+            </div>
+          )}
         </main>
       </div>
     </>
