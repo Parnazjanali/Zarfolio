@@ -1,107 +1,80 @@
-// src/components/DashboardCustomizeModal.jsx
+// frontend/src/components/DashboardCustomizeModal.jsx
+
 import React, { useState, useEffect } from 'react';
+import Portal from './Portal';
+import { FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './DashboardCustomizeModal.css';
-import { FaSave } from 'react-icons/fa';
 
-// کامپوننت تاگل ساده
-const ToggleSwitch = ({ label, checked, onChange, itemId }) => {
-  return (
-    <div className="toggle-switch-container">
-      <label htmlFor={`toggle-${itemId}`} className="toggle-switch-label">
-        {label}
-      </label>
-      <label className="switch">
-        <input
-          type="checkbox"
-          id={`toggle-${itemId}`}
-          checked={checked}
-          onChange={onChange}
-        />
-        <span className="slider round"></span>
-      </label>
-    </div>
-  );
-};
-
-// اضافه کردن مقدار پیشفرض [] برای dashboardElements
-function DashboardCustomizeModal({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  initialVisibility, 
-  dashboardElements = [] // <--- تغییر در اینجا: اضافه کردن مقدار پیشفرض
-}) {
-  const [visibilitySettings, setVisibilitySettings] = useState(initialVisibility || {});
+const DashboardCustomizeModal = ({ isOpen, onClose, onSave, initialVisibility, dashboardElements }) => {
+  const [tempVisibility, setTempVisibility] = useState({});
 
   useEffect(() => {
-    // همگام سازی با initialVisibility وقتی مودال باز می شود یا initialVisibility تغییر می کند
-    // و همچنین اطمینان از اینکه dashboardElements معتبر است
-    if (isOpen && dashboardElements && dashboardElements.length > 0) {
-      const initialSettings = {};
-      dashboardElements.forEach(element => {
-        initialSettings[element.key] = initialVisibility && initialVisibility.hasOwnProperty(element.key)
-          ? initialVisibility[element.key]
-          : true; // اگر در initialVisibility نبود، پیشفرض true
-      });
-      setVisibilitySettings(initialSettings);
-    } else if (isOpen) {
-      // اگر dashboardElements موجود نیست اما مودال باز است، یک آبجکت خالی تنظیم کن
-      setVisibilitySettings({});
+    if (isOpen) {
+      // اطمینان از اینکه initialVisibility یک آبجکت است
+      setTempVisibility(initialVisibility && typeof initialVisibility === 'object' ? { ...initialVisibility } : {});
     }
-  }, [isOpen, initialVisibility, dashboardElements]);
+  }, [isOpen, initialVisibility]);
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
-  const handleToggleChange = (elementKey) => {
-    setVisibilitySettings(prevSettings => ({
-      ...prevSettings,
-      [elementKey]: !prevSettings[elementKey],
+  const handleToggleVisibility = (key) => {
+    setTempVisibility(prev => ({
+      ...prev,
+      [key]: !prev[key]
     }));
   };
 
-  const handleSaveChanges = () => {
-    onSave(visibilitySettings);
+  const handleSave = () => {
+    onSave(tempVisibility); // ارسال وضعیت موقت ذخیره شده
+    onClose();
   };
 
+  const ModalWrapper = Portal || React.Fragment;
+
   return (
-    <div className="modal-overlay customize-dashboard-modal-overlay">
-      <div className="modal-content customize-dashboard-modal-content">
-        <div className="modal-header">
-          <h2>شخصی‌سازی نمایش المان‌های داشبورد</h2>
-        </div>
-        <div className="modal-body">
-          <p>انتخاب کنید کدام بخش‌ها در داشبورد نمایش داده شوند:</p>
-          <div className="customize-options-grid">
-            {/* حتی با مقدار پیشفرض، بهتر است یک بررسی اضافی انجام دهیم 
-              هرچند مقدار پیشفرض باید جلوی خطای map on undefined را بگیرد.
-            */}
-            {Array.isArray(dashboardElements) && dashboardElements.map(element => (
-              <ToggleSwitch
-                key={element.key}
-                itemId={element.key}
-                label={element.label}
-                checked={!!visibilitySettings[element.key]}
-                onChange={() => handleToggleChange(element.key)}
-              />
-            ))}
-            {(!Array.isArray(dashboardElements) || dashboardElements.length === 0) && (
-                <p>لیست المان‌های داشبورد برای شخصی‌سازی موجود نیست.</p>
-            )}
+    <ModalWrapper>
+      <div className="modal-overlay generic-modal-overlay dashboard-customize-overlay">
+        <div className="modal-content generic-modal-content dashboard-customize-content">
+          <div className="modal-header">
+            <h3>سفارشی‌سازی نمایش المان‌های داشبورد</h3>
+            <button type="button" onClick={onClose} className="close-button">
+              <FaTimes />
+            </button>
+          </div>
+          <div className="modal-body">
+            <p>المان‌هایی را که می‌خواهید در داشبورد نمایش داده شوند، انتخاب کنید:</p>
+            <div className="elements-list">
+              {dashboardElements && dashboardElements.map(element => (
+                <div key={element.key} className="element-item">
+                  <div className="element-info">
+                    {element.icon && <span className="element-icon">{element.icon}</span>}
+                    <span className="element-label">{element.label}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibility(element.key)}
+                    className={`visibility-toggle-button ${tempVisibility[element.key] ? 'visible' : 'hidden'}`}
+                    aria-pressed={tempVisibility[element.key]}
+                  >
+                    {tempVisibility[element.key] ? <FaEye /> : <FaEyeSlash />}
+                    <span className="button-text">{tempVisibility[element.key] ? 'نمایش' : 'مخفی'}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button type="button" onClick={onClose} className="action-button secondary">
+              انصراف
+            </button>
+            <button type="button" onClick={handleSave} className="action-button primary">
+              ذخیره تغییرات
+            </button>
           </div>
         </div>
-        <div className="modal-footer">
-          <button type="button" className="modal-action-button secondary" onClick={onClose}>
-            انصراف
-          </button>
-          <button type="button" className="modal-action-button primary" onClick={handleSaveChanges}>
-            <FaSave style={{ marginLeft: '8px' }} /> ذخیره تغییرات
-          </button>
-        </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
-}
+};
 
 export default DashboardCustomizeModal;
