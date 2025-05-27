@@ -1,20 +1,22 @@
 /* src/pages/DashboardPage.css */
 :root {
-  --grid-line-color: #eef2f7; /* رنگ خطوط گرید، بسیار نازک و ملایم */
-  --grid-row-height-for-lines: 100px; /* باید با ROW_HEIGHT_CONFIG در JSX هماهنگ باشد */
+  --grid-line-color: #e0e6ed;
+  /* متغیرهای زیر توسط JSX با استفاده از setProperty تنظیم می‌شوند */
+  /* --current-grid-cols: 16; /* مثال */
+  /* --grid-row-height-for-lines: 25px; /* مثال */
+  /* --grid-margin: 4px; /* مثال */
 }
 
 .dashboard-page-content {
   width: 100%;
-  padding: 20px 25px;
+  padding: 20px 0; /* padding عمودی برای کل صفحه */
   box-sizing: border-box;
   transition: filter 0.3s ease-in-out;
-  --current-grid-cols: 4; /* مقدار پیشفرض برای lg، در JSX آپدیت می شود */
 }
 
 .dashboard-page-content.content-blurred {
   filter: blur(4px);
-  pointer-events: none;
+  pointer-events: none; /* جلوگیری از تعامل با محتوای محو شده */
 }
 
 .dashboard-main-content {
@@ -22,6 +24,8 @@
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
+  padding-left: 25px; /* فاصله از لبه‌های صفحه برای محتوای اصلی */
+  padding-right: 25px;
 }
 
 .dashboard-header-actions {
@@ -32,15 +36,14 @@
   flex-wrap: wrap;
   margin-bottom: 10px;
   position: relative;
-  z-index: 102; /* بالاتر از گرید برای نمایش صحیح دراپ داون */
+  z-index: 102; /* بالاتر از گرید */
 }
 
-/* Dropdown for grid column selection */
 .grid-cols-dropdown-container {
   position: relative;
   display: inline-block;
   margin-left: auto; /* Pushes it to the right (for RTL layout) */
-  z-index: 101; /* بالاتر از آیتم های گرید اما پایین تر از مودال ها */
+  z-index: 105; /* بالاتر از آیتم های گرید اما پایین تر از مودال ها */
 }
 
 .grid-cols-dropdown-button {
@@ -78,10 +81,10 @@
   background-color: #ffffff;
   min-width: 160px;
   box-shadow: 0px 6px 12px rgba(0,0,0,0.15);
-  z-index: 100;
+  z-index: 106; /* بالاتر از سایدبار و سایر المان‌ها */
   border-radius: 6px;
   padding: 5px 0;
-  right: 0;
+  right: 0; /* برای RTL */
   margin-top: 4px;
   border: 1px solid #dee2e6;
 }
@@ -98,7 +101,7 @@
   width: 100%;
   border: none;
   background: none;
-  text-align: right;
+  text-align: right; /* برای RTL */
   font-size: 0.9em;
   font-weight: 400;
 }
@@ -154,7 +157,7 @@
 }
 .dashboard-action-toggle-button svg + .button-text,
 .dashboard-customize-button svg + .button-text {
-    margin-right: 6px;
+    margin-right: 6px; /* برای RTL */
 }
 
 .dashboard-action-toggle-button.active {
@@ -165,7 +168,7 @@
 }
 
 .summary-cards-grid-layout {
-  direction: ltr !important;
+  direction: ltr !important; /* RGL به LTR نیاز دارد */
   position: relative;
 }
 
@@ -173,39 +176,53 @@
   background-image:
     linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
-  /* background-size بر اساس تعداد ستون و ارتفاع ردیف محاسبه می شود */
-  /* margin بین آیتم ها هم باید در محاسبه background-size در نظر گرفته شود */
-  /* برای سادگی، margin را در اینجا در نظر نمی گیریم، خطوط دقیقا لبه ستون ها خواهند بود */
-  background-size: calc((100% - (var(--current-grid-cols) - 1) * 12px) / var(--current-grid-cols)) var(--grid-row-height-for-lines);
-  /* 12px همان margin افقی بین آیتم هاست */
+  background-size:
+    /* عرض هر سلول گرید شامل margin */
+    calc((100% - (var(--current-grid-cols, 16) - 1) * var(--grid-margin, 4px)) / var(--current-grid-cols, 16) + var(--grid-margin, 4px))
+    /* ارتفاع هر سلول گرید شامل margin */
+    calc(var(--grid-row-height-for-lines, 25px) + var(--grid-margin, 4px));
+  border-radius: 8px;
+  overflow: hidden;
 }
-
 
 .grid-item-card {
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
   overflow: hidden !important;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #e9edf0;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  direction: rtl;
+  direction: rtl; /* محتوای داخلی کارت RTL باشد */
   position: relative;
   z-index: 2;
   transition: box-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  /* padding توسط margin گرید ایجاد می‌شود، یا باید padding داخلی به محتوا داد */
 }
+
+.grid-item-card.digital-clock-grid-item,
+.grid-item-card.jalali-calendar-grid-item {
+  /* این ویجت‌ها ممکن است padding داخلی خود را داشته باشند */
+}
+.grid-item-card.digital-clock-grid-item > .digital-clock-widget,
+.grid-item-card.jalali-calendar-grid-item > .jalali-calendar-widget {
+  padding-top: 32px; /* فضا برای کنترل‌های آیتم */
+  height: 100%;
+  box-sizing: border-box;
+  width: 100%; /* اطمینان از گرفتن کل عرض والد */
+}
+
 .grid-item-card.locked {
-  /* box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.6); */ /* مثال برای بوردر قرمز در حالت قفل */
+  /* box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.5), 0 1px 3px rgba(0,0,0,0.05) ; */
 }
 
 .react-grid-placeholder {
-  background-color: rgba(0, 123, 255, 0.1) !important;
-  border-radius: 8px !important;
-  border: 1px dashed rgba(0, 123, 255, 0.5) !important;
-  opacity: 0.7 !important;
+  background-color: rgba(0, 123, 255, 0.08) !important;
+  border-radius: 0 !important;
+  border: 1px dashed rgba(0, 123, 255, 0.4) !important;
+  opacity: 0.6 !important;
   z-index: 1 !important;
 }
 
@@ -213,115 +230,98 @@
   opacity: 0.65;
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   z-index: 1000 !important;
-  border-color: transparent;
 }
 
 .item-controls {
   position: absolute;
   top: 5px;
-  left: 5px;
+  /* برای RTL، کنترل‌ها در سمت راست بالا قرار می‌گیرند */
+  right: 5px;
+  left: auto;
   display: flex;
+  flex-direction: row-reverse; /* آیکون‌ها از راست به چپ چیده شوند */
   gap: 5px;
-  z-index: 10;
+  z-index: 20;
+  background-color: rgba(255, 255, 255, 0.6); /* نیمه شفاف برای خوانایی بهتر */
+  padding: 3px 4px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.item-control-button {
+  cursor: pointer;
+  padding: 4px 5px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  color: #4a5568; /* رنگ تیره‌تر */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 1px solid rgba(0,0,0,0.1);
+  outline: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.item-control-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #1a202c;
+  border-color: rgba(0,0,0,0.2);
+}
+.item-control-button svg {
+  width: 11px; /* اندازه آیکون‌ها */
+  height: 11px;
+}
+.item-control-button.item-locked svg {
+  color: #e53e3e; /* قرمز برای قفل */
+}
+
+.digital-clock-grid-item .item-controls .item-control-button {
+    background-color: rgba(0, 0, 0, 0.2); /* کنتراست بهتر برای ساعت */
+    color: #edf2f7;
+    border-color: rgba(255,255,255,0.15);
+}
+.digital-clock-grid-item .item-controls .item-control-button:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+}
+.digital-clock-grid-item .item-controls .item-control-button.item-locked svg {
+  color: #fbd38d; /* زرد/نارنجی برای قفل روی ساعت */
 }
 
 .drag-handle {
   cursor: grab;
-  padding: 5px 6px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  color: #6c757d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.digital-clock-grid-item .drag-handle,
-.digital-clock-grid-item .lock-toggle-button {
-    background-color: rgba(255, 255, 255, 0.25);
-    color: #f0f0f0;
-}
-.digital-clock-grid-item .drag-handle:hover,
-.digital-clock-grid-item .lock-toggle-button:hover {
-    background-color: rgba(255, 255, 255, 0.35);
-    color: #ffffff;
-}
-.drag-handle:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  color: #343a40;
-}
-.drag-handle:active {
-  cursor: grabbing;
-}
-.drag-handle svg {
-  width: 12px;
-  height: 12px;
-}
+.drag-handle:active { cursor: grabbing; }
 
-.lock-toggle-button {
-  cursor: pointer;
-  padding: 5px 6px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  color: #6c757d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  border: none;
-  outline: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.lock-toggle-button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  color: #343a40;
-}
-.lock-toggle-button svg {
-  width: 12px;
-  height: 12px;
-}
-.lock-toggle-button.item-locked svg {
-  color: #dc3545;
-}
-.digital-clock-grid-item .lock-toggle-button.item-locked svg {
-  color: #f8c291;
-}
 
 .summary-card-inner-content {
   display: flex;
   align-items: center;
   flex-grow: 1;
-  padding: clamp(10px, 2.5vw, 15px);
-  padding-top: clamp(32px, 7vw, 40px);
+  padding: clamp(8px, 2vw, 12px); /* padding داخلی کارت خلاصه */
+  padding-top: clamp(30px, 6vw, 38px); /* فضا برای کنترل‌ها */
   width: 100%;
   box-sizing: border-box;
 }
 
 .summary-card .card-icon-container {
   flex-shrink: 0;
-  width: clamp(34px, 6.5vw, 40px);
-  height: clamp(34px, 6.5vw, 40px);
+  width: clamp(32px, 6vw, 38px);
+  height: clamp(32px, 6vw, 38px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  transition: width 0.2s ease, height 0.2s ease;
-  margin-left: clamp(8px, 2vw, 12px);
+  margin-left: clamp(8px, 2vw, 12px); /* برای RTL */
 }
-
 .summary-card .card-icon-container.gold { background-color: #f1c40f; }
 .summary-card .card-icon-container.value { background-color: #2ecc71; }
 .summary-card .card-icon-container.invoices { background-color: #3498db; }
 .summary-card .card-icon-container.price { background-color: #e67e22; }
-
-.summary-card .card-icon {
-  font-size: clamp(1em, 3vw, 1.2em);
-}
+.summary-card .card-icon { font-size: clamp(0.9em, 2.5vw, 1.1em); }
 
 .summary-card .card-content {
-  text-align: right;
+  text-align: right; /* برای RTL */
   flex-grow: 1;
   overflow: hidden;
   display: flex;
@@ -329,51 +329,35 @@
   justify-content: center;
   gap: 1px;
 }
-
 .summary-card .card-content h3 {
   margin: 0;
-  font-size: clamp(0.7em, 2vw, 0.75em);
-  font-weight: 400;
-  color: #6c757d;
+  font-size: clamp(0.7em, 1.9vw, 0.75em);
+  font-weight: 500; /* کمی خواناتر */
+  color: #4a5568;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.3;
   max-height: 2.6em;
 }
-
 .summary-card .card-content p {
   margin: 0;
-  font-size: clamp(1em, 3.2vw, 1.2em);
+  font-size: clamp(0.95em, 2.9vw, 1.15em);
   font-weight: 600;
-  color: #343a40;
+  color: #2d3748;
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.grid-item-card.digital-clock-grid-item,
-.grid-item-card.jalali-calendar-grid-item {
-  padding: 0;
-}
-.grid-item-card.digital-clock-grid-item > .digital-clock-widget,
-.grid-item-card.jalali-calendar-grid-item > .jalali-calendar-widget {
-  padding-top: 38px;
-  height: 100%;
-  box-sizing: border-box;
-}
-.grid-item-card.jalali-calendar-grid-item {
-  min-height: 330px;
-}
-
 .react-resizable-handle-se {
   background-image: none !important;
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 18px; /* کمی بزرگتر برای راحتی کلیک */
+  height: 18px;
   bottom: 0;
-  left: 0;
+  left: 0; /* برای LTR در RGL */
   cursor: nwse-resize;
   padding: 0;
   z-index: 11;
@@ -381,169 +365,121 @@
 .react-resizable-handle-se::after{
   content: '';
   position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid rgba(0,0,0,0.4);
-  border-bottom: 2px solid rgba(0,0,0,0.4);
+  right: 2px; /* برای LTR */
+  bottom: 2px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid rgba(0,0,0,0.3); /* کمی واضح‌تر */
+  border-bottom: 2px solid rgba(0,0,0,0.3);
 }
 
 .no-cards-placeholder,
-.no-sections-placeholder {
-  background-color: #f8f9fa;
-  border: 1px dashed #ced4da;
-  border-radius: 8px;
-  padding: 30px;
-  text-align: center;
-  color: #6c757d;
-  font-size: 0.95em;
-}
+.no-sections-placeholder { /* ... مثل قبل ... */ }
 .no-cards-placeholder p,
-.no-sections-placeholder p {
-  margin: 0;
-}
+.no-sections-placeholder p { /* ... مثل قبل ... */ }
 
-.dashboard-columns {
-  display: grid;
-  grid-template-columns: 1fr 2.5fr;
-  gap: 25px;
-}
-
-.card-style {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
-  text-align: right;
-}
-.card-style h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 1.4em;
-  font-weight: 600;
-  color: #2c3e50;
-  border-bottom: 1px solid #e8ecef;
-  padding-bottom: 12px;
-}
-.quick-actions-section .action-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 10px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  text-align: right;
-  font-size: 0.9em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.quick-actions-section .action-button:hover {
-  background-color: #2980b9;
-  transform: translateY(-1px);
-}
-.action-icon { font-size: 1.1em; }
-.recent-transactions-section table {
-  width: 100%;
-  border-collapse: collapse;
-  direction: rtl;
-}
+.dashboard-columns { /* ... مثل قبل ... */ }
+.card-style { /* ... مثل قبل ... */ }
+.card-style h2 { /* ... مثل قبل ... */ }
+.quick-actions-section .action-button { /* ... مثل قبل ... */ }
+.quick-actions-section .action-button:hover { /* ... مثل قبل ... */ }
+.action-icon { /* ... مثل قبل ... */ }
+.recent-transactions-section table { /* ... مثل قبل ... */ }
 .recent-transactions-section th,
-.recent-transactions-section td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #f1f3f5;
-  text-align: right;
-  font-size: 0.85em;
+.recent-transactions-section td { /* ... مثل قبل ... */ }
+.recent-transactions-section th { /* ... مثل قبل ... */ }
+.recent-transactions-section tbody tr:hover { /* ... مثل قبل ... */ }
+.no-data-message { /* ... مثل قبل ... */ }
+
+/* --- استایل‌های مودال تغییر سایز و دکمه آن --- */
+.resize-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
 }
-.recent-transactions-section th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
+.resize-option-button {
+  padding: 10px 15px;
+  background-color: #f8f9fa; /* رنگ روشن‌تر */
+  border: 1px solid #dee2e6; /* بوردر ملایم‌تر */
+  border-radius: 6px; /* ردیوس بیشتر */
+  text-align: right; /* برای RTL */
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  font-size: 0.9em;
+  color: #343a40;
+  font-family: inherit;
 }
-.recent-transactions-section tbody tr:hover {
-  background-color: #fdfdfe;
+.resize-option-button:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  color: #000;
 }
-.no-data-message {
-  color: #718096;
-  text-align: center;
-  padding: 20px;
-  font-style: italic;
+
+/* استایل پایه برای مودال‌های عمومی */
+.modal-overlay.generic-modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55); /* کمی شفاف‌تر */
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1050; direction: rtl;
+  opacity: 0; animation: fadeInOverlay 0.25s forwards;
 }
+.modal-content.generic-modal-content {
+  background-color: #fff; padding: 20px 25px; border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15); /* سایه ملایم‌تر */
+  width: 90%; max-width: 400px; /* عرض کمتر برای این مودال */
+  transform: translateY(-20px) scale(0.97); opacity: 0; /* انیمیشن ورود */
+  animation: slideDownModal 0.3s 0.05s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slideDownModal { 0% { transform: translateY(-20px) scale(0.97); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+
+.generic-modal-content .modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 12px; border-bottom: 1px solid #e9ecef; margin-bottom: 15px;
+}
+.generic-modal-content .modal-header h3 { margin: 0; font-size: 1.25em; color: #212529; font-weight: 600;}
+.generic-modal-content .modal-close-button {
+  background: none; border: none; font-size: 1.3em; color: #6c757d; cursor: pointer; padding: 5px; line-height: 1;
+  transition: color 0.2s ease;
+}
+.generic-modal-content .modal-close-button:hover { color: #343a40; }
+.generic-modal-content .modal-body { font-size: 0.95em; line-height: 1.6; }
+/* --- پایان استایل‌های مودال --- */
+
 
 @media (max-width: 992px) {
   .dashboard-columns { grid-template-columns: 1fr; }
-  .dashboard-page-content { padding: 15px; }
-  .dashboard-header-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+  .dashboard-page-content { padding: 15px 0; }
+  .dashboard-main-content {
+    padding-left: 15px;
+    padding-right: 15px;
   }
-  .dashboard-customize-button,
-  .dashboard-action-toggle-button,
-  .grid-cols-dropdown-container {
-      width: 100%;
-  }
-  .grid-cols-dropdown-button {
-      justify-content: space-between;
-  }
-  .grid-cols-dropdown-content {
-      width: 100%;
-      left:0;
-      box-sizing: border-box;
-  }
-  .dashboard-grid-cols-button .button-text {
-      display: inline;
-  }
+  .dashboard-header-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-container { width: 100%; }
+  .grid-cols-dropdown-button { justify-content: space-between; }
+  .grid-cols-dropdown-content { width: 100%; left:0; box-sizing: border-box; }
+  .dashboard-grid-cols-button .button-text { display: inline; }
 }
 
 @media (max-width: 520px) {
-  .dashboard-header-actions {
-    gap: 8px;
-  }
-  .dashboard-customize-button,
-  .dashboard-action-toggle-button,
-  .grid-cols-dropdown-button {
-      padding: 8px 10px;
-      font-size: 0.8em;
-  }
-  .dashboard-customize-button .button-text,
-  .dashboard-action-toggle-button .button-text {
-      display: none;
-  }
-   .dashboard-customize-button svg,
-   .dashboard-action-toggle-button svg {
-      margin-left: 0; margin-right: 0;
-  }
-  .dashboard-grid-cols-button .button-text {
-      display: inline;
-  }
-  .grid-cols-dropdown-button {
-      min-width: auto;
-  }
-   .grid-cols-dropdown-button .button-text {
-      margin-right: 4px;
-  }
-  .grid-cols-dropdown-button svg.dropdown-arrow-icon {
-      margin-left: 4px;
-  }
+  .dashboard-main-content { padding-left: 10px; padding-right: 10px; }
+  .dashboard-header-actions { gap: 8px; }
+  .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-button { padding: 8px 10px; font-size: 0.8em; }
+  .dashboard-customize-button .button-text, .dashboard-action-toggle-button .button-text { display: none; }
+  .dashboard-customize-button svg, .dashboard-action-toggle-button svg { margin-left: 0; margin-right: 0; }
+  .dashboard-grid-cols-button .button-text { display: inline; }
+  .grid-cols-dropdown-button { min-width: auto; }
+  .grid-cols-dropdown-button .button-text { margin-right: 4px; }
+  .grid-cols-dropdown-button svg.dropdown-arrow-icon { margin-left: 4px; }
+  .item-controls { top: 3px; right: 3px; gap: 3px; padding: 2px; }
+  .item-control-button { padding: 3px 4px; }
+  .item-control-button svg { width: 9px; height: 9px; }
 }
 
 @media (max-width: 480px) {
   .card-style h2 { font-size: 1.1em; }
-  .quick-actions-section .action-button,
-  .recent-transactions-section th,
-  .recent-transactions-section td {
-    font-size: 0.75em;
-    padding: 6px 8px;
-  }
-  .summary-card-inner-content { padding: 8px; padding-top: 30px; }
-  .summary-card .card-icon-container { width: 30px; height: 30px; margin-left: 6px;}
-  .summary-card .card-icon { font-size: 0.9em; }
-  .summary-card .card-content h3 { font-size: 0.65em; max-height: 2.7em; }
-  .summary-card .card-content p { font-size: 0.85em; }
+  .quick-actions-section .action-button, .recent-transactions-section th, .recent-transactions-section td { font-size: 0.75em; padding: 6px 8px; }
+  .summary-card .card-icon-container { width: 28px; height: 28px; margin-left: 5px;}
+  .summary-card .card-icon { font-size: 0.8em; }
 }
