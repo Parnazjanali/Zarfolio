@@ -16,17 +16,15 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
 	api := app.Group("/api/v1")
 	utils.Log.Info("Configuring /api/v1 routes")
 
-	registerGrouop := api.Group("/register")
+	registerGroup := api.Group("/register")
 	utils.Log.Info("Configuring /api/v1/register routes")
-	registerGrouop.Post("/user", authHandler.RegisterUser)
+	registerGroup.Post("/user", authHandler.RegisterUser)
 
 	authGroup := api.Group("/auth")
 	utils.Log.Info("Configuring /api/v1/auth routes")
 	authGroup.Post("/login", middleware.AuthUser, authHandler.LoginUser)
 
-	app.Use(middleware.CorsMiddleware())
-	utils.Log.Info("CORS middleware applied")
-
+	
 	return nil
 
 }
