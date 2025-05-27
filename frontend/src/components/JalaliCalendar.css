@@ -1,0 +1,211 @@
+/* src/components/JalaliCalendar.css */
+.jalali-calendar-widget {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* برای جلوگیری از بهم ریختگی در صورت کوچک شدن بیش از حد */
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.month-year-container {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  text-align: center;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+.month-name {
+  font-size: clamp(1.05rem, 3.6vw, 1.3rem); /* فونت خواناتر */
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.year-name {
+  font-size: clamp(0.8rem, 2.8vw, 0.95rem);
+  font-weight: 400;
+  color: #4b5563;
+}
+
+.nav-button {
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out;
+}
+.nav-button svg {
+  font-size: clamp(0.9rem, 3.2vw, 1.1rem);
+}
+.nav-button:hover {
+  background-color: #f3f4f6;
+}
+
+.days-of-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  width: 100%;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #6b7280;
+  font-size: clamp(0.7rem, 2.2vw, 0.75rem);
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.day-name {
+  padding: 4px 0;
+  line-height: 1.1;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* ارتفاع ردیف ها باید توسط ارتفاع کلی ویجت و تعداد ردیف ها تعیین شود */
+  /* grid-auto-rows: minmax(38px, 1fr); */
+  grid-auto-rows: 1fr; /* اجازه می دهد ردیف ها فضای مساوی بگیرند */
+  text-align: center;
+  width: 100%;
+  flex-grow: 1; 
+  gap: clamp(2px, 0.5vw, 4px);
+  min-height: 220px; /* حداقل ارتفاع برای جلوگیری از جمع شدن بیش از حد در حالت عادی */
+}
+
+.day-cell {
+  font-size: clamp(0.9rem, 3.8vw, 1.2rem); /* اعداد روز بزرگتر و واضح تر */
+  font-weight: 400; 
+  font-family: 'Vazirmatn FD', 'Vazirmatn', sans-serif; 
+  border-radius: 6px; 
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  aspect-ratio: 1 / 1; /* حفظ حالت مربعی */
+  border: 1px solid transparent;
+  outline: none;
+  line-height: 1; 
+  padding: 1px; 
+}
+
+.day-cell:focus-visible {
+  border-color: #007bff;
+  box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25); 
+}
+.day-cell:not(.empty):not(.today):hover {
+  background-color: #e9f2ff; 
+  color: #0056b3; 
+  border-color: #b8d8ff;
+}
+
+.day-number {
+  /* استایل اضافی لازم نیست */
+}
+
+.day-cell.empty {
+  background-color: transparent;
+  cursor: default;
+  pointer-events: none;
+  border-color: transparent !important; 
+}
+
+.day-cell.today {
+  background-color: #007bff; 
+  color: #fff;
+  font-weight: 600;
+  border-radius: 6px; 
+  border: 1px solid #0056b3; 
+}
+.day-cell.today:hover {
+  background-color: #0056b3;
+}
+
+.day-cell.has-event .day-number::after {
+  content: '';
+  position: absolute;
+  bottom: clamp(2px, 0.5vw, 3px); /* کمی بالاتر برای اعداد بزرگتر */
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(4px, 0.8vw, 5px); /* نشانگر کمی کوچکتر */
+  height: clamp(4px, 0.8vw, 5px);
+  background-color: #dc3545; 
+  border-radius: 50%;
+}
+.day-cell.has-event.official-holiday .day-number::after {
+  background-color: #c82333; 
+}
+.day-cell.today.has-event .day-number::after {
+  background-color: #fff; 
+  border: 1px solid #007bff;
+}
+
+.month-events-list {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  font-size: clamp(0.65rem, 2vw, 0.7rem); /* فونت کوچکتر برای لیست */
+  max-height: 55px; /* ارتفاع کمتر برای جلوگیری از اسکرول زیاد */
+  overflow-y: auto;
+  color: #333;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f0f0f0;
+}
+.month-events-list::-webkit-scrollbar { width: 4px; }
+.month-events-list::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 2px; }
+.month-events-list::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 2px; }
+
+.month-events-list h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: clamp(0.7rem, 2.2vw, 0.75rem);
+  color: #111;
+  font-weight: 500;
+}
+.month-events-list ul { list-style: none; padding: 0; margin: 0; }
+.month-events-list li {
+  padding: 2px 1px; 
+  border-bottom: 1px solid #f9f9f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.month-events-list li:last-child { border-bottom: none; }
+.month-events-list .event-day {
+  font-weight: 500;
+  color: #000;
+  margin-left: 4px; 
+  display: inline-block;
+  min-width: 14px; 
+}
+.month-events-list .official-holiday-text,
+.month-events-list .official-holiday-text .event-day {
+  color: #c00; 
+}
+
+.selected-day-event-tooltip {
+  /* (بدون تغییر از پاسخ قبلی) */
+}
