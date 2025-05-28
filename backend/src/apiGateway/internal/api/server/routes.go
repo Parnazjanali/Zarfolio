@@ -6,6 +6,7 @@ import (
 	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
@@ -24,7 +25,12 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
 	utils.Log.Info("Configuring /api/v1/auth routes")
 	authGroup.Post("/login", middleware.AuthUser, authHandler.LoginUser)
 
-	
+	app.Use(func(c *fiber.Ctx) error {
+		utils.Log.Warn("API Gateway: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "API Gateway: The requested resource was not found."})
+	})
+	utils.Log.Info("API Gateway: 404 fallback route configured.")
+
 	return nil
 
 }
