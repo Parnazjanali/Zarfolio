@@ -6,10 +6,11 @@ import loginPageImage from '../assets/login.jpg'; // Ensure this path is correct
 import {
   FaInstagram, FaTelegramPlane, FaWhatsapp, FaHeart,
   FaUserPlus, FaSignInAlt, FaUserCircle, FaEnvelope, FaLock, FaEye, FaEyeSlash,
-  FaKey, FaShieldAlt, // آیکون برای مودال
+  FaKey, FaShieldAlt,
 } from 'react-icons/fa';
-import Portal from '../components/Portal'; // اگر مودال را در پورتال نمایش می‌دهید
+import Portal from '../components/Portal';
 
+// استفاده از این تعریف که دارای مقدار پیش‌فرض است
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const generateStrongPassword = (length = 16) => {
@@ -21,12 +22,10 @@ const generateStrongPassword = (length = 16) => {
   return password;
 };
 
-// کامپوننت مودال برای نمایش مزایای رمز قوی
 const PasswordStrengthModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
-
   return (
-    <Portal> {/* نمایش مودال در ریشه DOM */}
+    <Portal>
       <div className="password-strength-modal-overlay" onClick={onClose}>
         <div className="password-strength-modal-content" onClick={(e) => e.stopPropagation()}>
           <h3>
@@ -54,23 +53,21 @@ const PasswordStrengthModal = ({ isOpen, onClose }) => {
   );
 };
 
-
 function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [emailForRegister, setEmailForRegister] = useState('');
-
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState('login');
-
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // State برای مودال
-
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
+  // حذف تعریف API_BASE_URL از اینجا، چون در سطح ماژول تعریف شده است
+
   const socialLinks = [
     { platform: 'instagram', icon: <FaInstagram />, text: '@YourInstaID', color: '#E1306C', hoverColor: '#c13584', href: 'https://instagram.com/YourInstaID' },
     { platform: 'telegram', icon: <FaTelegramPlane />, text: '@YourTelegramID', color: '#0088cc', hoverColor: '#0077b5', href: 'https://t.me/YourTelegramID' },
@@ -90,8 +87,7 @@ function LoginPage() {
   const handleSuggestPassword = () => {
     const newPassword = generateStrongPassword(16);
     setPassword(newPassword);
-    setIsPasswordModalOpen(true); // نمایش مودال پس از ایجاد رمز
-    // displayMessage('یک رمز عبور قوی برای شما ایجاد شد! آن را به خاطر بسپارید یا در مکانی امن ذخیره کنید.', false, 4000);
+    setIsPasswordModalOpen(true);
   };
 
   const handleClosePasswordModal = () => {
@@ -99,24 +95,28 @@ function LoginPage() {
     displayMessage('رمز عبور قوی در فیلد قرار گرفت. آن را به خاطر بسپارید یا در مکانی امن ذخیره کنید.', false, 4000);
   }
 
-  // ... (handleLogin و handleRegister بدون تغییر عمده)
+  // فقط یک تعریف از handleLogin باقی بماند
   const handleLogin = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     setShowMessage(false);
 
+    // نکته: اگر ورود ادمین موقت دیگر لازم نیست، این بخش را حذف کنید.
     if (identifier === 'admin' && password === 'admin') {
       localStorage.setItem('authToken', 'dummy-admin-token');
-      localStorage.setItem('username', 'ادمین موقت');
+      // برای ادمین موقت، یک نام کاربری موقت هم ذخیره می‌کنیم
+      const adminUserData = { username: 'ادمین موقت', role: 'admin' };
+      localStorage.setItem('userData', JSON.stringify(adminUserData));
       localStorage.setItem('showReleaseNotes', 'true');
       setIsLoading(false);
       navigate('/dashboard');
       return;
     }
-    const loginPayload = { identifier: identifier, password: password };
+
+    const loginPayload = { username: identifier, password: password };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, { // API_BASE_URL از سطح ماژول استفاده می‌شود
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginPayload),
@@ -124,12 +124,25 @@ function LoginPage() {
       const data = await response.json();
       if (response.ok && data.token) {
         localStorage.setItem('authToken', data.token);
-        localStorage.setItem('username', data.user?.name || data.user?.username || identifier.split('@')[0]);
+        if (data.user) { // اطمینان از وجود data.user
+          const userDataToStore = {
+            id: data.user.id, // دیگر نیازی به ?. نیست چون وجود data.user بررسی شده
+            username: data.user.username,
+            email: data.user.email,
+            role: data.user.role,
+            // fullName: data.user.fullName // اگر در بک‌اند fullName اضافه شود
+          };
+          localStorage.setItem('userData', JSON.stringify(userDataToStore));
+        } else {
+          // اگر data.user وجود نداشت، حداقل نام کاربری که کاربر وارد کرده را ذخیره کنیم (اختیاری)
+          localStorage.setItem('userData', JSON.stringify({ username: identifier }));
+          console.warn("Login successful but user object was not returned in response data.");
+        }
         localStorage.setItem('showReleaseNotes', 'true');
         displayMessage('ورود با موفقیت انجام شد! در حال انتقال به داشبورد...', false);
         setTimeout(() => navigate('/dashboard'), 1500);
       } else {
-        displayMessage(data.message || 'نام کاربری/ایمیل یا رمز عبور نامعتبر است.', true);
+        displayMessage(data.message || 'نام کاربری یا رمز عبور نامعتبر است.', true);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -144,12 +157,11 @@ function LoginPage() {
     setIsLoading(true);
     setShowMessage(false);
 
-    if (password.length < 8 ) { // بررسی ساده‌تر طول، چون تولید کننده رمز قوی داریم
+    if (password.length < 8 ) {
         displayMessage('رمز عبور باید حداقل ۸ کاراکتر باشد. می‌توانید از گزینه "پیشنهاد رمز" استفاده کنید.', true, 7000);
         setIsLoading(false);
         return;
     }
-    // بقیه اعتبارسنجی‌ها
     if (!name.trim()) {
         displayMessage('وارد کردن نام و نام خانوادگی الزامی است.', true);
         setIsLoading(false);
@@ -162,17 +174,23 @@ function LoginPage() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/register/user`, {
+      // نکته: اندپوینت register/user در فایل‌های بک‌اند شما (apiGateway) تعریف نشده بود.
+      // فرض می‌کنیم این اندپوینت در profileManager با مسیر /register وجود دارد و apiGateway آن را پروکسی نمی‌کند.
+      // یا اینکه باید در apiGateway روت `/api/v1/register/user` به profileManager مپ شود.
+      // در حال حاضر، با توجه به فایل‌های apiGateway، روت رجیستر به شکل `/api/v1/register/user` است.
+      const response = await fetch(`${API_BASE_URL}/register/user`, { // API_BASE_URL از سطح ماژول
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email: emailForRegister, password }),
+        // در بک‌اند profileManager، مدل RegisterRequest فیلدهای Username, Password, Email دارد.
+        // نام فیلدها باید مطابقت داشته باشد.
+        body: JSON.stringify({ username: emailForRegister, password: password, email: emailForRegister /* name در مدل بک‌اند نیست */ }),
       });
       const data = await response.json();
-      if (response.ok) {
+      if (response.ok) { // یا response.status === 201 اگر بک‌اند 201 برمی‌گرداند
         displayMessage('ثبت‌نام با موفقیت انجام شد! اکنون می‌توانید وارد شوید.', false, 7000);
         setMode('login');
         setIdentifier(emailForRegister);
-        setPassword(''); // پاک کردن پسورد پس از ثبت‌نام موفق
+        setPassword('');
         setName('');
         setEmailForRegister('');
       } else {
@@ -185,23 +203,24 @@ function LoginPage() {
       setIsLoading(false);
     }
   };
+
   const handleSocialMouseEnter = (platform) => setHoveredSocial(platform);
   const handleSocialMouseLeave = () => setHoveredSocial(null);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token && window.location.pathname === '/login') {
-      // navigate('/dashboard');
+      // navigate('/dashboard'); // این خط کامنت شده بود، در صورت نیاز فعال کنید
     }
   }, [navigate]);
 
 
   return (
+    // ... JSX بدون تغییر ...
     <div className="login-page-container">
       <div className="login-card">
         <div className="login-form-section">
           <div className="auth-container">
-            {/* ... هدر و ساب‌تایتل ... */}
             <div className="auth-header">
               <FaUserCircle className="auth-header-icon" />
               <h2>{mode === 'login' ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری جدید'}</h2>
@@ -211,17 +230,13 @@ function LoginPage() {
                 ? 'برای دسترسی به پنل مدیریت زرفولیو وارد شوید.'
                 : 'با ثبت‌نام در زرفولیو، مدیریت کسب و کار خود را آغاز کنید.'}
             </p>
-
-
             {showMessage && (
               <div className={`message-banner ${isError ? 'error' : 'success'} ${showMessage ? 'visible' : ''}`}>
                 {message}
                 <button type="button" onClick={() => setShowMessage(false)} className="close-message-btn">&times;</button>
               </div>
             )}
-
             <form onSubmit={mode === 'login' ? handleLogin : handleRegister}>
-              {/* ... فیلدهای نام و ایمیل برای ثبت‌نام ... */}
                {mode === 'register' && (
                 <div className="form-group">
                   <label htmlFor="register-name">
@@ -239,7 +254,6 @@ function LoginPage() {
                   />
                 </div>
               )}
-
               <div className="form-group">
                 <label htmlFor={mode === 'login' ? "login-identifier" : "register-email"}>
                   {mode === 'login' ? (
@@ -250,7 +264,7 @@ function LoginPage() {
                   ) : (
                     <>
                       <FaEnvelope style={{ marginLeft: '8px', fontSize: '0.9em' }} />
-                       ایمیل:
+                       ایمیل (به عنوان نام کاربری):
                     </>
                   )}
                 </label>
@@ -264,8 +278,6 @@ function LoginPage() {
                   className="form-control"
                 />
               </div>
-
-
               <div className="form-group">
                 <div className="password-options">
                   <label htmlFor="password">
@@ -303,7 +315,6 @@ function LoginPage() {
                   </button>
                 </div>
               </div>
-              {/* ... بقیه فرم ... */}
               <button type="submit" className="auth-button" disabled={isLoading}>
                 {isLoading ? (
                   <div className="spinner-sm-container">
@@ -313,7 +324,6 @@ function LoginPage() {
                 ) : (mode === 'login' ? 'ورود' : 'ثبت‌نام')}
               </button>
             </form>
-
             <div className="auth-toggle-section">
               {mode === 'login' ? (
                 <>
@@ -331,10 +341,8 @@ function LoginPage() {
                 </>
               )}
             </div>
-          </div> {/* End of auth-container */}
-
+          </div>
           <div className="contact-us-section">
-            {/* ... بخش شبکه‌های اجتماعی ... */}
             <h4 className="contact-us-title">با ما در ارتباط باشید...</h4>
             <div className="social-buttons-container">
               {socialLinks.map((social) => (
@@ -360,22 +368,17 @@ function LoginPage() {
               ))}
             </div>
           </div>
-
           <div className="made-with-love">
             MADE WITH <FaHeart className="heart-icon" />{'  '}BY PARNAZ
           </div>
           <div className="app-version">
             نسخه 0.0.3 beta
           </div>
-
-        </div> {/* End of login-form-section */}
-
+        </div>
         <div className="login-image-section">
           <img src={loginPageImage} alt="نمای کلی برنامه زرفولیو" />
         </div>
-      </div> {/* End of login-card */}
-
-      {/* مودال پاپ‌آپ برای نمایش مزایای رمز قوی */}
+      </div>
       <PasswordStrengthModal
         isOpen={isPasswordModalOpen}
         onClose={handleClosePasswordModal}
