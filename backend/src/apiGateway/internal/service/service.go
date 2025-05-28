@@ -17,7 +17,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// Pre-defined errors for service layer.
 var (
 	ErrInvalidCredentials = errors.New("invalid username or password")
 	ErrUserNotFound       = errors.New("user not found")
@@ -26,18 +25,15 @@ var (
 	ErrProfileManagerDown = errors.New("profile manager service is unavailable")
 )
 
-// ProfileManagerClient defines the interface for communicating with the Profile Manager service.
 type ProfileManagerClient interface {
 	RegisterUser(req model.RegisterRequest) error
-	AuthenticateUser(req model.LoginRequest) (*model.User, string, error) // <-- این همانی است که ProfileManagerClient باید برگرداند
+	AuthenticateUser(req model.LoginRequest) (*model.User, string, error) 
 }
 
-// AuthService handles business logic for authentication.
 type AuthService struct {
-	profileMgrClient ProfileManagerClient // این وابستگی است که در server.go تزریق می‌شود
+	profileMgrClient ProfileManagerClient 
 }
 
-// NewAuthService creates a new AuthService.
 func NewAuthService(client ProfileManagerClient) *AuthService {
 	if client == nil {
 		utils.Log.Fatal("ProfileManagerClient cannot be nil for AuthService.")
@@ -45,13 +41,11 @@ func NewAuthService(client ProfileManagerClient) *AuthService {
 	return &AuthService{profileMgrClient: client}
 }
 
-// LoginUser authenticates a user by calling the Profile Manager service.
-// It returns the authenticated user's details, a JWT token, or an error.
 func (s *AuthService) LoginUser(username, password string) (*model.User, string, error) {
 	req := model.LoginRequest{Username: username, Password: password}
 	utils.Log.Info("Attempting to authenticate user via Profile Manager", zap.String("username", username))
 
-	user, token, err := s.profileMgrClient.AuthenticateUser(req) // <-- فقط فراخوانی ProfileManagerClient
+	user, token, err := s.profileMgrClient.AuthenticateUser(req) 
 	if err != nil {
 		utils.Log.Error("Authentication failed in ProfileManagerClient", zap.String("username", username), zap.Error(err))
 		if errors.Is(err, ErrInvalidCredentials) {
@@ -67,9 +61,7 @@ func (s *AuthService) LoginUser(username, password string) (*model.User, string,
 	return user, token, nil
 }
 
-// RegisterUser registers a new user by calling the Profile Manager.
 func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
-	// ... (implementation as before) ...
 	err := s.profileMgrClient.RegisterUser(req)
 	if err != nil {
 		utils.Log.Error("Registration failed in ProfileManagerClient", zap.String("username", req.Username), zap.Error(err))
@@ -95,15 +87,13 @@ func NewProfileManagerClient(baseURL string) ProfileManagerClient {
 	}
 }
 
-// AuthenticateUser sends a login request to the Profile Manager service (on port 8081).
-// It expects to receive the user details (including role) and a token in the response.
 func (c *profileManagerHTTPClient) AuthenticateUser(req model.LoginRequest) (*model.User, string, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to marshal login request for profile manager: %w", err)
 	}
 
-	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/login", bytes.NewBuffer(body)) // Change /login to /profiles/validate if you prefer
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/login", bytes.NewBuffer(body)) 
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create HTTP request for profile manager login: %w", err)
 	}
@@ -142,7 +132,6 @@ func (c *profileManagerHTTPClient) AuthenticateUser(req model.LoginRequest) (*mo
 	return authResp.User, authResp.Token, nil
 }
 
-// RegisterUser sends a registration request to the Profile Manager service.
 func (c *profileManagerHTTPClient) RegisterUser(req model.RegisterRequest) error {
 	body, err := json.Marshal(req)
 	if err != nil {
