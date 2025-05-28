@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"profile-gold/internal/model"
 	"profile-gold/internal/utils"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -15,14 +15,8 @@ import (
 )
 
 var DB *gorm.DB
-var dbLogger *zap.Logger
 
 func InitDB() {
-	var err error
-
-	if err := godotenv.Load(); err != nil {
-		utils.Log.Error("Error loading .env file", zap.Error(err))
-	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Tehran",
 		os.Getenv("DB_HOST"),
@@ -38,34 +32,37 @@ func InitDB() {
 	utils.Log.Info("Database DSN constructed", zap.String("host", os.Getenv("DB_HOST")), zap.String("port", os.Getenv("DB_PORT")))
 
 	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // لاگ‌ها را به کنسول می‌فرستد
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
-			LogLevel:                  logger.Silent, // سطح لاگ: Silent، Info، Warn، Error
-			IgnoreRecordNotFoundError: true,          // خطاهای "رکورد یافت نشد" را لاگ نمی‌کند
-			Colorful:                  true,          // لاگ‌های رنگی
+			LogLevel:                  logger.Silent,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
 		},
 	)
-
+	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: newLogger, // استفاده از لاگر سفارشی GORM
-		// سایر تنظیمات GORM (مثلاً Naming Strategy) را می‌توان اینجا اضافه کرد
+		Logger: newLogger,
 	})
 
 	if err != nil {
-		// استفاده از لاگر Zap خودمان برای خطای اتصال به دیتابیس
-		utils.Log.Fatal("Failed to connect to the database", zap.Error(err))
+		utils.Log.Fatal("Failed to connect to the PostgreSQL database", zap.Error(err))
 	}
 
-	// 5. دریافت شیء sql.DB پایه برای تنظیمات connection pool
-	sqlDB, err := DB.DB() // این خط ضروری است تا بتوانی تنظیمات connection pool را انجام دهی
+	sqlDB, err := DB.DB()
 	if err != nil {
-		utils.Log.Fatal("Failed to get underlying SQL DB instance", zap.Error(err))
+		utils.Log.Fatal("Failed to get underlying SQL DB instance from GORM", zap.Error(err))
 	}
 
-	// 6. تنظیمات Connection Pool
-	sqlDB.SetMaxOpenConns(10)           // حداکثر تعداد اتصال‌های باز (همزمان)
-	sqlDB.SetMaxIdleConns(5)            // حداکثر تعداد اتصال‌های بیکار در Pool
-	sqlDB.SetConnMaxLifetime(time.Hour) // حداکثر زمان عمر یک اتصال قبل از بسته شدن
+	sqlDB.SetMaxOpenConns(10)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	utils.Log.Info("PostgreSQL database connected successfully")
+	utils.Log.Info("PostgreSQL database connected successfully. Attempting AutoMigrate...")
+
+	err = DB.AutoMigrate(&model.User{})
+	if err != nil {
+		utils.Log.Fatal("Failed to auto migrate database schema for User model", zap.Error(err))
+	}
+	utils.Log.Info("Database auto-migration completed successfully for User model.")
+
 }

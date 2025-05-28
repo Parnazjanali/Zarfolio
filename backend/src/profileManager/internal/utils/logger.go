@@ -1,11 +1,20 @@
 package utils
 
-import "go.uber.org/zap"
+import (
+	"fmt"
+
+	"go.uber.org/zap"
+)
 
 var Log *zap.Logger
 
 func InitLogger() error {
-	var err error
-	Log, err = zap.NewProduction()
-	return err
+	cfg := zap.NewProductionConfig()
+	cfg.Level.SetLevel(zap.DebugLevel) 
+	logger, err := cfg.Build()
+	if err != nil {
+		return fmt.Errorf("failed to build zap logger: %w", err)
+	}
+	Log = logger
+	return nil
 }
