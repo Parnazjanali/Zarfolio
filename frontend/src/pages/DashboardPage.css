@@ -542,3 +542,216 @@
   .summary-card .card-icon-container { width: 32px; height: 32px; margin-left: 8px;} /* تنظیم مجدد برای موبایل */
   .summary-card .card-icon { font-size: 1em; } /* تنظیم مجدد برای موبایل */
 }
+/* تغییر نام dashboard-page-content به dashboard-page-container برای هماهنگی با JSX */
+.dashboard-page-container { /* قبلا dashboard-page-content بود */
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  padding-left: 0; /* اگر می‌خواهید محتوای اصلی padding داشته باشد، در dashboard-main-content اعمال کنید */
+  padding-right: 0;
+  box-sizing: border-box;
+  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out; /* اضافه کردن transition برای پس‌زمینه */
+  min-height: 100vh; /* برای اینکه پس‌زمینه کل صفحه را بگیرد */
+  background-size: cover; /* این توسط JS هم تنظیم می‌شود */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dashboard-page-container.content-blurred { /* قبلا dashboard-page-content.content-blurred بود */
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+/* استایل برای زمانی که داشبورد تصویر پس‌زمینه دارد */
+.dashboard-page-container.has-background-image .grid-item-card {
+  background-color: rgba(255, 255, 255, 0.9); /* ویجت‌ها کمی شفاف‌تر شوند */
+  backdrop-filter: blur(3px); /* افکت شیشه‌ای */
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 255, 255, 0.3); /* بوردر روشن‌تر */
+}
+
+.dashboard-page-container.has-background-image .summary-card .card-content h3,
+.dashboard-page-container.has-background-image .summary-card .card-content p {
+  /* می‌توانید رنگ متن ویجت‌ها را در صورت نیاز تیره‌تر کنید تا روی پس‌زمینه خوانا باشند */
+  /* color: #1a202c; */
+}
+.dashboard-page-container.has-background-image .dashboard-header-actions .dashboard-customize-button {
+  /* تغییر رنگ دکمه شخصی‌سازی اگر پس‌زمینه دارد */
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.dashboard-page-container.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+/* frontend/src/pages/DashboardPage.css */
+/* ... (بخش :root و سایر استایل‌های ابتدایی شما) ... */
+
+.dashboard-page-content { /* این کلاس در JSX شما استفاده شده و ref به آن متصل است */
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out;
+  min-height: 100vh; /* برای اینکه پس‌زمینه کل صفحه را بگیرد */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* یک رنگ پس‌زمینه پیش‌فرض اگر تصویری انتخاب نشده باشد */
+  /* background-color: #f0f2f5;  این را می‌توانید حذف کنید اگر نمی‌خواهید رنگ پیش‌فرض داشته باشد */
+}
+
+.dashboard-page-content.content-blurred {
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+/* استایل برای زمانی که داشبورد تصویر پس‌زمینه دارد */
+.dashboard-page-content.has-background-image .grid-item-card {
+  background-color: rgba(255, 255, 255, 0.88); /* کمی شفافیت برای ویجت‌ها */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(200, 200, 200, 0.4); /* بوردر روشن‌تر و کمی شفاف */
+}
+
+.dashboard-page-content.has-background-image .card-style { /* برای بخش‌های card-style دیگر */
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(200, 200, 200, 0.4);
+}
+
+
+.dashboard-page-content.has-background-image .summary-card .card-content h3,
+.dashboard-page-content.has-background-image .summary-card .card-content p,
+.dashboard-page-content.has-background-image .quick-actions-section h2, /* مثال برای سایر بخش‌ها */
+.dashboard-page-content.has-background-image .recent-transactions-section h2 {
+  /* color: #2c3e50; */ /* رنگ متن را می‌توانید تنظیم کنید تا روی پس‌زمینه خواناتر باشد */
+}
+
+.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button {
+  background-color: rgba(240, 240, 240, 0.25); /* دکمه کمی تیره‌تر روی پس‌زمینه روشن */
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff; /* فرض می‌کنیم متن روی پس‌زمینه تیره باید روشن باشد */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+.cheque-alert-widget {
+  padding: 10px;
+  font-size: 0.9em;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.cheque-alert-widget h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+.cheque-alert-widget ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+.cheque-alert-widget li {
+  padding: 6px 2px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 0.9em;
+}
+.cheque-alert-widget li:last-child {
+  border-bottom: none;
+}
+.cheque-amount { font-weight: 500; color: #2c3e50; }
+.cheque-party { color: #3498db; }
+.cheque-due-date { float: left; font-size: 0.85em; color: #7f8c8d; }
+.cheque-alert-widget p { text-align: center; color: #7f8c8d; margin-top: 15px; }
+/* استایل برای ChequeAlertWidget اگر از JSX به اینجا منتقل شده باشد */
+.cheque-alert-widget {
+  padding: 10px;
+  font-size: 0.9em;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.cheque-alert-widget h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.cheque-alert-widget h4 svg {
+  margin-left: 8px; /* یا margin-right در RTL */
+  color: #e67e22;
+}
+.cheque-alert-widget ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+  font-size: 0.95em;
+}
+.cheque-alert-widget li {
+  padding: 5px 2px;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 5px;
+}
+.cheque-alert-widget li:last-child {
+  border-bottom: none;
+}
+.cheque-alert-widget .cheque-amount {
+  font-weight: 500;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+.cheque-alert-widget .cheque-party {
+  color: #3498db;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  text-align: right;
+}
+.cheque-alert-widget .cheque-due-date {
+  font-size: 0.9em;
+  color: #7f8c8d;
+  white-space: nowrap;
+  margin-right: auto; /* برای RTL، اگر می‌خواهید به سمت چپ برود */
+}
+.cheque-alert-widget p {
+  text-align: center;
+  color: #7f8c8d;
+  margin-top: 15px;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
