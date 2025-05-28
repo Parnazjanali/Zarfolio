@@ -11,12 +11,16 @@ import (
 )
 
 type AuthHandler struct {
-	authService service.AuthService
+	authService *service.AuthService
 }
 
+func NewAuthHandler(as *service.AuthService) *AuthHandler {
+	if as == nil {
+		utils.Log.Fatal("AuthService cannot be nil for AuthHandler. This is a critical dependency.")
+	}
+	return &AuthHandler{authService: as}
+}
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
-	// Logic for registering a user
-	// This is a placeholder function, implement your logic here
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "User registered successfully",
 	})
@@ -40,20 +44,17 @@ func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 		})
 	}
 
-	// Call the AuthService's LoginUser method.
-	// This now correctly expects user details, token, and an error.
-	user, token, err := h.authService.LoginUser(req.Username, req.Password) // <-- Corrected: Calls h.authService
+	user, token, err := h.authService.LoginUser(req.Username, req.Password)
 	if err != nil {
 		utils.Log.Error("Authentication failed in service layer", zap.String("username", req.Username), zap.Error(err))
 
-		// Check for specific service errors and map them to HTTP status codes.
 		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Code:    "401",
 				Message: "Invalid username or password",
 			})
 		}
-		if errors.Is(err, service.ErrProfileManagerDown) { // Handle case where Profile Manager is unavailable
+		if errors.Is(err, service.ErrProfileManagerDown) {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{
 				Code:    "503",
 				Message: "Authentication service is temporarily unavailable. Please try again later.",

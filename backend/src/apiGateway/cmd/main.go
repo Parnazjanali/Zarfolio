@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"gold-api/internal/api/server"
 	"gold-api/internal/utils"
-	"os"
+
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		utils.Log.Warn("Error loading .env file (this is fine if env vars are set directly)", zap.Error(err))
+	}
+
 	if err := utils.InitLogger(); err != nil {
 		panic(fmt.Errorf("failed to initialize logger: %w", err))
 	}
-	defer func() {
-		if err := utils.Log.Sync(); err != nil && err.Error() != "sync /dev/stdout: invalid argument" {
-
-			fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
-		}
-	}()
-
+	defer utils.Log.Sync()
 	server.StartServer(":8080")
 }
