@@ -1,0 +1,104 @@
+/* frontend/src/components/LabelPreview.css */
+.label-preview-wrapper {
+  background-color: #f0f4f8; /* کمی روشن‌تر از پس‌زمینه اصلی صفحه */
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dde4ec;
+}
+
+.label-preview-wrapper h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2em; /* کمی بزرگتر */
+  color: #2c3e50; /* رنگ تیره‌تر برای عنوان */
+  border-bottom: 1px solid #cbd5e0;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+/* اگر بخواهید آیکونی کنار عنوان پیش‌نمایش باشد:
+.label-preview-wrapper h4 svg {
+  margin-left: 8px;
+  color: #007bff;
+}
+*/
+
+.label-render-area {
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* سایه واضح‌تر */
+  transition: transform 0.2s ease-in-out; /* افکت کوچک هاور */
+}
+/* .label-render-area:hover {
+  transform: scale(1.02);
+} */
+
+.label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0.9;
+  padding-bottom: 2px; /* معادل تقریبی 0.5mm */
+  border-bottom: 0.5px dashed #b0bec5; /* خط جداکننده ظریف‌تر */
+  margin-bottom: 2px;
+}
+
+.shop-logo-preview {
+  max-height: 18px; /* متناسب با ارتفاع اتیکت و اندازه فونت */
+  max-width: 50px;
+  object-fit: contain;
+}
+
+.shop-name-preview {
+    font-weight: 500; /* کمی ضخیم‌تر */
+    color: #37474f;
+}
+
+.label-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* برای محتوای کمتر، وسط‌چین شود */
+  padding: 2px 0; /* کمی فاصله داخلی */
+}
+
+.label-footer {
+  /* border-top: 0.5px dashed #b0bec5; */ /* خط جداکننده اختیاری */
+  /* padding-top: 2px; */
+  /* margin-top: 2px; */
+}
+
+.price-preview {
+  color: #1a237e; /* رنگ تیره‌تر برای قیمت */
+  /* سایر استایل‌ها از طریق prop style اعمال می‌شوند */
+}
+
+.codes-preview {
+  display: flex;
+  justify-content: space-around; /* یا space-between اگر فقط یکی باشد */
+  align-items: flex-end; /* بارکد و کیوآرکد در پایین تراز شوند */
+  gap: 5px; /* فاصله بین بارکد و QR اگر هر دو باشند */
+  margin-top: 2px; /* فاصله از قیمت */
+  padding: 2px 0; /* کمی فاصله داخلی */
+  /* background-color: #fafafa; */ /* پس زمینه خیلی روشن برای بخش کدها (اختیاری) */
+  /* border-top: 1px solid #eee; */ /* جداکننده اختیاری */
+}
+
+/* اطمینان از اینکه بارکد و QR کد بیش از حد بزرگ یا کوچک نشوند و واضح باشند */
+.codes-preview svg,
+.codes-preview canvas { /* canvas برای QRCode */
+  max-width: 100%;
+  height: auto !important; /* برای حفظ نسبت ابعاد صحیح */
+  display: block; /* برای جلوگیری از فضای خالی زیر canvas */
+  margin: 0 auto; /* برای وسط‌چین کردن اگر یکی از آنها نمایش داده شود */
+}
+
+.stone-info-preview {
+  color: #455a64;
+  margin-top: 2px;
+}
+.stone-info-preview span {
+    margin-left: 4px;
+}
+.stone-info-preview span:last-child {
+    margin-left: 0;
+}

@@ -7,8 +7,9 @@ import InvoicesPage from './pages/InvoicesPage.jsx';
 import InventoryPage from './pages/InventoryPage.jsx';
 import CustomersPage from './pages/CustomersPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
-import SystemSettingsPage from './pages/SystemSettingsPage.jsx'; 
-import AccountSettingsPage from './pages/AccountSettingsPage.jsx'; 
+import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
+import AccountSettingsPage from './pages/AccountSettingsPage.jsx';
+import EtiketPage from './pages/EtiketPage.jsx'; // اضافه کردن ایمپورت صفحه اتیکت
 import Sidebar from './components/Sidebar.jsx';
 // مطمئن شوید این فایل در مسیر src/components/ProtectedRoute.jsx وجود دارد
 import ProtectedRoute from './components/ProtectedRoute.jsx'; // اضافه کردن پسوند .jsx برای صراحت بیشتر
@@ -33,7 +34,7 @@ function BackgroundManager() {
 function MainLayout({ children }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const savedState = localStorage.getItem('sidebarCollapsed');
-    return savedState !== null ? JSON.parse(savedState) : false; 
+    return savedState !== null ? JSON.parse(savedState) : false;
   });
 
   useEffect(() => {
@@ -69,8 +70,9 @@ function App() {
         <Route path="/invoices/*" element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>} />
         <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
         <Route path="/customers/*" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
+        <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} /> {/* اضافه کردن روت برای صفحه اتیکت */}
         <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
-        
+
         <Route
           path="/account/settings"
           element={<ProtectedRoute><MainLayout><AccountSettingsPage /></MainLayout></ProtectedRoute>}

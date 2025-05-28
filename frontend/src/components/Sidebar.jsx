@@ -9,11 +9,11 @@ import {
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaBookOpen,
   FaAngleLeft, FaAngleDown,
   FaBars, FaTimes,
-  FaCube, FaUserCog
+  FaCube, FaUserCog, FaTags // آیکون اتیکت اضافه شد
 } from 'react-icons/fa';
 
-const DROPDOWN_MENU_HEIGHT_APPROX = 110; // ارتفاع منوی پروفایل (1 آیتم اصلی) + جداکننده + (خروج دیگر اینجا نیست)
-const DROPDOWN_MENU_WIDTH_APPROX = 220; // عرض منو
+const DROPDOWN_MENU_HEIGHT_APPROX = 110;
+const DROPDOWN_MENU_WIDTH_APPROX = 220;
 
 function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isNewEntryDropdownOpen, setIsNewEntryDropdownOpen] = useState(false);
@@ -25,7 +25,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // نمایش پاپ‌آپ تاییدیه
     if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
       console.log("خروج کاربر تایید شد...");
       localStorage.removeItem('authToken');
@@ -98,6 +97,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     },
     { path: "/inventory", name: "موجودی‌ها", icon: <FaBoxes /> },
     { path: "/customers", name: "مشتریان", icon: <FaUsers /> },
+    { path: "/etiket", name: "اتیکت", icon: <FaTags /> }, //  آیتم اتیکت اضافه شد
     {
       name: "گزارشات", icon: <FaChartBar />, id: "reportsSubmenu",
       submenu: [
@@ -113,24 +113,20 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     const menuHeight = DROPDOWN_MENU_HEIGHT_APPROX;
     const menuWidth = DROPDOWN_MENU_WIDTH_APPROX;
 
-    // محاسبات برای موقعیت منو در حالت پورتال (سایدبار بسته)
-    // سایدبار در سمت راست است (RTL)
     let top = buttonRect.top;
-    let left = buttonRect.left - menuWidth - 8; // باز شدن به سمت چپ دکمه
+    let left = buttonRect.left - menuWidth - 8;
     let transformOrigin = 'top right';
 
-    // تنظیم بالا/پایین
-    if (top + menuHeight > window.innerHeight - 10) { // 10px فاصله از پایین صفحه
+    if (top + menuHeight > window.innerHeight - 10) {
       top = buttonRect.bottom - menuHeight;
       transformOrigin = transformOrigin.replace('top', 'bottom');
     }
-    if (top < 10) { // 10px فاصله از بالای صفحه
+    if (top < 10) {
         top = 10;
     }
 
-    // تنظیم چپ/راست
-    if (left < 10) { // اگر از لبه چپ صفحه خارج شد
-      left = buttonRect.right + 8; // باز شدن به سمت راست دکمه
+    if (left < 10) {
+      left = buttonRect.right + 8;
       transformOrigin = transformOrigin.replace('right', 'left');
     }
     
@@ -144,7 +140,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     };
   };
 
-
   const renderDropdownContent = (menuType) => {
     const closeAllDropdowns = () => {
       setIsProfileDropdownOpen(false);
@@ -157,7 +152,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
           <Link to="/account/settings" className="dropdown-item" onClick={closeAllDropdowns}>
             <FaUserCog className="dropdown-item-icon" /> تنظیمات حساب کاربری
           </Link>
-          {/* دکمه خروج از اینجا حذف شده و به پایین سایدبار منتقل شده است */}
         </>
       );
     }

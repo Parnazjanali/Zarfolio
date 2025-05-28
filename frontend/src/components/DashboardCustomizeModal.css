@@ -1,146 +1,202 @@
 /* frontend/src/components/DashboardCustomizeModal.css */
 
+/* استایل‌های عمومی مودال از DashboardPage.css یا generic-modal.css شما اعمال می‌شوند */
+/* .generic-modal-overlay .generic-modal-content ... */
+
 .dashboard-customize-overlay .dashboard-customize-content {
-  max-width: 550px; /* عرض حداکثر مودال، می‌توانید تنظیم کنید */
-  width: calc(100% - 40px); /* عرض مودال با کمی فاصله از لبه‌های صفحه در نمایشگرهای کوچک */
-  margin: 20px; /* فاصله از لبه‌های viewport */
-  max-height: calc(100vh - 40px); /* ارتفاع حداکثر با کمی فاصله از لبه‌های viewport */
-  display: flex;
-  flex-direction: column;
-  background-color: #fff; /* اطمینان از پس‌زمینه، چون generic-modal-content ممکن است override شود */
-  border-radius: 8px; /* گردی گوشه‌ها */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15); /* سایه برای مودال */
-  overflow: hidden; /* جلوگیری از سرریز محتوا از گوشه‌های گرد */
+  max-width: 650px; /* افزایش عرض برای جا دادن تامبنیل‌ها */
+  /* سایر استایل‌های generic-modal-content اگر لازم است اینجا override شود */
 }
 
-/* ارث‌بری استایل‌های هدر و فوتر از generic-modal-content اگر وجود دارد،
-   در غیر این صورت می‌توانید استایل‌های مشابهی اینجا اضافه کنید.
-   فرض می‌کنیم generic-modal-content استایل‌های پایه برای هدر و فوتر را دارد.
-*/
-.dashboard-customize-content .modal-header {
-  flex-shrink: 0; /* هدر نباید کوچک شود */
-  /* استایل‌های بیشتر برای هدر در صورت نیاز */
-  padding: 15px 20px;
-  border-bottom: 1px solid #e9ecef;
-}
 .dashboard-customize-content .modal-header h3 {
-  margin: 0;
-  font-size: 1.15em; /* کمی بزرگتر از generic */
-  font-weight: 600;
+  display: flex;
+  align-items: center;
 }
-.dashboard-customize-content .modal-header .close-button {
-  background: none;
-  border: none;
-  font-size: 1.4em;
-  color: #777;
-  cursor: pointer;
-  padding: 0; /* حذف پدینگ اضافی دکمه */
-  line-height: 1;
+.dashboard-customize-content .modal-header h3 svg {
+  margin-left: 10px; /* برای RTL */
+  color: #007bff;
 }
-.dashboard-customize-content .modal-header .close-button:hover {
-  color: #333;
-}
-
 
 .dashboard-customize-content .modal-body {
-  padding: 0; /* حذف پدینگ بدنه اصلی، لیست داخلی خودش پدینگ خواهد داشت */
-  overflow-y: hidden; /* بدنه اصلی اسکرول نمی‌شود */
-  flex-grow: 1; /* بدنه فضای باقی‌مانده را می‌گیرد */
+  /* padding اصلی از generic-modal-content می‌آید، اینجا می‌توانیم padding داخلی برای بخش‌ها بگذاریم */
+  /* در کد JSX، بخش‌های داخلی خودشان padding دارند */
+  max-height: 65vh; /* محدود کردن ارتفاع بدنه مودال و فعال کردن اسکرول داخلی */
+  overflow-y: auto;
+  padding-right: 10px; /* برای اسکرول بار در RTL */
+  margin-right: -10px;
+}
+
+.dashboard-customize-content .setting-section-dc {
+  margin-bottom: 25px;
+  padding: 0 10px; /* کمی پدینگ افقی برای هر بخش */
+}
+.dashboard-customize-content .setting-section-dc:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-customize-content .setting-section-dc h4 {
+  font-size: 1.1em;
+  color: #343a40;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 10px;
+  font-weight: 600;
+}
+.dashboard-customize-content .setting-section-dc h4 svg {
+    margin-left: 8px;
+    color: #17a2b8; /* یک رنگ دیگر برای آیکون عنوان بخش‌ها */
+}
+
+/* استایل برای انتخابگر پس‌زمینه */
+.background-selector-dc {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.bg-thumbnail-item-dc {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* برای flex-grow در Firefox */
+  align-items: center;
+  background-color: #fff;
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.bg-thumbnail-item-dc:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+.bg-thumbnail-item-dc.selected {
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.5); /* یک هاله سبز */
+}
+.bg-thumbnail-item-dc img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  margin-bottom: 5px;
+}
+.thumbnail-name-dc {
+    font-size: 0.8em;
+    color: #333;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    padding: 0 3px; /* برای جلوگیری از چسبیدن متن به لبه */
 }
 
-.dashboard-customize-content .modal-body > p { /* پاراگراف توضیحات */
-  padding: 15px 20px 10px 20px; /* پدینگ برای پاراگراف */
-  margin: 0; /* حذف مارجین پیش‌فرض پاراگراف */
-  font-size: 0.9em;
-  color: #555;
-  flex-shrink: 0;
-  border-bottom: 1px solid #f0f0f0; /* جداکننده از لیست */
+.selected-overlay-dc {
+  position: absolute;
+  top: 5px;
+  right: 5px; /* برای RTL، اگر چپ‌چین بود left: 5px */
+  background-color: rgba(40, 167, 69, 0.85);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em; /* اندازه آیکون تیک */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.reset-bg-button-dc { /* اگر دکمه‌ای برای ریست جداگانه داشتید */
+    background-color: #6c757d;
+    font-size: 0.9em;
+    color: white;
+}
+.reset-bg-button-dc:hover {
+    background-color: #5a6268;
 }
 
+/* استایل‌های قبلی شما برای elements-list از DashboardCustomizeModal.css */
 .dashboard-customize-content .elements-list {
-  flex-grow: 1; /* لیست المان‌ها فضای باقی‌مانده در بدنه را می‌گیرد */
-  overflow-y: auto; /* فقط اسکرول عمودی برای لیست */
-  padding: 10px 10px 10px 20px; /* پدینگ داخلی لیست (راست برای RTL) */
-  
-  /* اسکرول مدرن */
-  scrollbar-width: thin;          /* ("auto" or "thin") */
-  scrollbar-color: #b0b0b0 #f0f0f0;   /* (thumb and track color) */
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px 10px 10px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #b0b0b0 #f0f0f0;
 }
-
 .dashboard-customize-content .elements-list::-webkit-scrollbar {
-  width: 8px;               /* عرض اسکرول‌بار */
+  width: 8px;
 }
 .dashboard-customize-content .elements-list::-webkit-scrollbar-track {
-  background: #f0f0f0;        /* رنگ پس‌زمینه ترک */
+  background: #f0f0f0;
   border-radius: 4px;
 }
 .dashboard-customize-content .elements-list::-webkit-scrollbar-thumb {
-  background-color: #b0b0b0;    /* رنگ خود اسکرول (thumb) */
-  border-radius: 4px;       /* گردی گوشه‌های اسکرول */
-  border: 2px solid #f0f0f0;  /* ایجاد یک حاشیه دور thumb، شبیه padding */
+  background-color: #b0b0b0;
+  border-radius: 4px;
+  border: 2px solid #f0f0f0;
 }
 .dashboard-customize-content .elements-list::-webkit-scrollbar-thumb:hover {
-  background-color: #888888; /* رنگ اسکرول در حالت هاور */
+  background-color: #888888;
 }
-
-
 .dashboard-customize-content .element-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0; /* پدینگ عمودی برای هر آیتم، پدینگ افقی توسط والد (elements-list) */
-  /* padding-right: 10px; /* حذف - پدینگ افقی توسط elements-list */
+  padding: 12px 0;
   border-bottom: 1px solid #f0f0f0;
 }
-
 .dashboard-customize-content .element-item:last-child {
   border-bottom: none;
 }
-
 .dashboard-customize-content .element-info {
   display: flex;
   align-items: center;
-  gap: 12px; /* کمی افزایش فاصله */
-  flex-grow: 1; /* اجازه می‌دهد اطلاعات المان فضای بیشتری بگیرد */
-  overflow: hidden; /* برای جلوگیری از شکستن چیدمان با متن طولانی */
+  gap: 12px;
+  flex-grow: 1;
+  overflow: hidden;
 }
-
 .dashboard-customize-content .element-icon {
-  font-size: 1.15em; /* کمی بزرگتر */
-  color: #4a5568; /* رنگ آیکون */
-  width: 22px; 
+  font-size: 1.15em;
+  color: #4a5568;
+  width: 22px;
   text-align: center;
-  flex-shrink: 0; /* آیکون کوچک نشود */
+  flex-shrink: 0;
 }
-
 .dashboard-customize-content .element-label {
   font-size: 0.95em;
-  color: #2d3748; /* رنگ متن لیبل */
-  white-space: nowrap; /* جلوگیری از شکستن نام المان */
+  color: #2d3748;
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* نمایش ... برای نام‌های طولانی */
+  text-overflow: ellipsis;
 }
-
 .dashboard-customize-content .visibility-toggle-button {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px; /* کمی پدینگ بیشتر */
+  padding: 7px 12px;
   border-radius: 5px;
   border: 1px solid;
   cursor: pointer;
-  font-size: 0.8em; /* کمی کوچکتر برای تطابق بهتر */
-  min-width: 95px; 
+  font-size: 0.8em;
+  min-width: 95px;
   justify-content: center;
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-  flex-shrink: 0; /* دکمه کوچک نشود */
+  flex-shrink: 0;
 }
-
 .dashboard-customize-content .visibility-toggle-button.visible {
-  background-color: #e7f7ec; 
+  background-color: #e7f7ec;
   border-color: #a1d9b4;
   color: #1e7e3c;
 }
@@ -148,82 +204,51 @@
   background-color: #d1f0db;
   border-color: #89c9a2;
 }
-
 .dashboard-customize-content .visibility-toggle-button.hidden {
-  background-color: #fbeae5; 
+  background-color: #fbeae5;
   border-color: #f5c6cb;
-  color: #c82333; /* قرمز تیره‌تر */
+  color: #c82333;
 }
 .dashboard-customize-content .visibility-toggle-button.hidden:hover {
   background-color: #f8d6cf;
   border-color: #f1b0b7;
 }
-
 .dashboard-customize-content .visibility-toggle-button .button-text {
   font-weight: 500;
 }
 
-.dashboard-customize-content .modal-actions {
-  margin-top: 0; /* حذف مارجین بالا، چون بدنه خودش پدینگ دارد */
-  padding: 15px 20px; /* پدینگ برای فوتر */
+.dashboard-customize-content .modal-footer { /* اصلاح نام به modal-footer */
+  margin-top: 0;
+  padding: 15px 20px;
   border-top: 1px solid #e9ecef;
   display: flex;
-  justify-content: flex-start; /* دکمه‌ها در سمت چپ (برای RTL) */
+  justify-content: flex-start; /* برای RTL دکمه‌ها سمت چپ */
   gap: 10px;
-  flex-shrink: 0; /* فوتر نباید کوچک شود */
-  background-color: #f8f9fa; /* پس‌زمینه روشن برای فوتر */
+  flex-shrink: 0;
+  background-color: #f8f9fa;
 }
-
-.dashboard-customize-content .action-button {
-  padding: 8px 16px; /* تنظیم پدینگ دکمه‌ها */
+.dashboard-customize-content .modal-footer .action-button { /* استفاده از کلاس عمومی */
+  padding: 8px 16px;
   border-radius: 5px;
-  border: 1px solid transparent; /* پیش‌فرض بدون بوردر، مگر برای secondary */
+  border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9em;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-
-.dashboard-customize-content .action-button.primary {
+.dashboard-customize-content .modal-footer .action-button.primary {
   background-color: #007bff;
   color: white;
 }
-.dashboard-customize-content .action-button.primary:hover {
+.dashboard-customize-content .modal-footer .action-button.primary:hover {
   background-color: #0056b3;
 }
-
-.dashboard-customize-content .action-button.secondary {
-  background-color: #f0f2f5; /* رنگ خنثی‌تر */
+.dashboard-customize-content .modal-footer .action-button.secondary {
+  background-color: #f0f2f5;
   color: #343a40;
-  border: 1px solid #ced4da; /* بوردر برای دکمه دوم */
+  border: 1px solid #ced4da;
 }
-.dashboard-customize-content .action-button.secondary:hover {
+.dashboard-customize-content .modal-footer .action-button.secondary:hover {
   background-color: #e2e6ea;
   border-color: #adb5bd;
-}
-
-/* ریسپانسیو برای مودال */
-@media (max-width: 600px) {
-  .dashboard-customize-overlay .dashboard-customize-content {
-    width: calc(100% - 20px); /* فاصله کمتر در موبایل */
-    margin: 10px;
-    max-height: calc(100vh - 20px);
-  }
-  .dashboard-customize-content .modal-header,
-  .dashboard-customize-content .modal-body > p,
-  .dashboard-customize-content .modal-actions {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-  .dashboard-customize-content .elements-list {
-    padding: 10px 5px 10px 15px; /* پدینگ داخلی لیست در موبایل */
-  }
-  .dashboard-customize-content .element-item {
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  .dashboard-customize-content .action-button {
-    padding: 8px 12px;
-    font-size: 0.85em;
-  }
 }
