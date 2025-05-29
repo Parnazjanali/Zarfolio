@@ -21,7 +21,7 @@ import 'react-resizable/css/styles.css';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const APP_VERSION = '1.0.3'; // یا نسخه فعلی شما
+const APP_VERSION = '0.0.4'; // یا نسخه فعلی شما
 
 const DASHBOARD_ELEMENTS_CONFIG = [
   { key: 'summaryCardGold', label: 'موجودی طلا (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaBalanceScale /> },
