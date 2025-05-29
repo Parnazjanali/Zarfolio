@@ -1,8 +1,8 @@
 // frontend/src/pages/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './AuthForms.css'; // Ensure this path is correct
-import loginPageImage from '../assets/login.jpg'; // Ensure this path is correct
+import './AuthForms.css'; 
+import loginPageImage from '../assets/login.jpg'; 
 import {
   FaInstagram, FaTelegramPlane, FaWhatsapp, FaHeart,
   FaUserPlus, FaSignInAlt, FaUserCircle, FaEnvelope, FaLock, FaEye, FaEyeSlash,
@@ -10,7 +10,6 @@ import {
 } from 'react-icons/fa';
 import Portal from '../components/Portal';
 
-// استفاده از این تعریف که دارای مقدار پیش‌فرض است
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const generateStrongPassword = (length = 16) => {
@@ -66,7 +65,6 @@ function LoginPage() {
   const [mode, setMode] = useState('login');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
-  // حذف تعریف API_BASE_URL از اینجا، چون در سطح ماژول تعریف شده است
 
   const socialLinks = [
     { platform: 'instagram', icon: <FaInstagram />, text: '@YourInstaID', color: '#E1306C', hoverColor: '#c13584', href: 'https://instagram.com/YourInstaID' },
@@ -95,28 +93,15 @@ function LoginPage() {
     displayMessage('رمز عبور قوی در فیلد قرار گرفت. آن را به خاطر بسپارید یا در مکانی امن ذخیره کنید.', false, 4000);
   }
 
-  // فقط یک تعریف از handleLogin باقی بماند
   const handleLogin = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     setShowMessage(false);
 
-    // نکته: اگر ورود ادمین موقت دیگر لازم نیست، این بخش را حذف کنید.
-    if (identifier === 'admin' && password === 'admin') {
-      localStorage.setItem('authToken', 'dummy-admin-token');
-      // برای ادمین موقت، یک نام کاربری موقت هم ذخیره می‌کنیم
-      const adminUserData = { username: 'ادمین موقت', role: 'admin' };
-      localStorage.setItem('userData', JSON.stringify(adminUserData));
-      localStorage.setItem('showReleaseNotes', 'true');
-      setIsLoading(false);
-      navigate('/dashboard');
-      return;
-    }
-
     const loginPayload = { username: identifier, password: password };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, { // API_BASE_URL از سطح ماژول استفاده می‌شود
+      const response = await fetch(`${API_BASE_URL}/auth/login`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginPayload),
@@ -124,17 +109,15 @@ function LoginPage() {
       const data = await response.json();
       if (response.ok && data.token) {
         localStorage.setItem('authToken', data.token);
-        if (data.user) { // اطمینان از وجود data.user
+        if (data.user) {
           const userDataToStore = {
-            id: data.user.id, // دیگر نیازی به ?. نیست چون وجود data.user بررسی شده
+            id: data.user.id, 
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            // fullName: data.user.fullName // اگر در بک‌اند fullName اضافه شود
           };
           localStorage.setItem('userData', JSON.stringify(userDataToStore));
         } else {
-          // اگر data.user وجود نداشت، حداقل نام کاربری که کاربر وارد کرده را ذخیره کنیم (اختیاری)
           localStorage.setItem('userData', JSON.stringify({ username: identifier }));
           console.warn("Login successful but user object was not returned in response data.");
         }
@@ -210,13 +193,11 @@ function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token && window.location.pathname === '/login') {
-      // navigate('/dashboard'); // این خط کامنت شده بود، در صورت نیاز فعال کنید
     }
   }, [navigate]);
 
 
   return (
-    // ... JSX بدون تغییر ...
     <div className="login-page-container">
       <div className="login-card">
         <div className="login-form-section">
