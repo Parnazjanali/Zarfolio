@@ -228,7 +228,7 @@ function LoginPage() {
             <p className="auth-subtitle">
               {mode === 'login'
                 ? 'برای دسترسی به پنل مدیریت زرفولیو وارد شوید.'
-                : 'با ثبت‌نام در زرفولیو، مدیریت کسب و کار خود را آغاز کنید.'}
+                : 'با ثبت‌نام در زرفولیو، مدیریت کسب و کار طلا و جواهر خود را آغاز کنید.'}
             </p>
             {showMessage && (
               <div className={`message-banner ${isError ? 'error' : 'success'} ${showMessage ? 'visible' : ''}`}>
@@ -249,7 +249,7 @@ function LoginPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    placeholder="مثال: پرناز جنابی"
+                    placeholder="مثال: حسن دردشتی"
                     className="form-control"
                   />
                 </div>
@@ -369,10 +369,10 @@ function LoginPage() {
             </div>
           </div>
           <div className="made-with-love">
-            MADE WITH <FaHeart className="heart-icon" />{'  '}BY PARNAZ
+            MADE WITH <FaHeart className="heart-icon" />{'  '}BY Parza Team
           </div>
           <div className="app-version">
-            نسخه 0.0.3 beta
+            نسخه 0.0.4 beta
           </div>
         </div>
         <div className="login-image-section">
