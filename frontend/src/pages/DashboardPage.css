@@ -9,9 +9,8 @@
 
 .dashboard-page-content {
   width: 100%;
-  /* padding: 20px 0;  این خط قبلی بود */
-  padding-top: 10px; /* فاصله از بالا را به 10 پیکسل کاهش می‌دهیم */
-  padding-bottom: 20px; /* فاصله از پایین را حفظ می‌کنیم (یا به دلخواه تغییر دهید) */
+  padding-top: 10px;
+  padding-bottom: 20px;
   padding-left: 0;
   padding-right: 0;
   box-sizing: border-box;
@@ -20,7 +19,7 @@
 
 .dashboard-page-content.content-blurred {
   filter: blur(4px);
-  pointer-events: none; /* جلوگیری از تعامل با محتوای محو شده */
+  pointer-events: none;
 }
 
 .dashboard-main-content {
@@ -28,33 +27,41 @@
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
-  padding-left: 25px; /* فاصله از لبه‌های صفحه برای محتوای اصلی */
+  padding-left: 25px;
   padding-right: 25px;
 }
 
+/* === START: New styles for dashboard-sections-container === */
+.dashboard-sections-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust minmax as per your dashboard's main grid items */
+  gap: 20px; /* Consistent gap */
+}
+/* === END: New styles for dashboard-sections-container === */
+
+
 .dashboard-header-actions {
   display: flex;
-  justify-content: space-between; /* تغییر به space-between برای قرار دادن دکمه در سمت راست */
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 10px; /* کمی فاصله از گرید */
-  position: relative; /* برای z-index در صورت نیاز */
-  z-index: 102; /* بالاتر از ویجت های گرید اما پایین تر از مودال ها */
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 102;
 }
 
-/* Styles for the grid columns dropdown */
 .grid-cols-dropdown-container {
   position: relative;
   display: inline-block;
-  margin-left: auto; /* Pushes it to the right (for RTL layout) */
-  z-index: 105; /* بالاتر از آیتم های گرید اما پایین تر از مودال ها */
+  margin-left: auto;
+  z-index: 105;
 }
 
 .grid-cols-dropdown-button {
   background-color: #fff;
-  color: #495057; /* Dark gray text */
-  border: 1px solid #ced4da; /* Light gray border */
+  color: #495057;
+  border: 1px solid #ced4da;
   padding: 7px 12px;
   border-radius: 6px;
   font-size: 0.875em;
@@ -62,123 +69,117 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px; /* Space between text and icon */
-  min-width: 130px; /* Ensure some minimum width */
-  justify-content: space-between; /* Ensure icon is at the end */
+  gap: 6px;
+  min-width: 130px;
+  justify-content: space-between;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .grid-cols-dropdown-button svg.dropdown-arrow-icon {
   font-size: 0.8em;
-  color: #6c757d; /* Medium gray icon */
+  color: #6c757d;
   transition: transform 0.2s ease-in-out;
 }
 .grid-cols-dropdown-button.open svg.dropdown-arrow-icon {
   transform: rotate(180deg);
 }
 .grid-cols-dropdown-button:hover {
-  background-color: #f8f9fa; /* Very light gray on hover */
-  border-color: #adb5bd; /* Darker gray border on hover */
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
 }
 
 .grid-cols-dropdown-content {
-  display: none; /* Hidden by default */
+  display: none;
   position: absolute;
   background-color: #ffffff;
   min-width: 160px;
-  box-shadow: 0px 6px 12px rgba(0,0,0,0.15); /* Softer shadow */
-  z-index: 106; /* بالاتر از سایدبار و سایر المان‌ها */
+  box-shadow: 0px 6px 12px rgba(0,0,0,0.15);
+  z-index: 106;
   border-radius: 6px;
-  padding: 5px 0; /* Padding for items inside */
-  right: 0; /* برای RTL */
-  margin-top: 4px; /* Small space between button and dropdown */
-  border: 1px solid #dee2e6; /* Light border for the dropdown */
+  padding: 5px 0;
+  right: 0;
+  margin-top: 4px;
+  border: 1px solid #dee2e6;
 }
 .grid-cols-dropdown-content.show {
   display: block;
 }
 .grid-cols-dropdown-content button {
-  color: #343a40; /* Dark text for items */
+  color: #343a40;
   padding: 9px 14px;
   text-decoration: none;
-  display: flex; /* Use flex for icon alignment */
+  display: flex;
   align-items: center;
-  gap: 8px; /* Space between icon and text in item */
+  gap: 8px;
   width: 100%;
   border: none;
   background: none;
-  text-align: right; /* برای RTL */
+  text-align: right;
   font-size: 0.9em;
   font-weight: 400;
 }
 .grid-cols-dropdown-content button:hover {
-  background-color: #f1f3f5; /* Light hover for items */
+  background-color: #f1f3f5;
 }
 .grid-cols-dropdown-content button.active {
-  background-color: #007bff; /* Blue for active item */
+  background-color: #007bff;
   color: white;
   font-weight: 500;
 }
 .grid-cols-dropdown-content button svg {
-  font-size: 1em; /* Icon size in item */
-  color: #495057; /* Default icon color in item */
+  font-size: 1em;
+  color: #495057;
 }
 .grid-cols-dropdown-content button.active svg {
-  color: white; /* Icon color for active item */
+  color: white;
 }
 
 
 .dashboard-customize-button,
 .dashboard-action-toggle-button {
-  background-color: #6c757d; /* Bootstrap secondary color */
+  background-color: #6c757d;
   color: white;
   border: none;
-  padding: 8px 14px; /* Adjusted padding */
+  padding: 8px 14px;
   border-radius: 6px;
-  font-size: 0.95em; /* کمی بزرگتر */
-  font-weight: 600; /* ضخیم‌تر */
+  font-size: 0.95em;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   display: inline-flex;
   align-items: center;
-  justify-content: center; /* Center content if text is hidden */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow */
-  white-space: nowrap; /* Prevent text wrapping */
-}
-.dashboard-customize-button .button-text,
-.dashboard-action-toggle-button .button-text {
-    /* متن در همه حالت ها نمایش داده شود - اگر نمی‌خواهید در موبایل مخفی شود، این خط را حذف یا کامنت کنید */
-    /* display: inline-block !important; */
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  white-space: nowrap;
 }
 
 .dashboard-customize-button:hover,
 .dashboard-action-toggle-button:hover {
-  background-color: #5a6268; /* Darker shade on hover */
-  transform: translateY(-1px); /* Slight lift on hover */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Enhanced shadow on hover */
+  background-color: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .dashboard-customize-button svg,
 .dashboard-action-toggle-button svg {
-  font-size: 1.1em; /* کمی بزرگتر */
-  /* margin-left: 8px; */ /* برای LTR - حذف شد، با gap کنترل می‌شود */
+  font-size: 1.1em;
 }
-/* Add margin to the right of icon if text is present (for RTL) */
+
 .dashboard-action-toggle-button svg + .button-text,
 .dashboard-customize-button svg + .button-text {
-    margin-right: 8px; /* برای RTL - کمی فاصله بیشتر */
+    margin-right: 8px;
 }
 
 
 .dashboard-action-toggle-button.active {
-  background-color: #28a745; /* Green for active state (e.g., grid lines on) */
+  background-color: #28a745;
 }
 .dashboard-action-toggle-button.active:hover {
-  background-color: #218838; /* Darker green on hover */
+  background-color: #218838;
 }
 
 .summary-cards-grid-layout {
-  direction: ltr !important; /* RGL به LTR نیاز دارد */
-  position: relative; /* For z-indexing if needed */
+  direction: ltr !important;
+  position: relative;
 }
 
 .grid-lines-active {
@@ -210,8 +211,8 @@
 
 .grid-item-card.digital-clock-grid-item > .digital-clock-widget,
 .grid-item-card.jalali-calendar-grid-item > .jalali-calendar-widget,
-.grid-item-card.cheque-alert-grid-item > .cheque-alert-widget { /* اضافه شده برای ویجت چک */
-  padding-top: 35px; /* Space for item controls - افزایش برای کنترل‌های بزرگتر */
+.grid-item-card.cheque-alert-grid-item > .cheque-alert-widget {
+  padding-top: 35px;
   height: 100%;
   box-sizing: border-box;
   width: 100%;
@@ -233,42 +234,42 @@
 
 .item-controls {
   position: absolute;
-  top: 6px; /* کمی فاصله بیشتر از بالا */
-  left: 6px; /* کمی فاصله بیشتر از چپ (برای RTL) */
+  top: 6px;
+  left: 6px;
   display: flex;
   flex-direction: row-reverse;
-  gap: 6px; /* کمی فاصله بیشتر بین دکمه‌ها */
+  gap: 6px;
   z-index: 20;
-  background-color: rgba(255, 255, 255, 0.65); /* کمی شفافیت کمتر */
-  backdrop-filter: blur(4px); /* کمی بلور بیشتر */
+  background-color: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  padding: 4px 5px; /* کمی پدینگ بیشتر */
-  border-radius: 6px; /* گردی بیشتر */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12); /* سایه مشخص‌تر */
+  padding: 4px 5px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
 
 .item-control-button {
   cursor: pointer;
-  padding: 5px 6px; /* پدینگ کمی بیشتر */
-  background-color: rgba(0, 0, 0, 0.06); /* پس‌زمینه کمی تیره‌تر */
-  border-radius: 4px; /* گردی بیشتر */
-  color: #334155; /* رنگ تیره‌تر برای کنتراست بهتر */
+  padding: 5px 6px;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  color: #334155;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  border: 1px solid rgba(0,0,0,0.12); /* بوردر مشخص‌تر */
+  border: 1px solid rgba(0,0,0,0.12);
   outline: none;
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .item-control-button:hover {
   background-color: rgba(0, 0, 0, 0.12);
-  color: #1e293b; /* تیره‌تر در هاور */
+  color: #1e293b;
   border-color: rgba(0,0,0,0.25);
 }
 .item-control-button svg {
-  width: 12px; /* آیکون کمی بزرگتر */
-  height: 12px; /* آیکون کمی بزرگتر */
+  width: 12px;
+  height: 12px;
 }
 .item-control-button.item-locked svg {
   color: #e53e3e;
@@ -276,7 +277,7 @@
 
 .digital-clock-grid-item .item-controls .item-control-button {
     background-color: rgba(0, 0, 0, 0.25);
-    color: #f0f8ff; /* AliceBlue - روشن‌تر برای کنتراست بهتر */
+    color: #f0f8ff;
     border-color: rgba(255,255,255,0.2);
 }
 .digital-clock-grid-item .item-controls .item-control-button:hover {
@@ -284,12 +285,12 @@
     color: #ffffff;
 }
 .digital-clock-grid-item .item-controls .item-control-button.item-locked svg {
-  color: #ffd700; /* Gold - رنگ طلایی برای قفل */
+  color: #ffd700;
 }
 
 .jalali-calendar-grid-item .item-controls .item-control-button {
-    background-color: rgba(0, 0, 0, 0.15); /* کمی تیره‌تر */
-    color: #1f2937; /* تیره‌تر برای خوانایی */
+    background-color: rgba(0, 0, 0, 0.15);
+    color: #1f2937;
 }
 .jalali-calendar-grid-item .item-controls .item-control-button:hover {
     background-color: rgba(0, 0, 0, 0.25);
@@ -300,29 +301,27 @@
 }
 .drag-handle:active { cursor: grabbing; }
 
-/* Summary Card specific styles - UPDATED */
 .summary-card-inner-content {
   display: flex;
   align-items: center;
   flex-grow: 1;
-  padding: clamp(10px, 2.2vw, 15px); /* پدینگ داخلی بیشتر */
-  padding-top: clamp(38px, 6.5vw, 45px); /* افزایش پدینگ بالا برای کنترل‌های آیتم */
+  padding: clamp(10px, 2.2vw, 15px);
+  padding-top: clamp(38px, 6.5vw, 45px);
   width: 100%;
   box-sizing: border-box;
 }
 
 .summary-card .card-icon-container {
   flex-shrink: 0;
-  width: clamp(40px, 7vw, 48px); /* آیکون بزرگتر */
-  height: clamp(40px, 7vw, 48px); /* آیکون بزرگتر */
+  width: clamp(40px, 7vw, 48px);
+  height: clamp(40px, 7vw, 48px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  margin-left: clamp(10px, 2.2vw, 15px); /* فاصله بیشتر آیکون از متن */
+  margin-left: clamp(10px, 2.2vw, 15px);
 }
-/* رنگ‌های پس‌زمینه برای آیکون‌های مختلف - بدون تغییر نسبت به قبل */
 .summary-card .card-icon-container.gold { background-color: #f1c40f; }
 .summary-card .card-icon-container.value { background-color: #2ecc71; }
 .summary-card .card-icon-container.invoices { background-color: #3498db; }
@@ -334,7 +333,7 @@
 .summary-card .card-icon-container.misc { background-color: #95a5a6; }
 
 .summary-card .card-icon {
-  font-size: clamp(1.2em, 3.2vw, 1.5em); /* آیکون بزرگتر */
+  font-size: clamp(1.2em, 3.2vw, 1.5em);
 }
 
 .summary-card .card-content {
@@ -344,24 +343,24 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px; /* فاصله کمی بیشتر */
+  gap: 2px;
 }
-.summary-card .card-content h3 { /* عنوان کارت */
+.summary-card .card-content h3 {
   margin: 0;
-  font-size: clamp(0.8em, 2.2vw, 0.9em); /* فونت کمی بزرگتر */
-  font-weight: 600; /* ضخیم‌تر */
-  color: #34495e; /* رنگ تیره‌تر و خواناتر */
+  font-size: clamp(0.8em, 2.2vw, 0.9em);
+  font-weight: 600;
+  color: #34495e;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.35; /* کمی افزایش برای خوانایی */
+  line-height: 1.35;
   max-height: 2.7em;
 }
-.summary-card .card-content p { /* مقدار اصلی کارت */
+.summary-card .card-content p {
   margin: 0;
-  font-size: clamp(1.1em, 3.3vw, 1.4em); /* فونت بزرگتر */
-  font-weight: 700; /* ضخیم‌تر (Bold) */
-  color: #2c3e50; /* رنگ اصلی متن */
+  font-size: clamp(1.1em, 3.3vw, 1.4em);
+  font-weight: 700;
+  color: #2c3e50;
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -402,12 +401,12 @@
 }
 .no-cards-placeholder p,
 .no-sections-placeholder p {
-  font-size: 1em; /* کمی بزرگتر */
+  font-size: 1em;
   margin: 0;
-  font-weight: 500; /* کمی ضخیم‌تر */
+  font-weight: 500;
 }
 
-.dashboard-columns {
+.dashboard-columns { /* This class seems to be unused or for a different layout structure */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
@@ -415,32 +414,56 @@
 .card-style {
   background-color: #fff;
   border-radius: 8px;
-  padding: 20px;
+  padding: 20px; /* Default padding for cards */
   box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
   border: 1px solid #e9edf0;
 }
 .card-style h2 {
   margin-top: 0;
   margin-bottom: 15px;
-  font-size: 1.3em; /* بزرگتر */
-  color: #2c3e50; /* رنگ اصلی متن */
+  font-size: 1.3em; 
+  color: #2c3e50; 
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 10px;
-  font-weight: 700; /* ضخیم‌تر */
+  font-weight: 700; 
 }
+
+/* === Styles for Quick Actions & Recent Transactions Sections === */
+.quick-actions-section,
+.recent-transactions-section {
+    /* max-width and margin:auto are removed as .dashboard-sections-container now handles their width and placement */
+    padding: 15px; /* Keep reduced padding if desired, or remove to use .card-style default (20px) */
+}
+
 .quick-actions-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
+    grid-template-columns: 1fr; 
+    gap: 10px; 
 }
+
+.quick-actions-section h2,
+.recent-transactions-section h2 { 
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    font-size: 1.2em; 
+}
+
+.quick-actions-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  gap: 8px; 
+}
+/* === End: Styles for Quick Actions & Recent Transactions Sections === */
+
 .quick-actions-section .action-button {
   padding: 10px 12px;
   background-color: #e9f5ff;
   border: 1px solid #b8d6fb;
   border-radius: 6px;
   color: #004085;
-  font-size: 0.95em; /* کمی بزرگتر */
-  font-weight: 500; /* ضخامت متوسط */
+  font-size: 0.95em; 
+  font-weight: 500; 
   text-align: right;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -454,23 +477,23 @@
 }
 .action-icon {
   margin-left: 10px;
-  font-size: 1.2em; /* بزرگتر */
+  font-size: 1.2em; 
 }
 .recent-transactions-section table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9em; /* کمی بزرگتر */
+  font-size: 0.9em; 
 }
 .recent-transactions-section th,
 .recent-transactions-section td {
-  padding: 12px 10px; /* پدینگ بیشتر */
+  padding: 12px 10px; 
   text-align: right;
   border-bottom: 1px solid #edf2f7;
 }
 .recent-transactions-section th {
   background-color: #f8fafc;
-  color: #34495e; /* رنگ تیره‌تر */
-  font-weight: 600; /* ضخیم‌تر */
+  color: #34495e; 
+  font-weight: 600; 
 }
 .recent-transactions-section tbody tr:hover {
   background-color: #f7fafc;
@@ -479,8 +502,8 @@
   text-align: center;
   color: #718096;
   padding: 15px 0;
-  font-size: 0.95em; /* کمی بزرگتر */
-  font-weight: 500; /* ضخامت متوسط */
+  font-size: 0.95em; 
+  font-weight: 500; 
 }
 
 .modal-overlay.generic-modal-overlay {
@@ -514,7 +537,8 @@
 
 
 @media (max-width: 992px) {
-  .dashboard-columns { grid-template-columns: 1fr; }
+  /* .dashboard-columns { grid-template-columns: 1fr; } */ /* Already commented or potentially unused */
+  .dashboard-sections-container { grid-template-columns: 1fr; } /* Ensure sections stack on smaller screens */
   .dashboard-main-content {
   }
   .dashboard-header-actions { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -525,7 +549,7 @@
 
 @media (max-width: 520px) {
   .dashboard-header-actions { gap: 8px; }
-  .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-button { padding: 8px 10px; font-size: 0.85em; } /* افزایش فونت */
+  .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-button { padding: 8px 10px; font-size: 0.85em; } 
   .dashboard-customize-button .button-text, .dashboard-action-toggle-button .button-text { display: none; }
   .dashboard-customize-button svg, .dashboard-action-toggle-button svg { margin-left: 0; margin-right: 0; }
   .grid-cols-dropdown-button { min-width: auto; }
@@ -537,89 +561,41 @@
 }
 
 @media (max-width: 480px) {
-  .card-style h2 { font-size: 1.15em; } /* افزایش فونت */
-  .quick-actions-section .action-button, .recent-transactions-section th, .recent-transactions-section td { font-size: 0.8em; padding: 8px 10px; } /* افزایش فونت و پدینگ */
-  .summary-card .card-icon-container { width: 32px; height: 32px; margin-left: 8px;} /* تنظیم مجدد برای موبایل */
-  .summary-card .card-icon { font-size: 1em; } /* تنظیم مجدد برای موبایل */
+  .card-style h2, 
+  .quick-actions-section h2, 
+  .recent-transactions-section h2 { font-size: 1.15em; } 
+  .quick-actions-section .action-button, .recent-transactions-section th, .recent-transactions-section td { font-size: 0.8em; padding: 8px 10px; } 
+  .summary-card .card-icon-container { width: 32px; height: 32px; margin-left: 8px;} 
+  .summary-card .card-icon { font-size: 1em; } 
 }
-/* تغییر نام dashboard-page-content به dashboard-page-container برای هماهنگی با JSX */
-.dashboard-page-container { /* قبلا dashboard-page-content بود */
+
+.dashboard-page-container { 
   width: 100%;
   padding-top: 10px;
   padding-bottom: 20px;
-  padding-left: 0; /* اگر می‌خواهید محتوای اصلی padding داشته باشد، در dashboard-main-content اعمال کنید */
+  padding-left: 0; 
   padding-right: 0;
   box-sizing: border-box;
-  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out; /* اضافه کردن transition برای پس‌زمینه */
-  min-height: 100vh; /* برای اینکه پس‌زمینه کل صفحه را بگیرد */
-  background-size: cover; /* این توسط JS هم تنظیم می‌شود */
+  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out; 
+  min-height: 100vh; 
+  background-size: cover; 
   background-position: center;
   background-repeat: no-repeat;
 }
 
-.dashboard-page-container.content-blurred { /* قبلا dashboard-page-content.content-blurred بود */
+.dashboard-page-container.content-blurred { 
   filter: blur(4px);
   pointer-events: none;
 }
 
-/* استایل برای زمانی که داشبورد تصویر پس‌زمینه دارد */
-.dashboard-page-container.has-background-image .grid-item-card {
-  background-color: rgba(255, 255, 255, 0.9); /* ویجت‌ها کمی شفاف‌تر شوند */
-  backdrop-filter: blur(3px); /* افکت شیشه‌ای */
-  -webkit-backdrop-filter: blur(3px);
-  border: 1px solid rgba(255, 255, 255, 0.3); /* بوردر روشن‌تر */
-}
-
-.dashboard-page-container.has-background-image .summary-card .card-content h3,
-.dashboard-page-container.has-background-image .summary-card .card-content p {
-  /* می‌توانید رنگ متن ویجت‌ها را در صورت نیاز تیره‌تر کنید تا روی پس‌زمینه خوانا باشند */
-  /* color: #1a202c; */
-}
-.dashboard-page-container.has-background-image .dashboard-header-actions .dashboard-customize-button {
-  /* تغییر رنگ دکمه شخصی‌سازی اگر پس‌زمینه دارد */
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-.dashboard-page-container.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-/* frontend/src/pages/DashboardPage.css */
-/* ... (بخش :root و سایر استایل‌های ابتدایی شما) ... */
-
-.dashboard-page-content { /* این کلاس در JSX شما استفاده شده و ref به آن متصل است */
-  width: 100%;
-  padding-top: 10px;
-  padding-bottom: 20px;
-  padding-left: 0;
-  padding-right: 0;
-  box-sizing: border-box;
-  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out;
-  min-height: 100vh; /* برای اینکه پس‌زمینه کل صفحه را بگیرد */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  /* یک رنگ پس‌زمینه پیش‌فرض اگر تصویری انتخاب نشده باشد */
-  /* background-color: #f0f2f5;  این را می‌توانید حذف کنید اگر نمی‌خواهید رنگ پیش‌فرض داشته باشد */
-}
-
-.dashboard-page-content.content-blurred {
-  filter: blur(4px);
-  pointer-events: none;
-}
-
-/* استایل برای زمانی که داشبورد تصویر پس‌زمینه دارد */
 .dashboard-page-content.has-background-image .grid-item-card {
-  background-color: rgba(255, 255, 255, 0.88); /* کمی شفافیت برای ویجت‌ها */
+  background-color: rgba(255, 255, 255, 0.88); 
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(200, 200, 200, 0.4); /* بوردر روشن‌تر و کمی شفاف */
+  border: 1px solid rgba(200, 200, 200, 0.4); 
 }
 
-.dashboard-page-content.has-background-image .card-style { /* برای بخش‌های card-style دیگر */
+.dashboard-page-content.has-background-image .card-style { 
   background-color: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -629,60 +605,22 @@
 
 .dashboard-page-content.has-background-image .summary-card .card-content h3,
 .dashboard-page-content.has-background-image .summary-card .card-content p,
-.dashboard-page-content.has-background-image .quick-actions-section h2, /* مثال برای سایر بخش‌ها */
+.dashboard-page-content.has-background-image .quick-actions-section h2, 
 .dashboard-page-content.has-background-image .recent-transactions-section h2 {
-  /* color: #2c3e50; */ /* رنگ متن را می‌توانید تنظیم کنید تا روی پس‌زمینه خواناتر باشد */
+  /* color: #2c3e50; */ 
 }
 
 .dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button {
-  background-color: rgba(240, 240, 240, 0.25); /* دکمه کمی تیره‌تر روی پس‌زمینه روشن */
+  background-color: rgba(240, 240, 240, 0.25); 
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  color: #fff; /* فرض می‌کنیم متن روی پس‌زمینه تیره باید روشن باشد */
+  color: #fff; 
   text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 .dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
   background-color: rgba(255, 255, 255, 0.35);
   border-color: rgba(255, 255, 255, 0.7);
 }
-.cheque-alert-widget {
-  padding: 10px;
-  font-size: 0.9em;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.cheque-alert-widget h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1em;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
-  display: flex;
-  align-items: center;
-}
-.cheque-alert-widget ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-  flex-grow: 1;
-}
-.cheque-alert-widget li {
-  padding: 6px 2px;
-  border-bottom: 1px solid #f5f5f5;
-  font-size: 0.9em;
-}
-.cheque-alert-widget li:last-child {
-  border-bottom: none;
-}
-.cheque-amount { font-weight: 500; color: #2c3e50; }
-.cheque-party { color: #3498db; }
-.cheque-due-date { float: left; font-size: 0.85em; color: #7f8c8d; }
-.cheque-alert-widget p { text-align: center; color: #7f8c8d; margin-top: 15px; }
-/* استایل برای ChequeAlertWidget اگر از JSX به اینجا منتقل شده باشد */
 .cheque-alert-widget {
   padding: 10px;
   font-size: 0.9em;
@@ -705,7 +643,7 @@
   flex-shrink: 0;
 }
 .cheque-alert-widget h4 svg {
-  margin-left: 8px; /* یا margin-right در RTL */
+  margin-left: 8px; 
   color: #e67e22;
 }
 .cheque-alert-widget ul {
@@ -744,7 +682,7 @@
   font-size: 0.9em;
   color: #7f8c8d;
   white-space: nowrap;
-  margin-right: auto; /* برای RTL، اگر می‌خواهید به سمت چپ برود */
+  margin-right: auto; 
 }
 .cheque-alert-widget p {
   text-align: center;
