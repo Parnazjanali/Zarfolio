@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables 
+.env                 # ignores a file named .env in the root of the .gitignore
+*.env                # ignores any file ending with .env (e.g., .env.development, .env.production)
+**/.env              # ignores any file named .env in any subdirectory (e.g., backend/src/apiGateway/.env)
+
