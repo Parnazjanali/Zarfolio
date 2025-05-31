@@ -1,3 +1,1 @@
 .vscode/tasks.json
-backend/src/apiGateway/internal/service/service.go
-backend/src/profileManager/.env

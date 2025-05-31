@@ -1,96 +1,117 @@
 // src/components/ItemLayoutPanelSettingsModal.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-// import './ItemLayoutPanelSettingsModal.css'; // CSS مخصوص این مودال
+import { FaLock, FaArchive, FaCheck } from 'react-icons/fa';
+import './ItemLayoutPanelSettingsModal.css';
 
-// این ثابت ها اگر در فایل دیگری هستند باید import شوند یا به عنوان prop پاس داده شوند
-const GRID_SUBDIVISION_FACTOR = 4; 
-const SUBDIVISIONS_PER_UNIT_HEIGHT_CONFIG = 4;
-// DASHBOARD_ELEMENTS_CONFIG هم اگر برای نمایش نام آیتم لازم است، باید پاس داده شود یا نام مستقیم بیاید.
+const AVAILABLE_SIZES = [
+  { id: '1x1', label: '1x1', w: 1, h: 1 },
+  { id: '1x2', label: '1x2 (عمودی)', w: 1, h: 2 },
+  { id: '2x1', label: '2x1 (افقی)', w: 2, h: 1 },
+  { id: '2x2', label: '2x2', w: 2, h: 2 },
+  // { id: 'full', label: 'تمام عرض', w: 'full', h: 1 }, // برای تمام عرض نیاز به منطق جداگانه است
+];
 
 const ItemLayoutPanelSettingsModal = ({
     isOpen,
     onClose,
-    itemKey,
-    itemConfig, // حاوی label آیتم { key, label, type, ... }
-    currentItemLayout, // { i, x, y, w, h } in RGL sub-units
-    otherItemsLayout,
-    onSaveItemLayout,  // callback: (itemKey, {mainX, mainY, mainW, mainH})
-    gridConfig         // { mainCols, mainRows, subdivisionFactorW, subdivisionFactorH }
+    itemKey, // کلید آیتمی که تنظیماتش باز شده
+    itemConfig, // کانفیگ آیتم (شامل لیبل و ...)
+    currentItemLayout, // چیدمان فعلی آیتم از react-grid-layout
+    otherItemsLayout, // چیدمان سایر آیتم‌ها برای تشخیص تداخل
+    onSaveItemLayout, // تابعی برای ذخیره چیدمان جدید
+    gridConfig, // شامل: mainCols, mainRows, subdivisionFactorW, subdivisionFactorH
+    dashboardElementsConfig
 }) => {
     if (!isOpen || !itemKey || !itemConfig) return null;
 
-    const [selectedSize, setSelectedSize] = useState(() => {
-        if (currentItemLayout) {
-            const wMain = Math.round(currentItemLayout.w / gridConfig.subdivisionFactorW);
-            const hMain = Math.round(currentItemLayout.h / gridConfig.subdivisionFactorH);
-            return `${wMain > 0 ? wMain : 1}x${hMain > 0 ? hMain : 1}`;
-        }
-        return "1x1";
-    });
+    const parseSizeFromString = (sizeString) => {
+        const parts = sizeString.split('x');
+        return { w: parseInt(parts[0], 10), h: parseInt(parts[1], 10) };
+    };
 
-    const [targetCell, setTargetCell] = useState(() => {
-        if (currentItemLayout) {
+    const getInitialSizeId = () => {
+        if (currentItemLayout && gridConfig.subdivisionFactorW && gridConfig.subdivisionFactorH) {
+            const currentWMain = Math.max(1, Math.round(currentItemLayout.w / gridConfig.subdivisionFactorW));
+            const currentHMain = Math.max(1, Math.round(currentItemLayout.h / gridConfig.subdivisionFactorH));
+            const foundSize = AVAILABLE_SIZES.find(s => s.w === currentWMain && s.h === currentHMain);
+            if (foundSize) return foundSize.id;
+        }
+        return AVAILABLE_SIZES[0].id; // پیش‌فرض 1x1
+    };
+
+    const getInitialTargetCell = () => {
+        if (currentItemLayout && gridConfig.subdivisionFactorW) { // subdivisionFactorH هم باید چک شود اگر برای y استفاده می شود
             return {
                 mainX: Math.floor(currentItemLayout.x / gridConfig.subdivisionFactorW),
-                mainY: Math.floor(currentItemLayout.y / gridConfig.subdivisionFactorH)
+                mainY: Math.floor(currentItemLayout.y / gridConfig.subdivisionFactorH) // فرض می کنیم از subdivisionFactorH برای y استفاده می شود
             };
         }
         return { mainX: 0, mainY: 0 };
-    });
-
-    useEffect(() => { // برای به‌روزرسانی مقادیر اولیه مودال وقتی آیتم تغییر می‌کند
-        if (currentItemLayout) {
-            const wMain = Math.round(currentItemLayout.w / gridConfig.subdivisionFactorW);
-            const hMain = Math.round(currentItemLayout.h / gridConfig.subdivisionFactorH);
-            setSelectedSize(`${wMain > 0 ? wMain : 1}x${hMain > 0 ? hMain : 1}`);
-            setTargetCell({
-                mainX: Math.floor(currentItemLayout.x / gridConfig.subdivisionFactorW),
-                mainY: Math.floor(currentItemLayout.y / gridConfig.subdivisionFactorH)
-            });
-        }
-    }, [currentItemLayout, gridConfig]);
-
-
-    const availableSizes = ["1x1", "1x2", "2x1", "2x2"]; // اندازه‌های مجاز اصلی
-
-    const handleSave = () => {
-        const [wMainStr, hMainStr] = selectedSize.split('x');
-        const mainW = parseInt(wMainStr, 10);
-        const mainH = parseInt(hMainStr, 10);
-        onSaveItemLayout(itemKey, { ...targetCell, mainW, mainH });
     };
     
-    let cellNumberForDisplay = 0; // برای شماره گذاری بصری RTL
+    const [selectedSizeId, setSelectedSizeId] = useState(getInitialSizeId());
+    const [targetCell, setTargetCell] = useState(getInitialTargetCell()); // {mainX, mainY}
 
-    // محاسبه نقشه اشغالی بر اساس آیتم های دیگر
-    const occupiedByOtherMap = useMemo(() => {
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedSizeId(getInitialSizeId());
+            setTargetCell(getInitialTargetCell());
+        }
+    }, [isOpen, itemKey, currentItemLayout, gridConfig]); // وابستگی‌ها برای ریست شدن state هنگام باز شدن مجدد مودال
+
+
+    const selectedSizeConfig = AVAILABLE_SIZES.find(s => s.id === selectedSizeId) || AVAILABLE_SIZES[0];
+    const currentSelectedWMain = selectedSizeConfig.w;
+    const currentSelectedHMain = selectedSizeConfig.h;
+
+    const handleSave = () => {
+        if (targetCell.mainX == null || targetCell.mainY == null) {
+            alert("لطفا یک سلول شروع معتبر انتخاب کنید.");
+            return;
+        }
+        onSaveItemLayout(itemKey, { 
+            mainX: targetCell.mainX, 
+            mainY: targetCell.mainY, 
+            mainW: currentSelectedWMain, 
+            mainH: currentSelectedHMain 
+        });
+        onClose();
+    };
+
+    const occupancyMap = useMemo(() => {
         const map = Array(gridConfig.mainRows).fill(null).map(() => Array(gridConfig.mainCols).fill(null));
         (otherItemsLayout || []).forEach(item => {
+            if (item.i === itemKey) return; // خود آیتم فعلی را در نظر نگیر
             const startXMain = Math.floor(item.x / gridConfig.subdivisionFactorW);
-            const startYMain = Math.floor(item.y / gridConfig.subdivisionFactorH);
-            const itemWMain = Math.ceil(item.w / gridConfig.subdivisionFactorW);
-            const itemHMain = Math.ceil(item.h / gridConfig.subdivisionFactorH);
+            const startYMain = Math.floor(item.y / gridConfig.subdivisionFactorH); // تصحیح شده
+            const itemWMainNet = Math.max(1, Math.round(item.w / gridConfig.subdivisionFactorW));
+            const itemHMainNet = Math.max(1, Math.round(item.h / gridConfig.subdivisionFactorH)); // تصحیح شده
 
-            for (let r = startYMain; r < startYMain + itemHMain && r < gridConfig.mainRows; r++) {
-                for (let c = startXMain; c < startXMain + itemWMain && c < gridConfig.mainCols; c++) {
+            for (let r = startYMain; r < startYMain + itemHMainNet && r < gridConfig.mainRows; r++) {
+                for (let c = startXMain; c < startXMain + itemWMainNet && c < gridConfig.mainCols; c++) {
                     if (r >= 0 && c >= 0) {
-                         map[r][c] = item.i; // ذخیره کلید آیتمی که سلول را اشغال کرده
+                         if (!map[r][c]) map[r][c] = {key: item.i, label: (dashboardElementsConfig.find(el => el.key === item.i)?.label || item.i)};
                     }
                 }
             }
         });
         return map;
-    }, [otherItemsLayout, gridConfig]);
+     }, [otherItemsLayout, gridConfig, itemKey, dashboardElementsConfig]);
+
+    const selectionPromptText = `سلول شروع را برای المان "${itemConfig.label}" با اندازه ${selectedSizeConfig.label} انتخاب کنید:`;
+    
+    // ابعاد پیش‌نمایش اندازه
+    const previewBoxWidth = currentSelectedWMain * 25 + (currentSelectedWMain -1) * 3; // 25px for cell, 3px for gap
+    const previewBoxHeight = currentSelectedHMain * 25 + (currentSelectedHMain -1) * 3;
 
 
     return (
         <div
-            className="modal-overlay generic-modal-overlay"
+            className="modal-overlay generic-modal-overlay item-layout-modal-overlay" // کلاس خاص برای استایل‌دهی بهتر
             onClick={onClose}
         >
             <div
-                className="modal-content generic-modal-content"
-                style={{ maxWidth: '480px' }} // کمی بزرگتر برای گرید و انتخاب سایز
+                className="modal-content generic-modal-content item-layout-settings-modal-content"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-header">
@@ -98,93 +119,118 @@ const ItemLayoutPanelSettingsModal = ({
                     <button onClick={onClose} className="modal-close-button" type="button">&times;</button>
                 </div>
                 <div className="modal-body">
-                    <div style={{ marginBottom: '20px', textAlign: 'right' }}>
-                        <strong>انتخاب اندازه (عرضxارتفاع):</strong>
-                        <div style={{ marginTop: '5px' }}>
-                            {availableSizes.map(s => (
-                                <label key={s} style={{ marginRight: '15px', display: 'inline-block', cursor: 'pointer' }}>
-                                    <input
-                                        type="radio"
-                                        name="itemSizeSelection"
-                                        value={s}
-                                        checked={selectedSize === s}
-                                        onChange={(e) => setSelectedSize(e.target.value)}
-                                        style={{ marginLeft: '5px' }}
-                                    /> {s}
+                    <div className="layout-modal-section">
+                        <strong>انتخاب اندازه (عرض × ارتفاع):</strong>
+                        <div className="size-options-container">
+                            {AVAILABLE_SIZES.map(sizeOpt => (
+                                <label key={sizeOpt.id} className={`size-option-label ${selectedSizeId === sizeOpt.id ? 'selected' : ''}`}>
+                                    <input 
+                                      type="radio" 
+                                      name="itemSizeSelection" 
+                                      value={sizeOpt.id} 
+                                      checked={selectedSizeId === sizeOpt.id} 
+                                      onChange={(e) => setSelectedSizeId(e.target.value)} 
+                                    /> 
+                                    {sizeOpt.label}
                                 </label>
                             ))}
                         </div>
+                        <div className="size-preview-container">
+                            <p>پیش‌نمایش اندازه:</p>
+                            <div className="size-preview-box" style={{ width: `${previewBoxWidth}px`, height: `${previewBoxHeight}px`}}>
+                                {selectedSizeConfig.label}
+                            </div>
+                        </div>
                     </div>
-                    <p style={{ textAlign: 'center', marginBottom: '10px' }}>سلول شروع (بالا-راست در نمایش) را انتخاب کنید:</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridConfig.mainCols}, 1fr)`, gap: '5px', direction: 'ltr', border: '1px solid #eee', padding: '5px', marginBottom: '15px' }}>
-                        {Array.from({ length: gridConfig.mainRows * gridConfig.mainCols }).map((_, index) => {
-                            const logicalRow = Math.floor(index / gridConfig.mainCols); // Y (0-indexed)
-                            const logicalColLtr = index % gridConfig.mainCols;    // X (0-indexed, LTR)
-                            
-                            // شماره گذاری بصری از بالا-راست (۱ تا ۱۶)
-                            // برای نمایش RTL، ستون‌ها را معکوس می‌کنیم
-                            const visualColRtl = gridConfig.mainCols - 1 - logicalColLtr;
-                            const visualCellNumber = logicalRow * gridConfig.mainCols + visualColRtl + 1;
-                            
-                            const isSelected = targetCell.mainX === logicalColLtr && targetCell.mainY === logicalRow;
-                            
-                            // بررسی اینکه آیا سلول شروع فعلی آیتم این سلول است
-                            const isCurrentItemStartCell = currentItemLayout &&
-                                Math.floor(currentItemLayout.x / gridConfig.subdivisionFactorW) === logicalColLtr &&
-                                Math.floor(currentItemLayout.y / gridConfig.subdivisionFactorH) === logicalRow;
 
-                            // بررسی اشغال بودن توسط دیگران
-                            const occupyingItemKey = occupiedByOtherMap[logicalRow][logicalColLtr];
-                            const isOccupiedByOther = occupyingItemKey && occupyingItemKey !== itemKey;
+                    <div className="layout-modal-section">
+                      <strong>{selectionPromptText}</strong>
+                      <div className="layout-modal-grid-container" style={{gridTemplateColumns: `repeat(${gridConfig.mainCols}, 1fr)`}}>
+                          {Array.from({ length: gridConfig.mainRows * gridConfig.mainCols }).map((_, index) => {
+                              const logicalRow = Math.floor(index / gridConfig.mainCols); // Y
+                              const logicalColLtr = index % gridConfig.mainCols; // X (از چپ به راست برای منطق)
+                              // برای نمایش بصری در RTL، ستون‌ها معکوس می‌شوند اما منطق X ثابت است
+                              const visualColForNumbering = gridConfig.mainCols - 1 - logicalColLtr; 
+                              const visualCellNumber = logicalRow * gridConfig.mainCols + visualColForNumbering + 1;
 
+                              const isSelectedAsTarget = targetCell.mainX === logicalColLtr && targetCell.mainY === logicalRow;
+                              
+                              let cellState = 'available';
+                              let occupyingItemLabel = '';
+                              let canPlaceHere = true;
 
-                            let cellBgColor = '#f0f0f0'; // Default
-                            if (isCurrentItemStartCell) cellBgColor = '#d4edda'; // Light green for current item's start
-                            if (isOccupiedByOther) cellBgColor = '#f8d7da'; // Light red for occupied by other
-                            if (isSelected) cellBgColor = '#cfe2ff'; // Light blue for selected
+                              // بررسی اینکه آیا اندازه انتخابی در این سلول شروع جا می‌شود
+                              if (logicalColLtr + currentSelectedWMain > gridConfig.mainCols || logicalRow + currentSelectedHMain > gridConfig.mainRows) {
+                                  canPlaceHere = false; cellState = 'invalid';
+                              } else {
+                                  // بررسی تداخل با سایر آیتم‌ها
+                                  for (let rOffset = 0; rOffset < currentSelectedHMain; rOffset++) {
+                                      for (let cOffset = 0; cOffset < currentSelectedWMain; cOffset++) {
+                                          const checkR = logicalRow + rOffset; 
+                                          const checkC = logicalColLtr + cOffset;
+                                          if (occupancyMap[checkR]?.[checkC] && occupancyMap[checkR][checkC].key !== itemKey) {
+                                              cellState = 'occupied'; 
+                                              occupyingItemLabel = occupancyMap[checkR][checkC].label; 
+                                              break;
+                                          }
+                                      } 
+                                      if (cellState === 'occupied') break;
+                                  }
+                              }
+                              
+                              // بررسی اینکه آیا این سلول شروع، مکان فعلی آیتم با اندازه فعلی انتخاب شده است
+                              const currentItemActualMainW = currentItemLayout ? Math.max(1, Math.round(currentItemLayout.w / gridConfig.subdivisionFactorW)) : 0;
+                              const currentItemActualMainH = currentItemLayout ? Math.max(1, Math.round(currentItemLayout.h / gridConfig.subdivisionFactorH)) : 0;
 
-                            return (
-                                <button
-                                    key={`${logicalRow}-${logicalColLtr}`}
-                                    onClick={() => {
-                                        if (isOccupiedByOther) {
-                                            if (!window.confirm(`این سلول توسط "${DASHBOARD_ELEMENTS_CONFIG.find(el => el.key === occupyingItemKey)?.label || 'المان دیگر'}" اشغال شده است. آیا می‌خواهید جایگزین کنید؟ (این عمل ممکن است نیاز به جابجایی المان دیگر داشته باشد)`)) {
-                                                return;
-                                            }
-                                        }
-                                        setTargetCell({ mainX: logicalColLtr, mainY: logicalRow });
-                                    }}
-                                    style={{
-                                        height: '50px',
-                                        border: isSelected ? '2px solid #007bff' : '1px solid #ccc',
-                                        background: cellBgColor,
-                                        display: 'flex',
-                                        flexDirection: 'column', // برای نمایش شماره بالا، و شاید آیکون آیتم اشغال کننده
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8em',
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}
-                                    title={`سلول منطقی: Y=${logicalRow}, X=${logicalColLtr}`}
-                                >
-                                   <span style={{position: 'absolute', top: '2px', right: '2px', fontSize: '10px', color: '#888'}}>{visualCellNumber}</span>
-                                   {isOccupiedByOther && <FaLock size="0.8em" color="#dc3545" title={`اشغال شده توسط: ${occupyingItemKey}`} />}
-                                   {isCurrentItemStartCell && !isOccupiedByOther && <FaArchive size="0.8em" color="#198754" title="مکان فعلی این آیتم"/>}
+                              if (currentItemLayout && 
+                                  Math.floor(currentItemLayout.x / gridConfig.subdivisionFactorW) === logicalColLtr && 
+                                  Math.floor(currentItemLayout.y / gridConfig.subdivisionFactorH) === logicalRow && 
+                                  currentItemActualMainW === currentSelectedWMain && 
+                                  currentItemActualMainH === currentSelectedHMain) {
+                                  cellState = 'current';
+                              }
 
-                                </button>
-                            );
-                        })}
+                              if (isSelectedAsTarget && cellState !== 'occupied' && cellState !== 'invalid' && cellState !== 'current') cellState = 'selected';
+
+                              return (
+                                  <button
+                                      key={`${logicalRow}-${logicalColLtr}`}
+                                      onClick={() => { 
+                                          if (!canPlaceHere) { 
+                                              alert("اندازه انتخاب شده در این محل جا نمی‌شود یا خارج از محدوده گرید است."); 
+                                              return; 
+                                          } 
+                                          if (cellState === 'occupied') { 
+                                              if (!window.confirm(`این محل با آیتم "${occupyingItemLabel}" تداخل دارد. آیا می‌خواهید المان فعلی اینجا قرار گیرد؟ (توجه: این عمل ممکن است نیاز به جابجایی المان دیگر داشته باشد یا چیدمان به هم بریزد)`)) 
+                                              return; 
+                                          } 
+                                          setTargetCell({ mainX: logicalColLtr, mainY: logicalRow }); 
+                                      }}
+                                      disabled={cellState === 'invalid'}
+                                      className={`grid-cell-button cell-state-${cellState}`}
+                                      title={
+                                        cellState === 'invalid' ? 'خارج از محدوده یا اندازه نامعتبر' :
+                                        cellState === 'occupied' ? `اشغال شده توسط: ${occupyingItemLabel}` :
+                                        cellState === 'current' ? 'مکان فعلی آیتم' :
+                                        `سلول شروع: سطر ${logicalRow + 1}, ستون ${visualColForNumbering + 1}`
+                                      }
+                                  >
+                                    <span className="grid-cell-number">{visualCellNumber.toLocaleString('fa')}</span>
+                                    {cellState === 'occupied' && <FaLock className="grid-cell-icon" />}
+                                    {cellState === 'current' && <FaCheck className="grid-cell-icon" />}
+                                  </button>
+                              );
+                          })}
+                      </div>
                     </div>
-                    <div style={{textAlign: 'left', marginTop: '20px'}}>
-                        <button onClick={onClose} style={{ width: 'auto', padding: '8px 15px', marginLeft:'10px' }} className="dashboard-action-toggle-button">انصراف</button>
-                        <button onClick={handleSave} style={{ width: 'auto', padding: '8px 15px' }} className="dashboard-customize-button" disabled={!targetCell}>ذخیره</button>
-                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button onClick={onClose} className="action-button secondary" type="button">انصراف</button>
+                    <button onClick={handleSave} className="action-button primary" type="button" disabled={targetCell.mainX == null || targetCell.mainY == null}>ذخیره چیدمان</button>
                 </div>
             </div>
         </div>
     );
 };
 
-export default ItemLayoutPanelSettingsModal; // اگر در فایل جداگانه است
+export default ItemLayoutPanelSettingsModal;
