@@ -1,94 +1,59 @@
 /* frontend/src/components/JalaliCalendar.css */
 .jalali-calendar-widget {
   width: 100%;
-  height: 100%;
-  padding: 6px; /* کاهش بیشتر padding برای ویجت کوچکتر */
+  height: 100%; /* اطمینان از اینکه ارتفاع کامل را می‌گیرد */
+  padding: clamp(8px, 1.5vw, 10px); /* کاهش padding برای فضای بیشتر محتوا */
   box-sizing: border-box;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07); /* سایه کمی واضح‌تر */
   display: flex;
   flex-direction: column;
   font-family: 'Vazirmatn FD', 'Vazirmatn', sans-serif;
-  overflow: hidden; /* جلوگیری از بیرون زدن محتوا در صورت کوچک شدن بیش از حد */
+  /* overflow: hidden; */ /* <<<< این را موقتا کامنت یا حذف کنید برای تست >>>> */
+  /* اگر بعد از تست، محتوا بیرون زدگی نداشت، می‌توانید برگردانید */
+  border: 1px solid #e9edf0;
 }
 
+/* ... (سایر استایل‌های هدر و روزهای هفته بدون تغییر زیاد از نسخه قبلی شما) ... */
 .calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px; /* کاهش بیشتر فاصله */
-  padding: 0 2px;
+  margin-bottom: clamp(5px, 1vw, 8px); /* کاهش فاصله */
+  padding: 0 clamp(2px, 0.5vw, 4px);
+  flex-shrink: 0; /* هدر نباید کوچک شود */
 }
-
-.month-year-container {
-  display: flex;
-  align-items: baseline;
-  gap: 3px; /* کاهش بیشتر فاصله */
-  text-align: center;
-  flex-grow: 1;
-  justify-content: center;
-}
-
-.month-name {
-  font-size: clamp(0.8rem, 2.8vw, 1rem); /* فونت کوچکتر */
-  font-weight: 500;
-  color: #1f2937;
-}
-
-
-.year-name {
-  font-size: clamp(0.65rem, 2vw, 0.75rem); /* فونت کوچکتر */
-  font-weight: 400;
-  color: #4b5563;
-}
-
-.nav-button {
-  background: none;
-  border: none;
-  color: #4b5563;
-  cursor: pointer;
-  padding: 4px; /* کاهش بیشتر padding */
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease-in-out;
-}
-.nav-button svg {
-  font-size: clamp(0.7rem, 2.5vw, 0.9rem); /* آیکون کوچکتر */
-}
-.nav-button:hover {
-  background-color: #f3f4f6;
-}
-
 .days-of-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   width: 100%;
-  margin-bottom: 3px; /* کاهش بیشتر فاصله */
-  font-weight: 500;
-  color: #6b7280;
-  font-size: clamp(0.55rem, 1.8vw, 0.6rem); /* فونت کوچکتر */
-  padding-bottom: 3px; /* کاهش بیشتر padding */
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: clamp(4px, 1vw, 6px);
+  font-weight: 600; 
+  color: #4a5568;   
+  font-size: clamp(0.65rem, 1.8vw, 0.7rem); /* کمی کوچکتر کردن برای جا شدن بهتر */
+  padding-bottom: clamp(4px, 0.8vw, 5px);
+  border-bottom: 1px solid #e0e6ed;
+  flex-shrink: 0; /* بخش روزهای هفته نباید کوچک شود */
+}
+.day-name {
+  padding: clamp(2px, 0.5vw, 4px) 0;
+  line-height: 1.2;
 }
 
-.day-name {
-  padding: 2px 0; /* کاهش بیشتر padding */
-  line-height: 1;
-}
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr; /* باعث می‌شود ارتفاع ردیف‌ها برابر باشد */
+  /* grid-auto-rows: 1fr; */ /* این باعث می‌شود ارتفاع ردیف‌ها برابر باشد و ممکن است مشکل‌ساز شود */
+  grid-auto-rows: minmax(clamp(26px, 6.5vw, 36px), auto); /* ارتفاع خودکار و حداقل برای سلول‌ها */
   text-align: center;
   width: 100%;
-  flex-grow: 1;
-  gap: clamp(1px, 0.3vw, 2px); /* کاهش بیشتر gap */
-  /* min-height حذف شد تا ارتفاع توسط flex-grow و ارتفاع کلی ویجت کنترل شود */
+  flex-grow: 1; /* گرید فضای موجود را پر کند */
+  gap: clamp(2px, 0.5vw, 4px);
+  /* اطمینان از اینکه گرید ارتفاع کافی برای نمایش ۶ ردیف (حداکثر نیاز) دارد */
+  /* این بخش را می‌توان با JavaScript پویا کرد یا یک min-height مناسب داد */
 }
 
 .day-cell {
@@ -96,177 +61,173 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: 6px; /* گردی بیشتر برای ظاهر مدرن‌تر */
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  font-size: clamp(0.75rem, 3.2vw, 1rem); /* فونت کمی بزرگتر برای خوانایی بهتر اعداد */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+  font-size: clamp(0.8rem, 2.8vw, 1rem); /* حفظ اندازه فونت اعداد */
   color: #374151;
-  aspect-ratio: 1 / 1; /* مربع کردن سلول‌ها */
-  border: 1px solid transparent; /* برای انیمیشن بهتر */
-  line-height: 1; /* برای جلوگیری از مشکلات ارتفاع */
+  border: 1px solid transparent;
+  line-height: 1;
+  font-weight: 600; 
+  /* aspect-ratio: 1 / 1; */ /* <<<< این را موقتا کامنت کنید برای تست، ممکن است ارتفاع را محدود کند >>>> */
+}
+/* ... (سایر استایل‌های day-cell و حالات آن بدون تغییر زیاد) ... */
+.day-cell:not(.empty) {
+  background-color: #f8f9fa;
+  border: 1px solid #e9edf0;
 }
 .day-cell:not(.empty):not(.today):hover {
-  background-color: #f0f7ff; /* آبی بسیار روشن */
-  color: #0052cc;
-  border-color: #cce0ff;
+  background-color: #e2e8f0;
+  color: #1a202c;
+  border-color: #cbd5e0;
+  transform: scale(1.05);
 }
-
 .day-cell.empty {
   background-color: transparent;
   cursor: default;
   pointer-events: none;
+  border: none;
 }
-
 .day-cell .day-number {
   position: relative;
   z-index: 1;
-  padding: 2px; /* ایجاد کمی فاصله برای نشانگر رویداد */
+  padding: 2px;
 }
-
 .day-cell.today {
   background-color: #007bff;
   color: white;
-  font-weight: bold;
+  font-weight: 700;
   border: 1px solid #0056b3;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 .day-cell.today:hover {
   background-color: #0069d9;
   border-color: #004085;
 }
-
 .day-cell.official-holiday .day-number {
-  color: #dc3545; /* رنگ قرمز برای تعطیلات رسمی */
+  color: #e74c3c;
+  font-weight: 700;
 }
 .day-cell.today.official-holiday .day-number {
-  color: #fff; /* اگر امروز تعطیل رسمی بود، متن سفید بماند */
+  color: #fff; 
 }
-
-
 .day-cell.has-event .day-number::after {
   content: '';
   position: absolute;
-  bottom: clamp(1px, 0.4vw, 2px); /* تنظیم موقعیت نشانگر */
+  bottom: clamp(2px, 0.6vw, 3px);
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(2.5px, 0.6vw, 3.5px); /* نشانگر کوچکتر */
-  height: clamp(2.5px, 0.6vw, 3.5px);
-  background-color: #dc3545;
+  width: clamp(3.5px, 0.9vw, 4.5px);
+  height: clamp(3.5px, 0.9vw, 4.5px);
+  background-color: #e74c3c;
   border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
 }
 .day-cell.today.has-event .day-number::after {
-  background-color: #ffffff; /* نشانگر سفید برای روز جاری */
-}
-.day-cell.official-holiday.has-event .day-number::after {
-    background-color: #dc3545; /* برای اینکه با رنگ متن تعطیل رسمی همخوانی داشته باشد */
+  background-color: #ffffff;
 }
 
 
 .month-events-list {
-  margin-top: 4px; /* کاهش بیشتر فاصله */
-  padding-top: 4px;
-  border-top: 1px solid #f0f0f0;
-  font-size: clamp(0.5rem, 1.5vw, 0.6rem); /* فونت خیلی کوچک برای لیست در ویجت فشرده */
-  max-height: 35px; /* کاهش بیشتر ارتفاع */
+  margin-top: clamp(5px, 1vw, 8px); /* فاصله مناسب */
+  padding-top: clamp(5px, 1vw, 8px);
+  border-top: 1px solid #e0e6ed;
+  font-size: clamp(0.6rem, 1.6vw, 0.7rem); /* کمی بزرگتر کردن فونت رویدادها */
+  max-height: clamp(30px, 8vw, 45px); /* <<<< کاهش ارتفاع لیست رویدادها برای دادن فضای بیشتر به گرید >>>> */
+  /* یا اگر نمیخواهید لیست رویدادها اصلا نمایش داده شود در برخی استایل‌ها: */
+  /* display: none; */ /* برای استایل‌هایی که لیست رویداد ندارند */
   overflow-y: auto;
-  color: #333;
+  color: #495057;
   scrollbar-width: thin;
-  scrollbar-color: #ccc #f0f0f0;
+  scrollbar-color: #bdc3c7 #e9ecef;
+  padding-right: 5px;
+  flex-shrink: 0; /* لیست رویدادها نباید بیش از حد کوچک شود */
 }
-.month-events-list::-webkit-scrollbar { width: 3px; } /* اسکرول بار باریک تر */
-.month-events-list::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 2px; }
-.month-events-list::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 2px; }
+/* ... (استایل اسکرول بار وب‌کیت بدون تغییر) ... */
+.month-events-list::-webkit-scrollbar { width: 4px; } 
+.month-events-list::-webkit-scrollbar-track { background: #e9ecef; border-radius: 2px; }
+.month-events-list::-webkit-scrollbar-thumb { background-color: #bdc3c7; border-radius: 2px; }
+
 
 .month-events-list h4 {
   margin-top: 0;
-  margin-bottom: 4px;
-  font-size: clamp(0.6rem, 1.8vw, 0.65rem); /* فونت کوچکتر */
-  color: #111;
-  font-weight: 500;
+  margin-bottom: 5px; /* کاهش فاصله */
+  font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+  color: #2c3e50;
+  font-weight: 600;
 }
 .month-events-list ul { list-style: none; padding: 0; margin: 0; }
 .month-events-list li {
-  padding: 1px; /* کاهش padding */
-  border-bottom: 1px solid #f9f9f9;
+  padding: 2px 0; /* کاهش padding */
+  border-bottom: 1px solid #f1f3f5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* ... (سایر استایل‌های لیست رویدادها و tooltip و Themes بدون تغییر زیاد) ... */
+
 .month-events-list li:last-child { border-bottom: none; }
 .month-events-list .event-day {
-  font-weight: 500;
-  color: #000;
-  margin-left: 2px; /* کاهش بیشتر فاصله */
+  font-weight: 600;
+  color: #34495e;
+  margin-left: 4px;
   display: inline-block;
-  min-width: 10px; /* کاهش بیشتر عرض */
+  min-width: 15px;
 }
 .month-events-list .official-holiday-text,
 .month-events-list .official-holiday-text .event-day {
-  color: #c82333; /* قرمز تیره‌تر برای تعطیلات در لیست */
+  color: #c0392b;
 }
 
 
 .day-tooltip {
   position: absolute;
-  top: -35px;
+  top: -40px;
   left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
+  transform: translateX(-50%) translateY(-5px);
+  background-color: #343a40;
   color: #fff;
-  padding: 3px 6px; /* کاهش بیشتر padding */
-  border-radius: 4px;
-  font-size: 0.7rem; /* تنظیم فونت */
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
   z-index: 100;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  opacity: 0;
+  animation: tooltipFadeIn 0.2s 0.05s forwards;
+}
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(0px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(-5px); }
 }
 .day-tooltip::after {
   content: "";
   position: absolute;
   top: 100%;
   left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
+  margin-left: -6px;
+  border-width: 6px;
   border-style: solid;
-  border-color: #333 transparent transparent transparent;
+  border-color: #343a40 transparent transparent transparent;
 }
 
 /* Style Variations */
-/* مدل فشرده (compact) */
-.jalali-calendar-widget.calendar-style-compact .calendar-header {
-  margin-bottom: 4px;
-}
-.jalali-calendar-widget.calendar-style-compact .month-year-container {
-  gap: 2px;
-}
-.jalali-calendar-widget.calendar-style-compact .month-name {
-  font-size: clamp(0.7rem, 2.5vw, 0.9rem);
-}
-.jalali-calendar-widget.calendar-style-compact .year-name {
-  font-size: clamp(0.6rem, 1.8vw, 0.7rem);
-}
-.jalali-calendar-widget.calendar-style-compact .nav-button svg {
-  font-size: clamp(0.6rem, 2.2vw, 0.8rem);
-}
 .jalali-calendar-widget.calendar-style-compact .days-of-week {
-  font-size: clamp(0.5rem, 1.6vw, 0.55rem);
-  padding-bottom: 2px;
-  margin-bottom: 2px;
+  font-size: clamp(0.5rem, 1.6vw, 0.55rem); /* کوچکتر برای کامپکت */
 }
 .jalali-calendar-widget.calendar-style-compact .day-cell {
-  font-size: clamp(0.7rem, 3vw, 0.9rem);
+  font-size: clamp(0.7rem, 2.8vw, 0.9rem); /* اعداد کمی کوچکتر در کامپکت */
 }
 .jalali-calendar-widget.calendar-style-compact .month-events-list {
-  display: none; /* No event list in compact style */
+  display: none; 
 }
 
-/* مدل فقط جدول روزها (minimal_grid) */
 .jalali-calendar-widget.calendar-style-minimal_grid .calendar-header,
 .jalali-calendar-widget.calendar-style-minimal_grid .month-events-list {
   display: none;
 }
 .jalali-calendar-widget.calendar-style-minimal_grid .days-of-week {
   font-size: clamp(0.5rem, 1.5vw, 0.5rem);
-  padding-bottom: 1px;
   margin-bottom: 2px;
 }
 .jalali-calendar-widget.calendar-style-minimal_grid .day-cell {
@@ -275,65 +236,109 @@
 }
 
 /* --- Theme: Light Minimal --- */
+/* ... (بدون تغییر از کد قبلی شما، مگر اینکه بخواهید با base هماهنگ‌تر شود) ... */
 .jalali-calendar-widget.calendar-theme-light-minimal {
-  background-color: #f8f9fa; /* Very light grey */
-  color: #343a40; /* Dark grey text */
-  border: 1px solid #dee2e6; /* Light border */
-  box-shadow: none;
+  background-color: #f8f9fa; color: #343a40; border: 1px solid #dee2e6; box-shadow: none;
 }
 .jalali-calendar-widget.calendar-theme-light-minimal .month-name,
 .jalali-calendar-widget.calendar-theme-light-minimal .year-name,
-.jalali-calendar-widget.calendar-theme-light-minimal .nav-button {
-  color: #495057;
-}
+.jalali-calendar-widget.calendar-theme-light-minimal .nav-button { color: #495057; }
 .jalali-calendar-widget.calendar-theme-light-minimal .days-of-week { color: #6c757d; border-bottom-color: #e9ecef;}
+.jalali-calendar-widget.calendar-theme-light-minimal .day-cell:not(.empty) { background-color: #fff; border-color: #f0f0f0;}
 .jalali-calendar-widget.calendar-theme-light-minimal .day-cell:not(.empty):not(.today):hover { background-color: #e9ecef; }
 .jalali-calendar-widget.calendar-theme-light-minimal .day-cell.today { background-color: #6c757d; color: #fff; border-color: #5a6268; }
 .jalali-calendar-widget.calendar-theme-light-minimal .day-cell.has-event .day-number::after { background-color: #adb5bd; }
-.jalali-calendar-widget.calendar-theme-light-minimal .day-cell.official-holiday .day-number { color: #b02a37; } /* Darker red for better contrast */
+.jalali-calendar-widget.calendar-theme-light-minimal .day-cell.official-holiday .day-number { color: #b02a37; }
 
 /* --- Theme: Dark Minimal --- */
 .jalali-calendar-widget.calendar-theme-dark-minimal {
-  background-color: #212529; /* Very dark grey / soft black */
-  color: #f8f9fa; /* Light text */
-  border: 1px solid #495057; /* Darker border */
-  box-shadow: none;
+  background-color: #212529; color: #f8f9fa; border: 1px solid #495057; box-shadow: none;
 }
 .jalali-calendar-widget.calendar-theme-dark-minimal .month-name,
 .jalali-calendar-widget.calendar-theme-dark-minimal .year-name,
-.jalali-calendar-widget.calendar-theme-dark-minimal .nav-button {
-  color: #e9ecef;
-}
+.jalali-calendar-widget.calendar-theme-dark-minimal .nav-button { color: #e9ecef; }
 .jalali-calendar-widget.calendar-theme-dark-minimal .days-of-week { color: #adb5bd; border-bottom-color: #495057;}
 .jalali-calendar-widget.calendar-theme-dark-minimal .day-cell { color: #ced4da; }
-.jalali-calendar-widget.calendar-theme-dark-minimal .day-cell:not(.empty):not(.today):hover { background-color: #343a40; color: #f8f9fa; }
+.jalali-calendar-widget.calendar-theme-dark-minimal .day-cell:not(.empty) { background-color: #343a40; border-color: #495057;}
+.jalali-calendar-widget.calendar-theme-dark-minimal .day-cell:not(.empty):not(.today):hover { background-color: #495057; color: #f8f9fa; }
 .jalali-calendar-widget.calendar-theme-dark-minimal .day-cell.today { background-color: #6c757d; color: #fff; border-color: #5a6268; }
 .jalali-calendar-widget.calendar-theme-dark-minimal .day-cell.has-event .day-number::after { background-color: #ced4da; }
-.jalali-calendar-widget.calendar-theme-dark-minimal .day-cell.official-holiday .day-number { color: #e6626e; } /* Lighter red for dark theme */
+.jalali-calendar-widget.calendar-theme-dark-minimal .day-cell.official-holiday .day-number { color: #e6626e; }
 .jalali-calendar-widget.calendar-theme-dark-minimal .day-cell.today.official-holiday .day-number { color: #fff; }
-
 
 /* --- Theme: Compact Accent --- */
 .jalali-calendar-widget.calendar-theme-compact-accent {
-  background-color: #e0f2f7; /* Light cyan/blue */
-  color: #004d40; /* Dark teal */
-  border: 1px solid #77c7d7;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background-color: #e0f2f7; color: #004d40; border: 1px solid #77c7d7; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 .jalali-calendar-widget.calendar-theme-compact-accent .month-name,
 .jalali-calendar-widget.calendar-theme-compact-accent .year-name,
-.jalali-calendar-widget.calendar-theme-compact-accent .nav-button {
-  color: #006064;
-}
+.jalali-calendar-widget.calendar-theme-compact-accent .nav-button { color: #006064; }
 .jalali-calendar-widget.calendar-theme-compact-accent .days-of-week { color: #00796b; border-bottom-color: #b2ebf2;}
+.jalali-calendar-widget.calendar-theme-compact-accent .day-cell:not(.empty) { background-color: #fff; border-color: #b2ebf2;}
 .jalali-calendar-widget.calendar-theme-compact-accent .day-cell:not(.empty):not(.today):hover { background-color: #b2ebf2; }
 .jalali-calendar-widget.calendar-theme-compact-accent .day-cell.today { background-color: #00796b; color: #fff; border-color: #004d40; }
 .jalali-calendar-widget.calendar-theme-compact-accent .day-cell.has-event .day-number::after { background-color: #004d40; }
-.jalali-calendar-widget.calendar-theme-compact-accent .day-cell.official-holiday .day-number { color: #9c27b0; } /* Accent purple for holidays */
+.jalali-calendar-widget.calendar-theme-compact-accent .day-cell.official-holiday .day-number { color: #9c27b0; }
 .jalali-calendar-widget.calendar-theme-compact-accent .day-cell.today.official-holiday .day-number { color: #fff; }
 
-
-/* Ensure the main widget class has priority for themes if styleId is also present */
 .jalali-calendar-widget[class*="calendar-theme-"] {
   /* Potentially override some base styleId styles if needed */
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between; /* این فضا را بین دکمه‌ها تقسیم می‌کند */
+  align-items: center;
+  margin-bottom: clamp(6px, 1.5vw, 10px);
+  padding: 0 clamp(2px, 0.5vw, 4px);
+  flex-shrink: 0;
+}
+
+.month-year-container {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(4px, 1vw, 6px);
+  text-align: center;
+  /* flex-grow: 1; /* حذف این تا دکمه‌ها فضای بیشتری بگیرند */
+  justify-content: center;
+  margin: 0 auto; /* برای مرکزیت بهتر اگر flex-grow حذف شود */
+}
+
+.nav-button {
+  /* ... (استایل‌های قبلی) ... */
+  flex-shrink: 0; /* جلوگیری از کوچک شدن دکمه‌ها */
+}
+
+/* استایل جدید برای دکمه "امروز" */
+.nav-button.today-button svg {
+  font-size: clamp(0.75rem, 2.5vw, 0.9rem); /* اندازه آیکون ممکن است کمی متفاوت باشد */
+  color: #007bff; /* رنگ متمایز برای دکمه امروز */
+}
+.nav-button.today-button:hover svg {
+  color: #0056b3;
+}
+.nav-button.today-button {
+  /* font-size: clamp(0.7rem, 2.2vw, 0.85rem); /* تنظیم اندازه فونت متن */
+  padding: clamp(4px, 0.8vw, 6px) clamp(6px, 1.2vw, 10px); /* padding افقی بیشتر برای متن */
+  color: #007bff; /* رنگ متن دکمه */
+  /* border: 1px solid #007bff; /* بوردر اختیاری */
+  /* border-radius: 5px; /* گردی کمتر اگر بوردر دارد */
+  /* background-color: transparent; */ /* یا یک پس‌زمینه ملایم */
+  /* width: auto; /* عرض خودکار بر اساس محتوا */
+  /* min-width: 60px; /* حداقل عرض برای خوانایی */
+  /* flex-grow: 0; */ /* برای اینکه فضای اضافی نگیرد */
+  /* margin: 0 5px; */ /* کمی فاصله از دکمه‌های دیگر */
+}
+.nav-button.today-button:hover {
+  background-color: #e7f3ff; /* رنگ هاور ملایم */
+  /* color: #0056b3; */
+}
+
+/* ممکن است نیاز باشد flex-grow از month-year-container حذف شود 
+   و margin: 0 auto به آن داده شود تا دکمه "روز جاری" فضای کافی داشته باشد.
+   این تغییر در نسخه JSX بالا اعمال شده است.
+*/
+.month-year-container {
+  /* ... */
+  /* flex-grow: 1; */ /* این را کامنت یا حذف کنید اگر دکمه امروز فضای کافی ندارد */
+  margin: 0 auto; /* برای مرکزیت ماه و سال */
 }
