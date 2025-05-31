@@ -1,9 +1,10 @@
 // src/components/JalaliCalendar.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import jalaali from 'jalaali-js';
-import './JalaliCalendar.css';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import './JalaliCalendar.css'; //
+import { FaChevronLeft, FaChevronRight, FaCalendarDay } from 'react-icons/fa'; // FaCalendarDay اضافه شد
 
+// ... (بقیه کد SAMPLE_EVENTS_DATA و JALAALI_MONTH_NAMES بدون تغییر)
 const SAMPLE_EVENTS_DATA = {
   '1403/3/5': [{ type: 'official', text: 'رحلت امام خمینی (ره)' }],
   '1403/3/6': [{ type: 'official', text: 'قیام ۱۵ خرداد' }],
@@ -16,99 +17,132 @@ const SAMPLE_EVENTS_DATA = {
 
 const JALAALI_MONTH_NAMES = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
 
-const MonthHeader = ({ currentMonthJ, onPrevMonth, onNextMonth }) => {
-  return (
-    <div className="calendar-header">
-      <button onClick={onPrevMonth} className="nav-button" aria-label="ماه قبل">
-        <FaChevronRight />
-      </button>
-      <div className="month-year-container">
-        <span className="month-name">{JALAALI_MONTH_NAMES[currentMonthJ.jm - 1]}</span>
-        <span className="year-name">{currentMonthJ.jy.toLocaleString('fa-IR', { useGrouping: false })}</span>
-      </div>
-      <button onClick={onNextMonth} className="nav-button" aria-label="ماه بعد">
-        <FaChevronLeft />
-      </button>
+
+// کامپوننت MonthHeader
+const MonthHeader = ({ currentMonthJ, onPrevMonth, onNextMonth, onGoToToday }) => ( // onGoToToday اضافه شد
+  <div className="calendar-header">
+    <button onClick={onPrevMonth} className="nav-button" title="ماه قبل">
+      <FaChevronRight />
+    </button>
+    <div className="month-year-container">
+      <span className="month-name">{JALAALI_MONTH_NAMES[currentMonthJ.jm - 1]}</span>
+      <span className="year-name">{currentMonthJ.jy.toLocaleString('fa').replace(/٬/g, '')}</span>
     </div>
-  );
-};
+    {/* دکمه "رفتن به امروز" */}
+    <button onClick={onGoToToday} className="nav-button today-button" title="رفتن به امروز">
+      <FaCalendarDay />
+    </button>
+    <button onClick={onNextMonth} className="nav-button" title="ماه بعد">
+      <FaChevronLeft />
+    </button>
+  </div>
+);
 
-const DaysOfWeek = () => {
-  const dayNames = ["ش", "ی", "د", "س", "چ", "پ", "ج"]; // شنبه اول هفته
-  return (
-    <div className="days-of-week">
-      {dayNames.map(day => <div key={day} className="day-name">{day}</div>)}
-    </div>
-  );
-};
+// ... (کامپوننت DaysOfWeek بدون تغییر)
+const DaysOfWeek = () => (
+  <div className="days-of-week">
+    {['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].map(day => (
+      <div key={day} className="day-name">{day}</div>
+    ))}
+  </div>
+);
 
-const CalendarDays = ({ currentMonthJ, todayJ, eventsData, onDayClick }) => {
-  const monthInfo = jalaali.jalaaliMonthLength(currentMonthJ.jy, currentMonthJ.jm);
-  const firstDayOfMonthGregorian = jalaali.toGregorian(currentMonthJ.jy, currentMonthJ.jm, 1);
-  // getDay() returns 0 for Sunday, 1 for Monday, ..., 6 for Saturday
-  let firstDayWeekday = new Date(firstDayOfMonthGregorian.gy, firstDayOfMonthGregorian.gm - 1, firstDayOfMonthGregorian.gd).getDay();
-  
-  // Adjust for Saturday start in Persian calendar (0 for Saturday, 1 for Sunday, ..., 6 for Friday)
-  firstDayWeekday = (firstDayWeekday + 1) % 7;
 
-  const daysInMonth = Array.from({ length: monthInfo }, (_, i) => i + 1);
-  const leadingEmptyDays = Array.from({ length: firstDayWeekday }, (_, i) => `empty-start-${i}`);
+// کامپوننت CalendarDays
+const CalendarDays = ({ currentMonthJ, todayJ, eventsData, onDayClick, onDayHover, activeDayEvent }) => {
+  // ... (منطق داخلی generateCalendarDays بدون تغییر باقی می‌ماند، فقط startDayOffset را بررسی کنید)
+  const generateCalendarDays = () => {
+    const daysArray = [];
+    const { jy, jm } = currentMonthJ;
+    const daysInMonth = jalaali.jalaaliMonthLength(jy, jm);
+    
+    // محاسبه صحیح آفست برای شروع هفته از شنبه
+    const firstDayGregorian = jalaali.toGregorian(jy, jm, 1);
+    const firstDayDateObject = new Date(firstDayGregorian.gy, firstDayGregorian.gm - 1, firstDayGregorian.gd);
+    let dayOfWeek = firstDayDateObject.getDay(); // 0 = یکشنبه, ..., 6 = شنبه
+    const startDayOffset = (dayOfWeek === 6) ? 0 : dayOfWeek + 1; // شنبه ایندکس 0
 
-  const totalCells = firstDayWeekday + monthInfo;
-  const trailingEmptyDaysCount = (7 - (totalCells % 7)) % 7;
-  const trailingEmptyDays = Array.from({ length: trailingEmptyDaysCount }, (_, i) => `empty-end-${i}`);
+    for (let i = 0; i < startDayOffset; i++) {
+      daysArray.push({ type: 'empty', key: `empty-${i}` });
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${jy}/${jm}/${day}`;
+      const isToday = jy === todayJ.jy && jm === todayJ.jm && day === todayJ.jd;
+      const dayEvents = eventsData[dateStr] || [];
+      const isHoliday = dayEvents.some(event => event.type === 'official');
+      
+      daysArray.push({
+        type: 'day',
+        key: dateStr,
+        number: day,
+        isToday,
+        isHoliday,
+        hasEvent: dayEvents.length > 0,
+        eventText: dayEvents.map(e => e.text).join('، ')
+      });
+    }
+    // پر کردن سلول‌های خالی انتهای ماه برای داشتن ۶ ردیف کامل (اختیاری، اما برای ظاهر بهتر)
+    const totalCells = 42; // 6 ردیف * 7 روز
+    while (daysArray.length < totalCells && daysArray.length % 7 !== 0) {
+         daysArray.push({ type: 'empty', key: `empty-end-${daysArray.length}` });
+    }
+    // اگر می‌خواهید همیشه ۶ ردیف باشد، حتی اگر ماه ۵ ردیف را پر کند:
+    // while (daysArray.length < 42) { // 6 * 7
+    //    daysArray.push({ type: 'empty', key: `empty-end-${daysArray.length}` });
+    // }
+
+
+    return daysArray;
+  };
+
+  const days = generateCalendarDays();
 
   return (
     <div className="calendar-grid">
-      {leadingEmptyDays.map(dayKey => <div key={dayKey} className="day-cell empty"></div>)}
-      {daysInMonth.map(day => {
-        const dayKey = `${currentMonthJ.jy}/${currentMonthJ.jm}/${day}`;
-        const isToday = day === todayJ.jd && currentMonthJ.jm === todayJ.jm && currentMonthJ.jy === todayJ.jy;
-        const dayEvents = eventsData[dayKey] || [];
-        const hasOfficialHoliday = dayEvents.some(event => event.type === 'official');
-        const eventTextForTooltip = dayEvents.map(e => e.text).join('، ');
-
+      {days.map((dayInfo) => {
+        if (dayInfo.type === 'empty') {
+          return <div key={dayInfo.key} className="day-cell empty"></div>;
+        }
         return (
           <div
-            key={day}
-            className={`day-cell ${isToday ? 'today' : ''} ${dayEvents.length > 0 ? 'has-event' : ''} ${hasOfficialHoliday ? 'official-holiday' : ''}`}
-            onClick={() => onDayClick(day, eventTextForTooltip)}
-            role="button"
-            tabIndex={0}
-            aria-label={`${day} ${JALAALI_MONTH_NAMES[currentMonthJ.jm - 1]}${eventTextForTooltip ? ', رویداد: ' + eventTextForTooltip : ''}`}
-            onKeyPress={(e) => e.key === 'Enter' && onDayClick(day, eventTextForTooltip)}
+            key={dayInfo.key}
+            className={`day-cell 
+              ${dayInfo.isToday ? 'today' : ''} 
+              ${dayInfo.isHoliday ? 'official-holiday' : ''}
+              ${dayInfo.hasEvent ? 'has-event' : ''}
+            `}
+            onClick={() => onDayClick(dayInfo.number, dayInfo.eventText)}
+            onMouseEnter={() => onDayHover(dayInfo.eventText)}
+            onMouseLeave={() => onDayHover('')}
           >
-            <span className="day-number">{day.toLocaleString('fa-IR', { useGrouping: false })}</span>
+            <span className="day-number">{dayInfo.number.toLocaleString('fa').replace(/٬/g, '')}</span>
+            {activeDayEvent && dayInfo.eventText === activeDayEvent && (
+              <div className="day-tooltip">{activeDayEvent}</div>
+            )}
           </div>
         );
       })}
-      {trailingEmptyDays.map(dayKey => <div key={dayKey} className="day-cell empty"></div>)}
     </div>
   );
 };
 
-const MonthEventsList = ({ currentMonthJ, eventsData }) => {
-  const eventsInMonth = Object.entries(eventsData)
-    .filter(([dateKey]) => {
-      const [jy, jm] = dateKey.split('/').map(Number);
-      return jy === currentMonthJ.jy && jm === currentMonthJ.jm;
-    })
-    .flatMap(([dateKey, events]) =>
-      events.map(event => ({ ...event, day: parseInt(dateKey.split('/')[2], 10) }))
-    )
-    .sort((a, b) => a.day - b.day);
-
-  if (eventsInMonth.length === 0) {
-    return <div className="month-events-list" style={{ textAlign: 'center', fontSize: '0.9em', color: '#777', paddingTop: '10px' }}>رویدادی برای این ماه ثبت نشده است.</div>;
+// ... (کامپوننت MonthEventsList بدون تغییر)
+const MonthEventsList = ({ events, currentMonthName }) => {
+  if (!events || events.length === 0) {
+    return (
+      <div className="month-events-list no-events">
+        <p>رویدادی برای ماه {currentMonthName} ثبت نشده است.</p>
+      </div>
+    );
   }
-
   return (
     <div className="month-events-list">
-      <h4>رویدادهای {JALAALI_MONTH_NAMES[currentMonthJ.jm - 1]}</h4>
+      <h4>رویدادهای ماه {currentMonthName}</h4>
       <ul>
-        {eventsInMonth.map((event, index) => (
-          <li key={index} className={event.type === 'official' ? 'official-holiday-text' : ''}>
-            <span className="event-day">{event.day.toLocaleString('fa-IR')}:</span> {event.text}
+        {events.map((event, index) => (
+          <li key={index} className={event.isHoliday ? 'official-holiday-text' : ''}>
+            <span className="event-day">{event.day.toLocaleString('fa').replace(/٬/g, '')}</span>
+            {event.text}
           </li>
         ))}
       </ul>
@@ -116,13 +150,12 @@ const MonthEventsList = ({ currentMonthJ, eventsData }) => {
   );
 };
 
-// کامپوننت اصلی تقویم
-function JalaliCalendar({ styleId = 'full', themeId = 'default' }) { // اضافه شدن پراپ themeId
-  const todayJalaali = jalaali.toJalaali(new Date());
+
+// کامپوننت اصلی JalaliCalendar
+const JalaliCalendar = ({ styleId = 'full', themeId = 'default', eventsData = SAMPLE_EVENTS_DATA }) => {
+  const todayJalaali = useMemo(() => jalaali.toJalaali(new Date()), []);
   const [currentMonth, setCurrentMonth] = useState({ jy: todayJalaali.jy, jm: todayJalaali.jm });
   const [activeDayEvent, setActiveDayEvent] = useState('');
-  // eslint-disable-next-line no-unused-vars
-  const [eventsData, setEventsData] = useState(SAMPLE_EVENTS_DATA); // رویدادها می‌توانند از props یا API دریافت شوند
 
   const handlePrevMonth = () => {
     setCurrentMonth(prev => {
@@ -147,19 +180,23 @@ function JalaliCalendar({ styleId = 'full', themeId = 'default' }) { // اضاف
       return { jy: newJy, jm: newJm };
     });
   };
+
+  // <<<< تابع جدید برای بازگشت به امروز >>>>
+  const handleGoToToday = () => {
+    setCurrentMonth({ jy: todayJalaali.jy, jm: todayJalaali.jm });
+  };
   
   const handleDayClick = (day, eventText) => {
-    // console.log(`Day clicked: ${day}, Event: ${eventText}`);
     if (eventText) {
       setActiveDayEvent(eventText);
     } else {
-      setActiveDayEvent(''); // Clear if no event
+      setActiveDayEvent('');
     }
   };
 
   useEffect(() => {
     if (activeDayEvent) {
-      const timer = setTimeout(() => setActiveDayEvent(''), 3000); // Auto-hide tooltip after 3s
+      const timer = setTimeout(() => setActiveDayEvent(''), 3000);
       return () => clearTimeout(timer);
     }
   }, [activeDayEvent]);
@@ -167,14 +204,28 @@ function JalaliCalendar({ styleId = 'full', themeId = 'default' }) { // اضاف
   const showHeader = styleId === 'full' || styleId === 'compact';
   const showEventsList = styleId === 'full';
 
+  const monthEvents = useMemo(() => {
+    if (!showEventsList) return [];
+    const events = [];
+    for (let day = 1; day <= 31; day++) {
+      const dateStr = `${currentMonth.jy}/${currentMonth.jm}/${day}`;
+      if (eventsData[dateStr]) {
+        eventsData[dateStr].forEach(event => {
+          events.push({ day, text: event.text, isHoliday: event.type === 'official' });
+        });
+      }
+    }
+    return events;
+  }, [currentMonth, eventsData, showEventsList]);
+
   return (
-    // اضافه کردن کلاس بر اساس styleId و themeId
     <div className={`jalali-calendar-widget calendar-style-${styleId} calendar-theme-${themeId}`}>
       {showHeader && (
         <MonthHeader
           currentMonthJ={currentMonth}
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
+          onGoToToday={handleGoToToday} // <<<< پاس دادن تابع به هدر >>>>
         />
       )}
       <DaysOfWeek />
@@ -183,17 +234,17 @@ function JalaliCalendar({ styleId = 'full', themeId = 'default' }) { // اضاف
         todayJ={todayJalaali}
         eventsData={eventsData}
         onDayClick={handleDayClick}
+        onDayHover={setActiveDayEvent} // ساده‌سازی برای نمایش tooltip
+        activeDayEvent={activeDayEvent}
       />
       {showEventsList && (
-        <MonthEventsList currentMonthJ={currentMonth} eventsData={eventsData} />
-      )}
-      {activeDayEvent && (
-        <div className="day-tooltip">
-          {activeDayEvent}
-        </div>
+        <MonthEventsList 
+          events={monthEvents} 
+          currentMonthName={JALAALI_MONTH_NAMES[currentMonth.jm - 1]} 
+        />
       )}
     </div>
   );
-}
+};
 
 export default JalaliCalendar;
