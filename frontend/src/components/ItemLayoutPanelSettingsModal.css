@@ -23,13 +23,10 @@
   font-family: 'Vazirmatn FD', sans-serif;
   display: flex;
   flex-direction: column;
-  
   width: 90%;
-  max-width: 540px; /* افزایش عرض مودال */
-  
-  max-height: calc(100vh - 80px); 
-  margin: 40px auto; 
-
+  max-width: 520px; /* کمی افزایش عرض برای جای دادن اعداد بزرگتر */
+  max-height: calc(100vh - 60px); 
+  margin: 30px auto;
   overflow: hidden; 
   transform: translateY(-20px) scale(0.97); 
   opacity: 0;
@@ -43,7 +40,7 @@
 }
 
 .item-layout-settings-modal-content .modal-header {
-  padding: 14px 20px; /* کمی افزایش padding */
+  padding: 12px 18px; 
   border-bottom: 1px solid #e9ecef;
   display: flex;
   justify-content: space-between;
@@ -51,7 +48,7 @@
   flex-shrink: 0; 
 }
 .item-layout-settings-modal-content .modal-header h3 {
-  font-size: 1.15em; 
+  font-size: 1.1em; 
   margin: 0;
   color: #333;
   font-weight: 600;
@@ -67,7 +64,7 @@
 }
 
 .item-layout-settings-modal-content .modal-body {
-  padding: 18px 20px; /* افزایش padding */
+  padding: 15px 18px; 
   overflow-y: auto; 
   flex-grow: 1; 
   scrollbar-width: thin;
@@ -78,8 +75,8 @@
 .item-layout-settings-modal-content .modal-body::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
 
 .layout-modal-section {
-  margin-bottom: 20px; 
-  padding: 15px; 
+  margin-bottom: 15px; 
+  padding: 10px; 
   background-color: #f8f9fa;
   border-radius: 6px; 
   border: 1px solid #e9ecef;
@@ -89,39 +86,40 @@
 }
 .layout-modal-section strong {
   display: block;
-  font-size: 0.95em; /* کمی بزرگتر */
-  margin-bottom: 12px; /* فاصله بیشتر */
+  font-size: 0.9em; 
+  margin-bottom: 10px; 
   color: #212529; 
   font-weight: 600;
 }
 
 .size-options-container {
-  display: grid; /* تغییر به grid برای چیدمان بهتر */
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* ایجاد ستون‌های خودکار */
-  gap: 10px; 
-  margin-bottom: 15px;
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+  gap: 8px;
+  margin-bottom: 12px;
 }
 .size-option-label {
-  padding: 8px 12px; /* padding استاندارد */
+  padding: 6px 10px; 
   border: 1px solid #ced4da; 
   border-radius: 5px; 
   cursor: pointer;
-  font-size: 0.9em; /* فونت خواناتر */
+  font-size: 0.85em; 
+  /* ... (سایر استایل‌های size-option-label از فایل قبلی) ... */
   transition: all 0.2s ease;
   background-color: #fff;
-  display: flex; /* تغییر به flex برای هم‌راستایی بهتر متن و رادیو باتن */
+  display: flex; 
   align-items: center;
-  text-align: right; /* برای زبان فارسی */
+  text-align: right; 
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 .size-option-label input[type="radio"] {
-  margin-left: 8px; /* فاصله از متن */
+  margin-left: 8px; 
   vertical-align: middle;
   accent-color: #007bff;
-  flex-shrink: 0; /* جلوگیری از کوچک شدن رادیو باتن */
+  flex-shrink: 0; 
 }
-.size-option-label span { /* برای متن لیبل */
-    flex-grow: 1; /* متن فضای باقی‌مانده را بگیرد */
+.size-option-label span { 
+    flex-grow: 1; 
 }
 .size-option-label:hover {
     border-color: #adb5bd;
@@ -137,39 +135,39 @@
 
 .size-preview-container {
     text-align: right; 
-    margin-top: 10px;
+    margin-top: 8px;
 }
 .size-preview-container p {
-    font-size: 0.85em; 
+    font-size: 0.8em; 
     color: #495057; 
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 .size-preview-box {
-  border: 2px dashed #007bff; 
+  border: 1px dashed #007bff; 
   background-color: #e7f3ff;
   color: #0056b3;
-  font-weight: bold;
-  font-size: 0.85em; 
+  font-weight: 500; 
+  font-size: 0.75em; 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px; /* padding بیشتر */
-  border-radius: 4px;
+  padding: 5px; 
+  border-radius: 3px;
   transition: width 0.2s ease, height 0.2s ease;
-  min-width: 35px; /* حداقل اندازه بزرگتر */
-  min-height: 35px;
+  min-width: 25px; 
+  min-height: 25px;
 }
 
 .layout-modal-grid-container {
   display: grid;
-  gap: 4px; 
+  /* grid-template-columns از style prop در JSX اعمال می‌شود */
+  gap: 2px; /* کاهش بیشتر فاصله */
   border: 1px solid #dee2e6; 
-  padding: 8px; 
-  border-radius: 6px; 
+  padding: 4px; /* کاهش padding */
+  border-radius: 4px; 
   background-color: #fff; 
-  max-height: 240px; /* ارتفاع مناسب برای گرید */
-  overflow-y: auto;
-  scrollbar-width: thin;
+  /* max-height: auto; /* حذف برای جلوگیری از اسکرول گرید داخلی */
+  overflow: visible; /* اطمینان از عدم اسکرول */
   direction: ltr;
 }
 
@@ -177,20 +175,38 @@
   aspect-ratio: 1 / 1;
   background-color: #f8f9fa; 
   border: 1px solid #d1d9e1; 
-  border-radius: 4px; 
+  border-radius: 3px; 
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  font-size: 0.8em; 
-  display: flex;
+  display: flex; /* برای مرکزیت بهتر عدد */
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  padding: 0; /* حذف padding برای فضای بیشتر برای عدد */
   position: relative;
-  min-height: 30px; 
-  min-width: 30px;
+  /* min-height و min-width توسط aspect-ratio و عرض ستون تعیین می‌شوند. 
+     اگر نیاز به کنترل دقیق‌تر دارید، aspect-ratio را بردارید. */
+  /* برای مثال، اگر عرض ستون در گرید حدود 25px باشد: */
+   min-height: 22px; /* <<< تنظیم اندازه سلول‌ها >>> */
+   min-width: 22px;  /* <<< تنظیم اندازه سلول‌ها >>> */
 }
-/* ... (سایر استایل‌های grid-cell-button بدون تغییر زیاد باقی می‌مانند) ... */
+.grid-cell-button .grid-cell-number {
+    display: block;
+    font-weight: 600; /* ضخیم‌تر کردن عدد */
+    color: #343a40; /* رنگ تیره‌تر برای عدد */
+    font-size: 1em; /* <<< افزایش اندازه فونت عدد >>> */
+    line-height: 1; /* برای مرکزیت بهتر عمودی */
+    /* margin-bottom: 1px; */ /* اگر آیکون دارید، در غیر این صورت نیازی نیست */
+}
+.grid-cell-button .grid-cell-icon {
+    font-size: 0.7em; /* آیکون کوچک‌تر شود تا عدد بزرگتر به نظر برسد */
+    color: #6c757d; 
+    position: absolute; /* موقعیت‌دهی آیکون برای عدم تداخل با عدد */
+    bottom: 2px;
+    right: 2px;
+}
+
+/* ... (سایر استایل‌های grid-cell-button و حالات آن مانند :hover, :disabled, .selected, .occupied و ...) ... */
 .grid-cell-button:hover:not(:disabled) {
   background-color: #e9ecef; 
   border-color: #adb5bd;
@@ -200,19 +216,6 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
-
-.grid-cell-button .grid-cell-number {
-    display: block;
-    font-weight: 500;
-    color: #495057; 
-    font-size: 0.9em; 
-    margin-bottom: 2px;
-}
-.grid-cell-button .grid-cell-icon {
-    font-size: 0.85em; 
-    color: #6c757d; 
-}
-
 .grid-cell-button.cell-state-available:hover {
     background-color: #cfe2ff; 
     border-color: #b8daff;
@@ -227,7 +230,7 @@
 .grid-cell-button.cell-state-selected .grid-cell-icon {
     color: white;
 }
-
+/* ... (ادامه استایل‌های حالات سلول) ... */
 .grid-cell-button.cell-state-occupied {
   background-color: #fff3cd; 
   border-color: #ffe69c;
@@ -236,7 +239,6 @@
 .grid-cell-button.cell-state-occupied .grid-cell-icon {
     color: #664d03; 
 }
-
 .grid-cell-button.cell-state-current {
   background-color: #d1e7dd; 
   border-color: #badbcc;
@@ -245,7 +247,6 @@
 .grid-cell-button.cell-state-current .grid-cell-icon {
     color: #0f5132; 
 }
-
 .grid-cell-button.cell-state-invalid {
     background-color: #f8f9fa; 
     border-color: #dee2e6;
@@ -255,24 +256,24 @@
     color: #6c757d;
 }
 
+
 .item-layout-settings-modal-content .modal-footer {
-    text-align: left; /* یا right برای RTL */
-    padding: 14px 20px; /* padding استاندارد */
-    margin-top: 12px; 
+    text-align: left;
+    padding: 12px 18px; 
+    margin-top: 10px; 
     border-top: 1px solid #e9ecef;
     flex-shrink: 0; 
 }
 
+/* ... (استایل دکمه‌های action-button و انیمیشن‌ها بدون تغییر) ... */
 .item-layout-settings-modal-content .action-button { 
-    padding: 8px 18px; /* padding استاندارد دکمه */
+    padding: 8px 16px; 
     font-size: 0.9em; 
     border-radius: 5px;
 }
 .item-layout-settings-modal-content .action-button.secondary {
-    margin-right: 10px; /* برای RTL */
+    margin-right: 8px;
 }
-
-/* کلاس‌های عمومی دکمه (اگر قبلا تعریف نشده‌اند) */
 .action-button {
   border: none;
   cursor: pointer;
@@ -306,10 +307,4 @@
 }
 .action-button.secondary:hover {
   background-color: #5a6268;
-}
-
-@keyframes fadeInOverlayIL { 0% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes slideDownModalIL { 
-  0% { transform: translateY(-20px) scale(0.97); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
