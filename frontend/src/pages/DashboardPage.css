@@ -1,6 +1,13 @@
 /* src/pages/DashboardPage.css */
 :root {
   --grid-line-color: #e0e6ed;
+<<<<<<< HEAD
+=======
+  /* متغیرهای زیر توسط JSX با استفاده از setProperty تنظیم می‌شوند */
+  /* --current-grid-cols: 16; /* مثال */
+  /* --grid-row-height-for-lines: 25px; /* مثال */
+  /* --grid-margin: 4px; /* مثال */
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 
 .dashboard-page-content {
@@ -11,7 +18,10 @@
   padding-right: 0;
   box-sizing: border-box;
   transition: filter 0.3s ease-in-out;
+<<<<<<< HEAD
   min-height: 100vh;
+=======
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 
 .dashboard-page-content.content-blurred {
@@ -28,11 +38,22 @@
   padding-right: 25px;
 }
 
+<<<<<<< HEAD
 .dashboard-sections-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
+=======
+/* === START: New styles for dashboard-sections-container === */
+.dashboard-sections-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust minmax as per your dashboard's main grid items */
+  gap: 20px; /* Consistent gap */
+}
+/* === END: New styles for dashboard-sections-container === */
+
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 
 .dashboard-header-actions {
   display: flex;
@@ -48,6 +69,10 @@
 .grid-cols-dropdown-container {
   position: relative;
   display: inline-block;
+<<<<<<< HEAD
+=======
+  margin-left: auto;
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   z-index: 105;
 }
 
@@ -200,6 +225,7 @@
   position: relative;
   z-index: 2;
   transition: box-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out;
+<<<<<<< HEAD
   border-radius: 8px;
 }
 /* کلاس برای زمانی که آیتم قفل است (برای استایل بصری اگر لازم باشد) */
@@ -207,11 +233,18 @@
   /* border: 1px dashed #777;  مثلا */
 }
 
+=======
+}
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 
 .grid-item-card.digital-clock-grid-item > .digital-clock-widget,
 .grid-item-card.jalali-calendar-grid-item > .jalali-calendar-widget,
 .grid-item-card.cheque-alert-grid-item > .cheque-alert-widget {
+<<<<<<< HEAD
   padding-top: 35px; /* فضا برای کنترل ها در دسکتاپ */
+=======
+  padding-top: 35px;
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   height: 100%;
   box-sizing: border-box;
   width: 100%;
@@ -225,7 +258,15 @@
   z-index: 1 !important;
 }
 
+<<<<<<< HEAD
 /* .grid-item-card.react-draggable-dragging class is no longer used as dragging is disabled */
+=======
+.grid-item-card.react-draggable-dragging {
+  opacity: 0.65;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  z-index: 1000 !important;
+}
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 
 .item-controls {
   position: absolute;
@@ -266,7 +307,11 @@
   width: 12px;
   height: 12px;
 }
+<<<<<<< HEAD
 .item-control-button.item-locked svg { 
+=======
+.item-control-button.item-locked svg {
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   color: #e53e3e;
 }
 
@@ -291,14 +336,25 @@
     background-color: rgba(0, 0, 0, 0.25);
 }
 
+<<<<<<< HEAD
 /* .drag-handle class is no longer needed */
+=======
+.drag-handle {
+  cursor: grab;
+}
+.drag-handle:active { cursor: grabbing; }
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 
 .summary-card-inner-content {
   display: flex;
   align-items: center;
   flex-grow: 1;
   padding: clamp(10px, 2.2vw, 15px);
+<<<<<<< HEAD
   padding-top: 35px; /* برای دسکتاپ که کنترل ها هستند */
+=======
+  padding-top: clamp(38px, 6.5vw, 45px);
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   width: 100%;
   box-sizing: border-box;
 }
@@ -324,7 +380,10 @@
 .summary-card .card-icon-container.coins { background-color: #f1c40f; }
 .summary-card .card-icon-container.misc { background-color: #95a5a6; }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 .summary-card .card-icon {
   font-size: clamp(1.2em, 3.2vw, 1.5em);
 }
@@ -360,9 +419,33 @@
   text-overflow: ellipsis;
 }
 
+<<<<<<< HEAD
 /* Resize handles are no longer needed as resizing is disabled */
 /* .react-resizable-handle-se { ... } */
 /* .react-resizable-handle-se::after { ... } */
+=======
+.react-resizable-handle-se {
+  background-image: none !important;
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  bottom: 0;
+  left: 0;
+  cursor: nwse-resize;
+  padding: 0;
+  z-index: 11;
+}
+.react-resizable-handle-se::after{
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid rgba(0,0,0,0.3);
+  border-bottom: 2px solid rgba(0,0,0,0.3);
+}
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 
 .no-cards-placeholder,
 .no-sections-placeholder {
@@ -377,6 +460,7 @@
 .no-cards-placeholder p,
 .no-sections-placeholder p {
   font-size: 1em;
+<<<<<<< HEAD
   margin: 5px 0 0 0;
   font-weight: 500;
 }
@@ -389,12 +473,28 @@
   background-color: #fff;
   border-radius: 8px;
   padding: 20px;
+=======
+  margin: 0;
+  font-weight: 500;
+}
+
+.dashboard-columns { /* This class seems to be unused or for a different layout structure */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.card-style {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px; /* Default padding for cards */
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
   border: 1px solid #e9edf0;
 }
 .card-style h2 {
   margin-top: 0;
   margin-bottom: 15px;
+<<<<<<< HEAD
   font-size: 1.3em;
   color: #2c3e50;
   border-bottom: 1px solid #e2e8f0;
@@ -508,13 +608,86 @@
 .recent-transactions-section th,
 .recent-transactions-section td {
   padding: 12px 10px;
+=======
+  font-size: 1.3em; 
+  color: #2c3e50; 
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  font-weight: 700; 
+}
+
+/* === Styles for Quick Actions & Recent Transactions Sections === */
+.quick-actions-section,
+.recent-transactions-section {
+    /* max-width and margin:auto are removed as .dashboard-sections-container now handles their width and placement */
+    padding: 15px; /* Keep reduced padding if desired, or remove to use .card-style default (20px) */
+}
+
+.quick-actions-section {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 10px; 
+}
+
+.quick-actions-section h2,
+.recent-transactions-section h2 { 
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    font-size: 1.2em; 
+}
+
+.quick-actions-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  gap: 8px; 
+}
+/* === End: Styles for Quick Actions & Recent Transactions Sections === */
+
+.quick-actions-section .action-button {
+  padding: 10px 12px;
+  background-color: #e9f5ff;
+  border: 1px solid #b8d6fb;
+  border-radius: 6px;
+  color: #004085;
+  font-size: 0.95em; 
+  font-weight: 500; 
+  text-align: right;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+.quick-actions-section .action-button:hover {
+  background-color: #d1e7ff;
+  border-color: #a2c7f5;
+  box-shadow: 0 2px 5px rgba(0, 64, 133, 0.1);
+}
+.action-icon {
+  margin-left: 10px;
+  font-size: 1.2em; 
+}
+.recent-transactions-section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em; 
+}
+.recent-transactions-section th,
+.recent-transactions-section td {
+  padding: 12px 10px; 
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   text-align: right;
   border-bottom: 1px solid #edf2f7;
 }
 .recent-transactions-section th {
   background-color: #f8fafc;
+<<<<<<< HEAD
   color: #34495e;
   font-weight: 600;
+=======
+  color: #34495e; 
+  font-weight: 600; 
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 .recent-transactions-section tbody tr:hover {
   background-color: #f7fafc;
@@ -523,6 +696,7 @@
   text-align: center;
   color: #718096;
   padding: 15px 0;
+<<<<<<< HEAD
   font-size: 0.95em;
   font-weight: 500;
 }
@@ -557,10 +731,17 @@
 }
 
 /* Styles for ItemLayoutPanelSettingsModal placeholder content */
+=======
+  font-size: 0.95em; 
+  font-weight: 500; 
+}
+
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 .modal-overlay.generic-modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0, 0, 0, 0.55);
   display: flex; align-items: center; justify-content: center;
+<<<<<<< HEAD
   z-index: 1050; direction: rtl; /* Ensure RTL for overlay */
   opacity: 0; animation: fadeInOverlay 0.25s forwards;
 }
@@ -728,11 +909,44 @@
   .dashboard-main-content {
     padding-left: 15px;
     padding-right: 15px;
+=======
+  z-index: 1050; direction: rtl;
+  opacity: 0; animation: fadeInOverlay 0.25s forwards;
+}
+.modal-content.generic-modal-content {
+  background-color: #fff; padding: 20px 25px; border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  width: 90%; max-width: 400px;
+  transform: translateY(-20px) scale(0.97); opacity: 0;
+  animation: slideDownModal 0.3s 0.05s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slideDownModal { 0% { transform: translateY(-20px) scale(0.97); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+
+.generic-modal-content .modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 12px; border-bottom: 1px solid #e9ecef; margin-bottom: 15px;
+}
+.generic-modal-content .modal-header h3 { margin: 0; font-size: 1.25em; color: #212529; font-weight: 600;}
+.generic-modal-content .modal-close-button {
+  background: none; border: none; font-size: 1.3em; color: #6c757d; cursor: pointer; padding: 5px; line-height: 1;
+  transition: color 0.2s ease;
+}
+.generic-modal-content .modal-close-button:hover { color: #343a40; }
+.generic-modal-content .modal-body { font-size: 0.95em; line-height: 1.6; }
+
+
+@media (max-width: 992px) {
+  /* .dashboard-columns { grid-template-columns: 1fr; } */ /* Already commented or potentially unused */
+  .dashboard-sections-container { grid-template-columns: 1fr; } /* Ensure sections stack on smaller screens */
+  .dashboard-main-content {
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   }
   .dashboard-header-actions { flex-direction: column; align-items: stretch; gap: 10px; }
   .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-container { width: 100%; }
   .grid-cols-dropdown-button { justify-content: space-between; }
   .grid-cols-dropdown-content { width: 100%; left:0; box-sizing: border-box; }
+<<<<<<< HEAD
 
   .grid-item-card,
   .card-style,
@@ -740,10 +954,13 @@
   .no-sections-placeholder {
     border-radius: 12px;
   }
+=======
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 
 @media (max-width: 520px) {
   .dashboard-header-actions { gap: 8px; }
+<<<<<<< HEAD
   .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-button {
     padding: 10px 12px;
     font-size: 0.9em;
@@ -830,6 +1047,80 @@
   border-color: rgba(255, 255, 255, 0.8);
 }
 
+=======
+  .dashboard-customize-button, .dashboard-action-toggle-button, .grid-cols-dropdown-button { padding: 8px 10px; font-size: 0.85em; } 
+  .dashboard-customize-button .button-text, .dashboard-action-toggle-button .button-text { display: none; }
+  .dashboard-customize-button svg, .dashboard-action-toggle-button svg { margin-left: 0; margin-right: 0; }
+  .grid-cols-dropdown-button { min-width: auto; }
+  .grid-cols-dropdown-button .button-text { margin-right: 4px; }
+  .grid-cols-dropdown-button svg.dropdown-arrow-icon { margin-left: 4px; }
+  .item-controls { top: 3px; right: 3px; gap: 3px; padding: 2px; }
+  .item-control-button { padding: 3px 4px; }
+  .item-control-button svg { width: 9px; height: 9px; }
+}
+
+@media (max-width: 480px) {
+  .card-style h2, 
+  .quick-actions-section h2, 
+  .recent-transactions-section h2 { font-size: 1.15em; } 
+  .quick-actions-section .action-button, .recent-transactions-section th, .recent-transactions-section td { font-size: 0.8em; padding: 8px 10px; } 
+  .summary-card .card-icon-container { width: 32px; height: 32px; margin-left: 8px;} 
+  .summary-card .card-icon { font-size: 1em; } 
+}
+
+.dashboard-page-container { 
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  padding-left: 0; 
+  padding-right: 0;
+  box-sizing: border-box;
+  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out; 
+  min-height: 100vh; 
+  background-size: cover; 
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dashboard-page-container.content-blurred { 
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.dashboard-page-content.has-background-image .grid-item-card {
+  background-color: rgba(255, 255, 255, 0.88); 
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(200, 200, 200, 0.4); 
+}
+
+.dashboard-page-content.has-background-image .card-style { 
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(200, 200, 200, 0.4);
+}
+
+
+.dashboard-page-content.has-background-image .summary-card .card-content h3,
+.dashboard-page-content.has-background-image .summary-card .card-content p,
+.dashboard-page-content.has-background-image .quick-actions-section h2, 
+.dashboard-page-content.has-background-image .recent-transactions-section h2 {
+  /* color: #2c3e50; */ 
+}
+
+.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button {
+  background-color: rgba(240, 240, 240, 0.25); 
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff; 
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 .cheque-alert-widget {
   padding: 10px;
   font-size: 0.9em;
@@ -852,7 +1143,11 @@
   flex-shrink: 0;
 }
 .cheque-alert-widget h4 svg {
+<<<<<<< HEAD
   margin-left: 8px;
+=======
+  margin-left: 8px; 
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   color: #e67e22;
 }
 .cheque-alert-widget ul {
@@ -864,7 +1159,11 @@
   font-size: 0.95em;
 }
 .cheque-alert-widget li {
+<<<<<<< HEAD
   padding: 6px 2px;
+=======
+  padding: 5px 2px;
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
   border-bottom: 1px solid #f5f5f5;
   display: flex;
   justify-content: space-between;
@@ -886,13 +1185,20 @@
   white-space: nowrap;
   flex-shrink: 1;
   text-align: right;
+<<<<<<< HEAD
   margin: 0 5px;
+=======
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 .cheque-alert-widget .cheque-due-date {
   font-size: 0.9em;
   color: #7f8c8d;
   white-space: nowrap;
+<<<<<<< HEAD
   margin-right: auto;
+=======
+  margin-right: auto; 
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
 .cheque-alert-widget p {
   text-align: center;
@@ -902,6 +1208,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
 }
 .item-settings-menu {
   position: fixed; /* Changed from absolute for better positioning relative to viewport */
@@ -1069,4 +1376,6 @@
 .grid-cell-button .FaLock, .grid-cell-button .FaArchive { 
   font-size: 1em; 
   margin-top: 3px; 
+=======
+>>>>>>> d83be28e480caad8639392f57deae2a074915b47
 }
