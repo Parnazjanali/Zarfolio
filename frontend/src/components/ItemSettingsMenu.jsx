@@ -1,7 +1,5 @@
-// src/components/ItemSettingsMenu.jsx
 import React, { useEffect, useRef } from 'react';
-// import './ItemSettingsMenu.css'; // برای استایل‌دهی، این فایل را بسازید و import کنید
-
+import './ItemSettingsMenu.css'; // <--- ایمپورت فایل CSS
 const ItemSettingsMenu = ({
   anchorEl,
   isOpen,
