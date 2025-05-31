@@ -1,0 +1,315 @@
+/* frontend/src/components/ItemLayoutPanelSettingsModal.css */
+
+.item-layout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+  direction: rtl;
+  opacity: 0;
+  animation: fadeInOverlayIL 0.25s forwards;
+}
+
+.item-layout-modal-overlay .item-layout-settings-modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  font-family: 'Vazirmatn FD', sans-serif;
+  display: flex;
+  flex-direction: column;
+  
+  width: 90%;
+  max-width: 540px; /* افزایش عرض مودال */
+  
+  max-height: calc(100vh - 80px); 
+  margin: 40px auto; 
+
+  overflow: hidden; 
+  transform: translateY(-20px) scale(0.97); 
+  opacity: 0;
+  animation: slideDownModalIL 0.3s 0.05s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes fadeInOverlayIL { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slideDownModalIL { 
+  0% { transform: translateY(-20px) scale(0.97); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.item-layout-settings-modal-content .modal-header {
+  padding: 14px 20px; /* کمی افزایش padding */
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0; 
+}
+.item-layout-settings-modal-content .modal-header h3 {
+  font-size: 1.15em; 
+  margin: 0;
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.item-layout-settings-modal-content .modal-close-button{
+  background: none; border: none; font-size: 1.2em; color: #6c757d; cursor: pointer; padding: 3px; line-height: 1;
+}
+.item-layout-settings-modal-content .modal-close-button:hover{
+  color: #343a40;
+}
+
+.item-layout-settings-modal-content .modal-body {
+  padding: 18px 20px; /* افزایش padding */
+  overflow-y: auto; 
+  flex-grow: 1; 
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f0f0f0;
+}
+.item-layout-settings-modal-content .modal-body::-webkit-scrollbar { width: 6px; }
+.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
+.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
+
+.layout-modal-section {
+  margin-bottom: 20px; 
+  padding: 15px; 
+  background-color: #f8f9fa;
+  border-radius: 6px; 
+  border: 1px solid #e9ecef;
+}
+.layout-modal-section:last-child {
+    margin-bottom: 0;
+}
+.layout-modal-section strong {
+  display: block;
+  font-size: 0.95em; /* کمی بزرگتر */
+  margin-bottom: 12px; /* فاصله بیشتر */
+  color: #212529; 
+  font-weight: 600;
+}
+
+.size-options-container {
+  display: grid; /* تغییر به grid برای چیدمان بهتر */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* ایجاد ستون‌های خودکار */
+  gap: 10px; 
+  margin-bottom: 15px;
+}
+.size-option-label {
+  padding: 8px 12px; /* padding استاندارد */
+  border: 1px solid #ced4da; 
+  border-radius: 5px; 
+  cursor: pointer;
+  font-size: 0.9em; /* فونت خواناتر */
+  transition: all 0.2s ease;
+  background-color: #fff;
+  display: flex; /* تغییر به flex برای هم‌راستایی بهتر متن و رادیو باتن */
+  align-items: center;
+  text-align: right; /* برای زبان فارسی */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.size-option-label input[type="radio"] {
+  margin-left: 8px; /* فاصله از متن */
+  vertical-align: middle;
+  accent-color: #007bff;
+  flex-shrink: 0; /* جلوگیری از کوچک شدن رادیو باتن */
+}
+.size-option-label span { /* برای متن لیبل */
+    flex-grow: 1; /* متن فضای باقی‌مانده را بگیرد */
+}
+.size-option-label:hover {
+    border-color: #adb5bd;
+    background-color: #f7f7f7;
+}
+.size-option-label.selected {
+  background-color: #e2efff; 
+  border-color: #007bff;
+  color: #0056b3;
+  font-weight: 500;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.size-preview-container {
+    text-align: right; 
+    margin-top: 10px;
+}
+.size-preview-container p {
+    font-size: 0.85em; 
+    color: #495057; 
+    margin-bottom: 6px;
+}
+.size-preview-box {
+  border: 2px dashed #007bff; 
+  background-color: #e7f3ff;
+  color: #0056b3;
+  font-weight: bold;
+  font-size: 0.85em; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px; /* padding بیشتر */
+  border-radius: 4px;
+  transition: width 0.2s ease, height 0.2s ease;
+  min-width: 35px; /* حداقل اندازه بزرگتر */
+  min-height: 35px;
+}
+
+.layout-modal-grid-container {
+  display: grid;
+  gap: 4px; 
+  border: 1px solid #dee2e6; 
+  padding: 8px; 
+  border-radius: 6px; 
+  background-color: #fff; 
+  max-height: 240px; /* ارتفاع مناسب برای گرید */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  direction: ltr;
+}
+
+.grid-cell-button {
+  aspect-ratio: 1 / 1;
+  background-color: #f8f9fa; 
+  border: 1px solid #d1d9e1; 
+  border-radius: 4px; 
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.8em; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  position: relative;
+  min-height: 30px; 
+  min-width: 30px;
+}
+/* ... (سایر استایل‌های grid-cell-button بدون تغییر زیاد باقی می‌مانند) ... */
+.grid-cell-button:hover:not(:disabled) {
+  background-color: #e9ecef; 
+  border-color: #adb5bd;
+}
+.grid-cell-button:disabled {
+  background-color: #e9ecef; 
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.grid-cell-button .grid-cell-number {
+    display: block;
+    font-weight: 500;
+    color: #495057; 
+    font-size: 0.9em; 
+    margin-bottom: 2px;
+}
+.grid-cell-button .grid-cell-icon {
+    font-size: 0.85em; 
+    color: #6c757d; 
+}
+
+.grid-cell-button.cell-state-available:hover {
+    background-color: #cfe2ff; 
+    border-color: #b8daff;
+}
+.grid-cell-button.cell-state-selected {
+  background-color: #0d6efd; 
+  border-color: #0a58ca;
+  color: white; 
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+.grid-cell-button.cell-state-selected .grid-cell-number,
+.grid-cell-button.cell-state-selected .grid-cell-icon {
+    color: white;
+}
+
+.grid-cell-button.cell-state-occupied {
+  background-color: #fff3cd; 
+  border-color: #ffe69c;
+}
+.grid-cell-button.cell-state-occupied .grid-cell-number,
+.grid-cell-button.cell-state-occupied .grid-cell-icon {
+    color: #664d03; 
+}
+
+.grid-cell-button.cell-state-current {
+  background-color: #d1e7dd; 
+  border-color: #badbcc;
+}
+.grid-cell-button.cell-state-current .grid-cell-number,
+.grid-cell-button.cell-state-current .grid-cell-icon {
+    color: #0f5132; 
+}
+
+.grid-cell-button.cell-state-invalid {
+    background-color: #f8f9fa; 
+    border-color: #dee2e6;
+    opacity: 0.6;
+}
+.grid-cell-button.cell-state-invalid .grid-cell-number{
+    color: #6c757d;
+}
+
+.item-layout-settings-modal-content .modal-footer {
+    text-align: left; /* یا right برای RTL */
+    padding: 14px 20px; /* padding استاندارد */
+    margin-top: 12px; 
+    border-top: 1px solid #e9ecef;
+    flex-shrink: 0; 
+}
+
+.item-layout-settings-modal-content .action-button { 
+    padding: 8px 18px; /* padding استاندارد دکمه */
+    font-size: 0.9em; 
+    border-radius: 5px;
+}
+.item-layout-settings-modal-content .action-button.secondary {
+    margin-right: 10px; /* برای RTL */
+}
+
+/* کلاس‌های عمومی دکمه (اگر قبلا تعریف نشده‌اند) */
+.action-button {
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
+.action-button:hover:not(:disabled){
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.action-button.primary {
+  background-color: #007bff;
+  color: white;
+}
+.action-button.primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+.action-button.primary:disabled {
+  background-color: #a0c7e8;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.action-button.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+.action-button.secondary:hover {
+  background-color: #5a6268;
+}
+
+@keyframes fadeInOverlayIL { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slideDownModalIL { 
+  0% { transform: translateY(-20px) scale(0.97); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
