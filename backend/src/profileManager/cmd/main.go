@@ -29,6 +29,21 @@ func main() {
 	postgresDb.InitDB()
 	utils.Log.Info("Database connection established.")
 
+	userRepo := postgresDb.NewPostgresUserRepository(postgresDb.DB)
+	if userRepo == nil {
+		utils.Log.Fatal("Failed to initialize UserRepository for seeding. Exiting application.")
+	}
+
+	if os.Getenv("RUN_DB_SEED") == "true" {
+		utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
+		if err := postgresDb.SeedAdminUsers(userRepo); err != nil {
+			utils.Log.Fatal("Database seeding failed: %v", zap.Error(err))
+		}
+		utils.Log.Info("Database seeding completed.")
+	} else {
+		utils.Log.Info("Database seeding skipped. Set RUN_DB_SEED=true to run seed.")
+	}
+
 	server.StartServer(":8081")
 
 }
