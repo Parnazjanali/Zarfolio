@@ -5,6 +5,7 @@ import (
 	"gold-api/internal/model"
 	"gold-api/internal/service"
 	"gold-api/internal/utils"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -21,8 +22,59 @@ func NewAuthHandler(as *service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: as}
 }
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "User registered successfully",
+	var req model.RegisterRequest 
+
+	
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("Failed to parse register request body in API Gateway handler", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request body format.",
+			Code:    "400",
+		})
+	}
+
+	
+	if req.Username == "" || req.Password == "" || req.Email == "" {
+		utils.Log.Warn("Register attempt: Missing required fields",
+			zap.String("username", req.Username),
+			zap.String("email", req.Email))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Username, password, and email are required for registration.",
+			Code:    "400",
+		})
+	}
+		if !service.IsValidEmail(req.Email) {
+		utils.Log.Warn("Register attempt: Invalid email format", zap.String("email", req.Email))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid email format.",
+			Code:    "400",
+		})
+	}
+
+	err := h.authService.RegisterUser(req) 
+	if err != nil {
+		utils.Log.Error("User registration failed in service layer", zap.String("username", req.Username), zap.Error(err))
+		if errors.Is(err, service.ErrUserAlreadyExists) {
+			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{ 
+				Message: "User with this username or email already exists.",
+				Code:    "409",
+			})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{
+				Message: "Registration service is temporarily unavailable. Please try again later.",
+				Code:    "503",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Internal server error during registration.",
+			Code:    "500",
+		})
+	}
+
+	utils.Log.Info("User registered successfully via API Gateway", zap.String("username", req.Username))
+	return c.Status(fiber.StatusCreated).JSON(model.AuthResponse{
+		Message: "User registered successfully!",
 	})
 }
 
@@ -75,4 +127,49 @@ func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 		Exp:     3600,
 	})
 
+}
+func (h *AuthHandler) LogoutUser(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
+		utils.Log.Warn("Logout attempt without Authorization header")
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+			Message: "Authorization header is required",
+			Code:    "401",
+		})
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		utils.Log.Warn("Logout attempt with invalid Authorization header format", zap.String("header", authHeader))
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+			Message: "Invalid Authorization header format. Expected 'Bearer <token>'",
+			Code:    "401",
+		})
+	}
+	tokenSrting := tokenParts[1]
+
+	err := h.authService.Logout(tokenSrting)
+	if err != nil {
+		utils.Log.Error("Logout failed in service layer", zap.String("token", tokenSrting), zap.Error(err))
+		if errors.Is(err, service.ErrTokenNotFound) {
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Invalid or expired token",
+				Code:    "401",
+			})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{
+				Code:    "503",
+				Message: "Authentication service is temporarily unavailable. Please try again later.",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Internal server error during logout",
+			Code:    "500",
+		})
+	}
+
+	utils.Log.Info("User logged out successfully", zap.String("token_prefix", tokenSrting[:min(len(tokenSrting), 10)]))
+	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
+		Message: "Logout successful",
+	})
 }

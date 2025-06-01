@@ -10,8 +10,9 @@ import (
 	"gold-api/internal/utils"
 	"io/ioutil"
 	"net/http"
-	"os"      
-	"syscall" 
+	"os"
+	"strings"
+	"syscall"
 	"time"
 
 	"go.uber.org/zap"
@@ -23,15 +24,17 @@ var (
 	ErrUserAlreadyExists  = errors.New("user with this username or email already exists")
 	ErrInternalService    = errors.New("internal service error")
 	ErrProfileManagerDown = errors.New("profile manager service is unavailable")
+	ErrTokenNotFound      = errors.New("authentication token not found")
 )
 
 type ProfileManagerClient interface {
 	RegisterUser(req model.RegisterRequest) error
-	AuthenticateUser(req model.LoginRequest) (*model.User, string, error) 
+	AuthenticateUser(req model.LoginRequest) (*model.User, string, error)
+	LogoutUser(token string) error
 }
 
 type AuthService struct {
-	profileMgrClient ProfileManagerClient 
+	profileMgrClient ProfileManagerClient
 }
 
 func NewAuthService(client ProfileManagerClient) *AuthService {
@@ -45,7 +48,7 @@ func (s *AuthService) LoginUser(username, password string) (*model.User, string,
 	req := model.LoginRequest{Username: username, Password: password}
 	utils.Log.Info("Attempting to authenticate user via Profile Manager", zap.String("username", username))
 
-	user, token, err := s.profileMgrClient.AuthenticateUser(req) 
+	user, token, err := s.profileMgrClient.AuthenticateUser(req)
 	if err != nil {
 		utils.Log.Error("Authentication failed in ProfileManagerClient", zap.String("username", username), zap.Error(err))
 		if errors.Is(err, ErrInvalidCredentials) {
@@ -74,7 +77,6 @@ func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
 	return nil
 }
 
-
 type profileManagerHTTPClient struct {
 	baseURL string
 	client  *http.Client
@@ -83,7 +85,7 @@ type profileManagerHTTPClient struct {
 func NewProfileManagerClient(baseURL string) ProfileManagerClient {
 	return &profileManagerHTTPClient{
 		baseURL: baseURL,
-		client:  &http.Client{Timeout: 10 * time.Second}, // Add a timeout for HTTP requests
+		client:  &http.Client{Timeout: 10 * time.Second}, 
 	}
 }
 
@@ -93,7 +95,7 @@ func (c *profileManagerHTTPClient) AuthenticateUser(req model.LoginRequest) (*mo
 		return nil, "", fmt.Errorf("failed to marshal login request for profile manager: %w", err)
 	}
 
-	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/login", bytes.NewBuffer(body)) 
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/login", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create HTTP request for profile manager login: %w", err)
 	}
@@ -166,4 +168,65 @@ func (c *profileManagerHTTPClient) RegisterUser(req model.RegisterRequest) error
 	}
 
 	return nil
+}
+
+func (c *profileManagerHTTPClient) LogoutUser(token string) error {
+	if token == "" {
+		return ErrTokenNotFound
+	}
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/logout", nil)
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request for profile manager logout: %w", err)
+	}
+	httpReq.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return fmt.Errorf("%w: cannot connect to profile manager service at %s", ErrProfileManagerDown, c.baseURL)
+		}
+		return fmt.Errorf("failed to send logout request to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read profile manager logout response body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("%w: %s", ErrInvalidCredentials, string(respBody))
+		}
+		return fmt.Errorf("profile manager logout failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
+
+func (s *AuthService) Logout(token string) error {
+	utils.Log.Info("Attempting to logout user via Profile Manager", zap.String("token_prefix", token[:min(len(token), 10)]))
+	err := s.profileMgrClient.LogoutUser(token) 
+	if err != nil {
+		utils.Log.Error("Logout failed in ProfileManagerClient", zap.Error(err), zap.String("token_prefix", token[:min(len(token), 10)]))
+		if errors.Is(err, ErrInvalidCredentials) { 
+			return ErrInvalidCredentials
+		}
+		if errors.Is(err, ErrProfileManagerDown) { 
+			return ErrProfileManagerDown
+		}
+		return fmt.Errorf("%w: failed to logout user with profile manager", ErrInternalService)
+	}
+	utils.Log.Info("User logout successfully by Profile Manager", zap.String("token_prefix", token[:min(len(token), 10)]))
+	return nil
+}
+func IsValidEmail(email string) bool {
+	// Simple email validation
+	if len(email) < 3 || len(email) > 254 {
+		return false
+	}
+	at := strings.Index(email, "@")
+	dot := strings.LastIndex(email, ".")
+	return at > 0 && dot > at+1 && dot < len(email)-1
 }

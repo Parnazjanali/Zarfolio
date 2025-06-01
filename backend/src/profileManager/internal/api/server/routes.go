@@ -17,6 +17,9 @@ func SetupProfileManagerRoutes(app *fiber.App, authHandler *handler.AuthHandler,
 	if authHandler == nil {
 		utils.Log.Fatal("AuthHandler is nil in SetupProfileManagerRoutes, cannot set up auth routes.")
 	}
+	if profileHandler == nil {
+        utils.Log.Fatal("ProfileHandler is nil in SetupProfileManagerRoutes, cannot set up profile management routes.")
+    }
 	
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:   "http://localhost:8080", 
@@ -30,7 +33,9 @@ func SetupProfileManagerRoutes(app *fiber.App, authHandler *handler.AuthHandler,
 	authGroup := app.Group("/") 
 	utils.Log.Info("Profile Manager: Configuring authentication routes.")
 	authGroup.Post("/register", authHandler.Register) 
-	authGroup.Post("/login", authHandler.Login)      
+	authGroup.Post("/login", authHandler.Login) 
+	authGroup.Post("/logout", authHandler.Logout)
+
 	utils.Log.Info("Profile Manager: Authentication routes configured.")
 
 	profileGroup := app.Group("/profiles")

@@ -52,14 +52,13 @@ func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
 	return tokenString, claims, nil
 }
 func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY") // کلید مخفی (مشترک با Profile Manager)
+	jwtSecret := os.Getenv("JWT_SECRET_KEY") 
 	if jwtSecret == "" {
 		Log.Error("JWT_SECRET_KEY environment variable is not set. Cannot validate JWT.")
 		return nil, errors.New("jwt secret key not configured")
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// اطمینان از اینکه متد امضا HMAC SHA256 است (همانند تولید)
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
