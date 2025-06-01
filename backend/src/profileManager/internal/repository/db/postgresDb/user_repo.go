@@ -12,7 +12,12 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrUserNotFound = errors.New("user not found")
+var (
+	
+	ErrUserNotFound = errors.New("user not found")
+	ErrTokenNotFound = errors.New("token not found in blacklist")
+)
+
 
 type UserRepository interface {
 	CreateUser(user *model.User) error
