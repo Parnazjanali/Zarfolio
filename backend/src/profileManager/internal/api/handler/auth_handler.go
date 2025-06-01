@@ -6,6 +6,7 @@ import (
 	"profile-gold/internal/model"
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -14,15 +15,23 @@ import (
 type AuthHandler struct {
 	userService service.UserService
 }
-type ProfileHandler struct {
-	userService service.UserService 
-}
 
 func NewAuthHandler(us service.UserService) *AuthHandler {
 	if us == nil {
 		utils.Log.Fatal("UserService cannot be nil for AuthHandler in Profile Manager.")
 	}
 	return &AuthHandler{userService: us}
+}
+
+type ProfileHandler struct {
+	userService service.UserService
+}
+
+func NewProfileHandler(us service.UserService) *ProfileHandler { 
+	if us == nil {
+		utils.Log.Fatal("UserService cannot be nil for ProfileHandler in Profile Manager.")
+	}
+	return &ProfileHandler{userService: us}
 }
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
@@ -83,7 +92,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	user, token, claims, err := h.userService.AuthenticateUser(req.Username, req.Password) 
+	user, token, claims, err := h.userService.AuthenticateUser(req.Username, req.Password)
 	if err != nil {
 		utils.Log.Error("User authentication failed in Profile Manager service", zap.String("username", req.Username), zap.Error(err))
 
@@ -111,8 +120,56 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		Message: "Login successful",
 		Token:   token,
 		User:    user,
-		Exp:     claims.ExpiresAt.Unix(), 
+		Exp:     claims.ExpiresAt.Unix(),
 	})
+}
+func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
+		utils.Log.Warn("Profile Manager Handler: Logout attempt: Authorization header missing.", zap.String("ip", c.IP()))
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+			Message: "Authorization header required.",
+			Code:    "401",
+		})
+	}
+
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || strings.ToLower(tokenParts[0]) != "bearer" {
+		utils.Log.Warn("Profile Manager Handler: Logout attempt: Invalid Authorization header format.", zap.String("ip", c.IP()), zap.String("header", authHeader))
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+			Message: "Invalid Authorization header format. Expected 'Bearer [token]'.",
+			Code:    "401",
+		})
+	}
+	tokenString := tokenParts[1]
+
+	err := h.userService.LogoutUser(tokenString) 
+	if err != nil {
+		utils.Log.Error("Profile Manager Handler: Logout failed in service layer", zap.Error(err), zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
+		if errors.Is(err, service.ErrInvalidCredentials) { 
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Invalid or expired token.",
+				Code:    "401",
+			})
+		}
+		if errors.Is(err, service.ErrInternalService) { 
+			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+				Message: "Internal server error during logout.",
+				Code:    "500",
+			})
+		}
+		
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "An unexpected error occurred during logout.",
+			Code:    "500",
+		})
+	}
+
+	utils.Log.Info("Profile Manager Handler: User logged out successfully", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
+	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{ 
+		Message: "Logged out successfully!",
+	})
+
 }
 func (h *ProfileHandler) CreateProfile(c *fiber.Ctx) error {
 	utils.Log.Info("CreateProfile endpoint hit. Placeholder.", zap.String("ip", c.IP()))
@@ -134,5 +191,5 @@ func (h *ProfileHandler) UpdateProfile(c *fiber.Ctx) error {
 func (h *ProfileHandler) DeleteProfile(c *fiber.Ctx) error {
 	profileID := c.Params("id")
 	utils.Log.Info("DeleteProfile endpoint hit. Placeholder.", zap.String("id", profileID), zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusNoContent).SendString("") 
+	return c.Status(fiber.StatusNoContent).SendString("")
 }
