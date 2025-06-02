@@ -3,6 +3,7 @@ package postgresDb
 import (
 	"errors"
 	"fmt"
+	"strings" // این پکیج برای بررسی متن خطا اضافه شده است
 	"time"
 
 	"profile-gold/internal/model"
@@ -27,7 +28,7 @@ func SeedAdminUsers(userRepo UserRepository) error {
 	}
 
 	for _, adminData := range adminUsers {
-
+		// این بخش برای بررسی اولیه نام کاربری خوب است و می‌تواند باقی بماند
 		_, err := userRepo.GetUserByUsername(adminData.Username)
 		if err == nil {
 			utils.Log.Info("Admin user already exists, skipping seed", zap.String("username", adminData.Username))
@@ -55,13 +56,18 @@ func SeedAdminUsers(userRepo UserRepository) error {
 
 		err = userRepo.CreateUser(adminToCreate)
 		if err != nil {
-			utils.Log.Error("Failed to create admin user during seed", zap.String("username", adminData.Username), zap.Error(err))
-			if errors.Is(err, ErrUserAlreadyExists) {
-				utils.Log.Warn("Admin user already exists, skipping seed", zap.String("username", adminData.Username))
-				continue
+			
+			if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key") {
+				utils.Log.Warn("User with this username or email already exists (duplicate key error), skipping seed",
+					zap.String("username", adminData.Username),
+					zap.String("email", adminData.Email))
+				continue 
 			}
+
+			utils.Log.Error("Failed to create admin user during seed", zap.String("username", adminData.Username), zap.Error(err))
 			return fmt.Errorf("seed failed: failed to create admin user %s: %w", adminData.Username, err)
 		}
+
 		utils.Log.Info("Admin user seeded successfully", zap.String("username", adminData.Username), zap.String("role", adminData.Role))
 	}
 

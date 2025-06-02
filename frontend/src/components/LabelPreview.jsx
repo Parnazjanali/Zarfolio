@@ -3,157 +3,119 @@ import React from 'react';
 import Barcode from 'react-barcode';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import './LabelPreview.css';
-// import { Fa伊朗 RialSign } from 'react-icons/fa6'; // این خط باید حذف شده باشد
 
 const LabelPreview = ({ productData, labelSettings, storeInfo }) => {
-  // استخراج داده‌ها از productData با مقادیر پیش‌فرض
   const name = productData?.name || 'نام محصول';
-  const code = productData?.code || 'کد محصول';
-  const weight = productData?.weight ? `${parseFloat(productData.weight).toLocaleString('fa-IR')} гр` : ''; // اگر وزن نیست، خالی نمایش بده یا 'وزن'
-  const productPurityValue = productData?.purity; // مقدار خام عیار
-  const purity = productPurityValue ? `عیار ${productPurityValue}` : ''; // اگر عیار نیست، خالی نمایش بده یا 'عیار'
-  const priceValue = productData?.price;
-  const price = priceValue ? `${parseFloat(priceValue).toLocaleString('fa-IR')}` : ''; // اگر قیمت نیست، خالی نمایش بده یا 'قیمت'
+  const barcodeValue = productData?.code || '';
+  const displayCode = barcodeValue || 'کد محصول';
+  const weight = productData?.weight ? `${parseFloat(productData.weight).toLocaleString('fa-IR')} gr` : 'وزن';
+  const purity = productData?.purity ? `عیار ${productData.purity}` : 'عیار';
+  const price = productData?.price ? `${parseFloat(productData.price).toLocaleString('fa-IR')}` : 'قیمت';
   const goldColor = productData?.goldColor || '';
 
-  // استخراج تنظیمات از labelSettings با مقادیر پیش‌فرض
   const {
-    width = 50,
-    height = 30,
-    font = 'Vazirmatn',
-    fontSize = 9,
-    barcodeEnabled = true,
-    qrCodeEnabled = false,
-    qrCodeContent = '',
-    showPrice = true,
-    showWeight = true,
-    showPurity = true, // این prop باید از labelSettings بیاید
-    showGoldColor = false,
-    showStoneInfo = true,
-  } = labelSettings || {}; // اطمینان از اینکه labelSettings null یا undefined نباشد
+    width = 50, height = 30, font = 'Vazirmatn', fontSize = 9,
+    showName = true, showCode = true, showWeight = true, showPurity = true,
+    showGoldColor = true, showStoneInfo = true, showPrice = true,
+    barcodeEnabled = true, barcodeHeight = 30, barcodeFontSize = 12,
+    qrCodeEnabled = false, qrCodeSize = 40, qrCodeContent = ''
+  } = labelSettings || {};
 
-  const shopName = storeInfo?.name || "فروشگاه شما";
-  const shopLogo = storeInfo?.logoUrl || null;
-
-  const mmToPxFactor = 3.7795;
-  const pxWidth = width * mmToPxFactor;
-  const pxHeight = height * mmToPxFactor;
+  const finalQrCodeContent = qrCodeContent.replace('{code}', barcodeValue).replace('{price}', productData?.price || '');
 
   const labelStyle = {
-    width: `${pxWidth}px`,
-    height: `${pxHeight}px`,
+    width: `${width}mm`,
+    height: `${height}mm`,
     fontFamily: font,
     fontSize: `${fontSize}pt`,
-    border: '1px solid #ccc',
-    padding: '5px',
-    boxSizing: 'border-box',
-    direction: 'rtl',
-    textAlign: 'right',
-    backgroundColor: 'white',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
   };
 
-  const baseTextStyle = {
-    lineHeight: '1.3',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  };
+  const priceStyle = { fontSize: `${Math.max(6, fontSize * 1.1)}pt` };
 
-  const titleStyle = {
-    ...baseTextStyle,
-    fontWeight: 'bold',
-    fontSize: `${fontSize}pt`,
-    marginBottom: '2px',
-  };
+  const renderRulerNumbers = (length, direction) => {
+    const numbers = [];
+    // گام‌های داینامیک برای نمایش اعداد، بسته به طول خط‌کش
+    const step = length > 60 ? 10 : (length > 30 ? 5 : (length > 15 ? 2 : 1));
+    
+    // عدد صفر
+    numbers.push(<span key={0} className={`ruler-number zero-mark-${direction}`}>0</span>);
 
-  const textStyle = {
-    ...baseTextStyle,
-    fontSize: `${Math.max(5, fontSize * 0.8)}pt`,
-    marginBottom: '1px',
-  };
-  
-  const stoneInfoStyle = {
-    ...baseTextStyle,
-    fontSize: `${Math.max(5, fontSize * 0.75)}pt`,
-    marginTop: '2px',
-  };
+    // اعداد میانی
+    for (let i = step; i < length; i += step) {
+      if (length - i < step / 2 && i !== Math.floor(length) ) continue; // از چاپ عدد خیلی نزدیک به انتها جلوگیری کن اگر خود انتها چاپ می‌شود
+      const positionPercent = (i / length) * 100;
+      const positionStyle = direction === 'x' 
+        ? { right: `calc(${positionPercent}% - 4px)` } // تنظیم برای وسط عدد
+        : { top: `calc(${positionPercent}% - 6px)` };  // تنظیم برای وسط عدد
+      numbers.push(
+        <span key={i} className="ruler-number" style={positionStyle}>
+          {i}
+        </span>
+      );
+    }
 
-  const priceStyle = {
-    ...baseTextStyle,
-    fontSize: `${Math.max(6, fontSize * 0.9)}pt`,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: '2px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    // عدد انتهایی (طول اتیکت)
+    if (length > 0) {
+      // فقط اگر عدد انتهایی با آخرین گام یکی نیست یا فاصله معناداری دارد
+      if (length % step !== 0 || length < step) {
+        const endPositionStyle = direction === 'x' 
+            ? { left: `-4px` } // نزدیک به انتهای چپ خط‌کش
+            : { bottom: `-6px` }; // نزدیک به انتهای پایین خط‌کش
+        numbers.push(
+            <span key={length} className="ruler-number end-mark" style={endPositionStyle}>
+                {Math.floor(length)}
+            </span>
+        );
+      }
+    }
+    return numbers;
   };
-
-  const barcodeValue = code || "NO_CODE";
-  const finalQrCodeContent = qrCodeContent || code || "NO_QR_DATA";
-  const barcodeHeight = Math.max(15, pxHeight * 0.20);
-  const barcodeFontSize = Math.max(6, fontSize * 0.65);
-  const qrCodeSize = Math.max(20, pxHeight * 0.25);
 
   return (
     <div className="label-preview-wrapper">
-      <h4>پیش‌نمایش اتیکت:</h4>
-      <div style={labelStyle} className="label-render-area">
-        <div className="label-header">
-          {shopLogo && <img src={shopLogo} alt="لوگو" className="shop-logo-preview" />}
-          <span className="shop-name-preview" style={{fontSize: `${Math.max(5, fontSize*0.65)}pt`}}>{shopName}</span>
-        </div>
-
-        <div className="label-body">
-          <div style={titleStyle}>{name}</div>
-          {showWeight && weight && <div style={textStyle}>وزن: {weight}</div>} {/* نمایش شرطی بر اساس وجود مقدار */}
-          {showPurity && purity && <div style={textStyle}>{purity}</div>} {/* استفاده از متغیر purity و نمایش شرطی */}
-          {showGoldColor && goldColor && <div style={textStyle}>رنگ: {goldColor}</div>}
-
-          {productData?.productType === 'jewelry' && showStoneInfo && (productData.stoneType || productData.stoneCount || productData.stoneWeight) && (
-            <div className="stone-info-preview" style={stoneInfoStyle}>
-              {productData.stoneType && <span>سنگ: {productData.stoneType}</span>}
-              {productData.stoneCount && <span> ({productData.stoneCount} عدد)</span>}
-              {productData.stoneWeight && <span> - وزن: {productData.stoneWeight}</span>}
+      <div className="preview-area-with-rulers">
+        <div className="label-and-rulers-container"> {/* نگهدارنده جدید */}
+            <div className="ruler ruler-x" style={{ width: `${width}mm` }}>
+                {renderRulerNumbers(width, 'x')}
             </div>
-          )}
-        </div>
+            <div className="ruler ruler-y" style={{ height: `${height}mm` }}>
+                {renderRulerNumbers(height, 'y')}
+            </div>
+            <div className="ruler-corner"></div>
 
-        <div className="label-footer">
-          {showPrice && price && (
-            <div className="price-preview" style={priceStyle}>
-              {price} <span className="price-unit" style={{ marginRight: '3px', fontSize: `${Math.max(5, fontSize * 0.7)}pt` }}>تومان</span>
+            <div className="label-render-area" style={labelStyle}>
+                {/* ... محتوای اتیکت شما ... */}
+                <div className="label-header">
+                    {storeInfo?.name && <span title={storeInfo.name}>{storeInfo.name}</span>}
+                </div>
+                <div className="label-body">
+                    {showName && name && <div title={name}>{name}</div>}
+                    {showCode && displayCode && <div title={`کد: ${displayCode}`}>کد: {displayCode}</div>}
+                    {showWeight && weight && <div title={weight}>{weight}</div>}
+                    {showPurity && purity && <div title={purity}>{purity}</div>}
+                    {showGoldColor && goldColor && <div title={`رنگ: ${goldColor}`}>رنگ: {goldColor}</div>}
+                    {showStoneInfo && productData.productType === 'stone_gold' && (
+                    <div className="stone-info-preview">
+                        {productData.stoneType && <span>سنگ: {productData.stoneType}</span>}
+                        {productData.stoneCount && <span> - ت: {productData.stoneCount}</span>}
+                        {productData.stoneWeight && <span> - و: {productData.stoneWeight} ق</span>}
+                    </div>
+                    )}
+                </div>
+                <div className="label-footer">
+                    {showPrice && price && (
+                    <div className="price-preview" style={priceStyle}>
+                        {price}<span style={{ fontSize: '0.7em', marginRight: '3px' }}>تومان</span>
+                    </div>
+                    )}
+                    {(barcodeEnabled || qrCodeEnabled) && (
+                    <div className="codes-preview">
+                        {barcodeEnabled && barcodeValue && <Barcode value={barcodeValue} width={1} height={barcodeHeight} fontSize={barcodeFontSize} margin={1} displayValue={true} textAlign="center" textMargin={2} />}
+                        {qrCodeEnabled && <QRCode value={finalQrCodeContent} size={qrCodeSize} level="H" includeMargin={false} className="qr-code-preview" />}
+                    </div>
+                    )}
+                </div>
             </div>
-          )}
-          {(barcodeEnabled || qrCodeEnabled) && (
-            <div className="codes-preview" style={{minHeight: `${Math.max(barcodeHeight, qrCodeSize) + (barcodeEnabled && code ? barcodeFontSize*1.5 : 0) }px`}}>
-              {barcodeEnabled && code && (
-                <Barcode
-                  value={barcodeValue}
-                  width={1}
-                  height={barcodeHeight}
-                  fontSize={barcodeFontSize}
-                  margin={1}
-                  displayValue={true}
-                  textAlign="center"
-                  textMargin={1}
-                />
-              )}
-              {qrCodeEnabled && (
-                <QRCode
-                  value={finalQrCodeContent}
-                  size={qrCodeSize}
-                  level="H"
-                  includeMargin={false}
-                  className="qr-code-preview"
-                />
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

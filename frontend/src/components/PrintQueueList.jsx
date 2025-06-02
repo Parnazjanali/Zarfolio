@@ -1,34 +1,46 @@
 // frontend/src/components/PrintQueueList.jsx
 import React from 'react';
-import { FaListUl, FaPrint, FaTrash } from 'react-icons/fa';
+import { FaPrint, FaTrashAlt, FaListOl } from 'react-icons/fa';
+import './PrintQueueList.css'; // فرض بر اینکه یک فایل CSS برای این کامپوننت وجود دارد
 
 const PrintQueueList = ({ printQueue, onRemoveFromQueue, onPrintQueue }) => {
-  if (printQueue.length === 0) {
-    return null; // اگر صف خالی است، چیزی نمایش نده
-  }
-
   return (
     <div className="print-queue-area card-style">
-      <h3><FaListUl /> صف چاپ ({printQueue.length.toLocaleString('fa')})</h3>
-      <ul>
-        {printQueue.map(item => (
-          <li key={item.id}>
-            <div className="queue-item-info">
-               <span className="item-name">{item.data.name || 'محصول بدون نام'} ({item.data.productType === 'jewelry' ? 'جواهر' : 'طلای ساده'})</span>
-               <span className="item-code">کد: {item.data.code || 'N/A'} - قیمت: {item.data.price ? parseFloat(item.data.price).toLocaleString('fa-IR') : 'N/A'}</span>
-            </div>
-            <div className="queue-item-actions">
-                <button onClick={() => onRemoveFromQueue(item.id)} title="حذف از صف">
-                  <FaTrash />
-                </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <button type="button" className="action-button primary-action full-width" onClick={onPrintQueue}>
-        <FaPrint /> چاپ همه موارد صف
-      </button>
+      <h3 className="card-header"><FaListOl /> صف چاپ ({printQueue.length})</h3>
+      
+      <div className="queue-items-container">
+        {printQueue.length === 0 ? (
+          <p className="empty-queue-message">صف چاپ خالی است. برای افزودن، از دکمه "افزودن به صف چاپ" استفاده کنید.</p>
+        ) : (
+          <ul className="queue-list">
+            {/* ***** شروع تغییرات برای رفع خطای TypeError ***** */}
+            {/* بررسی می‌کنیم که item وجود داشته باشد قبل از دسترسی به خصوصیات آن */}
+            {printQueue.map((item, index) => (
+              item ? (
+                <li key={item.id || index} className="queue-item">
+                  <span className="item-info">
+                    {index + 1}. {item.name || 'محصول بدون نام'} (کد: {item.code || 'N/A'})
+                  </span>
+                  <button onClick={() => onRemoveFromQueue(item.id)} className="remove-item-btn" aria-label="حذف از صف">
+                    <FaTrashAlt />
+                  </button>
+                </li>
+              ) : null // اگر آیتمی به هر دلیلی null یا undefined بود، آن را نادیده بگیر
+            ))}
+            {/* ***** پایان تغییرات ***** */}
+          </ul>
+        )}
+      </div>
+
+      {printQueue.length > 0 && (
+        <div className="queue-actions">
+          <button onClick={onPrintQueue} className="action-button primary-action print-btn">
+            <FaPrint /> چاپ همه موارد صف
+          </button>
+        </div>
+      )}
     </div>
   );
 };
+
 export default PrintQueueList;

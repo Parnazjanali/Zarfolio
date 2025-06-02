@@ -24,12 +24,50 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const profileButtonRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => { // 1. تابع را async کنید
     if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
       console.log("خروج کاربر تایید شد...");
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
-      navigate('/login');
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.warn("هیچ توکنی برای خروج یافت نشد.");
+          // اگر توکنی وجود ندارد، نیازی به ارسال درخواست به بک‌اند نیست
+          // فقط کاربر را به صفحه لاگین هدایت می‌کنیم
+          navigate('/login');
+          return;
+        }
+
+        // 2. آدرس API Gateway برای خروج از حساب
+        // مطمئن شوید VITE_API_BASE_URL در فایل .env شما به درستی تنظیم شده است
+        // مثال: VITE_API_BASE_URL=http://localhost:8080
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+        // 3. ارسال درخواست POST به بک‌اند
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: {
+            // هدر Authorization برای احراز هویت درخواست لازم است
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          console.log("درخواست خروج به بک‌اند با موفقیت ارسال شد.");
+        } else {
+          // حتی اگر بک‌اند خطا داد، بهتر است کاربر را از سیستم خارج کنیم
+          const errorData = await response.json().catch(() => ({ message: "پاسخ سرور قابل خواندن نیست" }));
+          console.error("خطا در خروج از حساب در سمت سرور:", response.status, errorData.message);
+        }
+      } catch (error) {
+        console.error("خطا هنگام ارسال درخواست خروج:", error);
+        // اینجا هم در صورت بروز خطا در شبکه، کاربر را خارج می‌کنیم
+      } finally {
+        // 4. پاک‌سازی localStorage و هدایت کاربر در هر صورت
+        // این بلوک چه درخواست موفق باشد چه ناموفق، اجرا می‌شود
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        navigate('/login');
+      }
     } else {
       console.log("خروج کاربر لغو شد.");
     }
