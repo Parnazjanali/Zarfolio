@@ -1,21 +1,13 @@
 // frontend/src/components/ProductInfoForm.jsx
 import React from 'react';
-import { FaBalanceScale, FaShapes, FaGem, FaTint } from 'react-icons/fa';
-import { FieldLabel } from './FieldLabel'; // فرض می‌کنیم FieldLabel را هم جدا می‌کنیم یا همینجا تعریف می‌کنیم
+import { FaBalanceScale, FaShapes, FaGem } from 'react-icons/fa'; // FaTint حذف شد چون استفاده نمی‌شود
+import { FieldLabel } from './FieldLabel';
+import './ProductInfoForm.css'; // <<<< ایمپورت فایل CSS جدید
 
-// فعلا FieldLabel را موقتا اینجا تعریف میکنیم اگر هنوز جدا نشده
-// const FieldLabel = ({ htmlFor, label, fieldId }) => (
-//   <label htmlFor={htmlFor} className="field-label-with-id">
-//     {label}
-//     {fieldId && <span className="field-id-tooltip" title={`شناسه برای فرمول: ${fieldId}`}>(<FaIdBadge /> {fieldId})</span>}
-//   </label>
-// );
-
-
-const ProductInfoForm = ({ productData, onProductDataChange, availableFormulaVariables }) => {
-  // TODO: انتقال JSX مربوط به نوع محصول و مشخصات کالا به اینجا
+const ProductInfoForm = ({ productData, onProductDataChange }) => {
   return (
-    <>
+    // ***** یک کلاس والد برای اعمال استایل‌های خاص از ProductInfoForm.css اضافه شد *****
+    <div className="product-info-form">
       {/* نوع محصول */}
       <fieldset className="form-fieldset">
         <legend><FaShapes /> نوع محصول</legend>
@@ -34,14 +26,18 @@ const ProductInfoForm = ({ productData, onProductDataChange, availableFormulaVar
       {/* مشخصات کالا */}
       <fieldset className="form-fieldset">
         <legend><FaBalanceScale /> مشخصات کالا</legend>
-        <div className="form-row">
-          <FieldLabel htmlFor="productName" label="نام محصول:" fieldId="name" />
-          <input type="text" id="productName" name="name" value={productData.name} onChange={onProductDataChange} placeholder="مثال: انگشتر رینگی ساده / سرویس برلیان" />
+        
+        <div className="form-row-inline">
+          <div className="form-row">
+            <FieldLabel htmlFor="productName" label="نام محصول:" fieldId="name" />
+            <input type="text" id="productName" name="name" value={productData.name} onChange={onProductDataChange} placeholder="مثال: انگشتر رینگی ساده" />
+          </div>
+          <div className="form-row">
+            <FieldLabel htmlFor="productCode" label="کد محصول:" fieldId="code" />
+            <input type="text" id="productCode" name="code" value={productData.code} onChange={onProductDataChange} placeholder="مثال: RG1025" />
+          </div>
         </div>
-        <div className="form-row">
-          <FieldLabel htmlFor="productCode" label="کد محصول:" fieldId="code" />
-          <input type="text" id="productCode" name="code" value={productData.code} onChange={onProductDataChange} placeholder="مثال: RG1025 / SNB201" />
-        </div>
+
         <div className="form-row-inline">
           <div className="form-row">
             <FieldLabel htmlFor="productWeight" label="وزن طلا (گرم):" fieldId="weight" />
@@ -58,7 +54,7 @@ const ProductInfoForm = ({ productData, onProductDataChange, availableFormulaVar
             </select>
           </div>
         </div>
-        <div className="form-row">
+        <div className="form-row"> {/* رنگ طلا در یک ردیف جدا */}
            <FieldLabel htmlFor="goldColor" label="رنگ طلا:" fieldId="goldColor" />
            <select id="goldColor" name="goldColor" value={productData.goldColor} onChange={onProductDataChange}>
               <option value="زرد">زرد</option>
@@ -72,11 +68,11 @@ const ProductInfoForm = ({ productData, onProductDataChange, availableFormulaVar
 
       {/* مشخصات سنگ (فقط برای جواهر) */}
       {productData.productType === 'jewelry' && (
-        <fieldset className="form-fieldset nested-fieldset">
+        <fieldset className="form-fieldset nested-fieldset"> {/* کلاس nested-fieldset برای استایل‌دهی خاص */}
            <legend><FaGem /> مشخصات سنگ</legend>
            <div className="form-row">
              <FieldLabel htmlFor="stoneType" label="نوع سنگ اصلی:" fieldId="stoneType" />
-             <input type="text" id="stoneType" name="stoneType" value={productData.stoneType} onChange={onProductDataChange} placeholder="مثال: برلیان، یاقوت، اتمی"/>
+             <input type="text" id="stoneType" name="stoneType" value={productData.stoneType} onChange={onProductDataChange} placeholder="مثال: برلیان، یاقوت"/>
            </div>
            <div className="form-row-inline">
              <div className="form-row">
@@ -85,12 +81,12 @@ const ProductInfoForm = ({ productData, onProductDataChange, availableFormulaVar
              </div>
              <div className="form-row">
                <FieldLabel htmlFor="stoneWeight" label="وزن کل سنگ (واحد):" fieldId="stoneWeight" />
-               <input type="text" id="stoneWeight" name="stoneWeight" value={productData.stoneWeight} onChange={onProductDataChange} placeholder="مثال: ۰.۲۵ قیراط یا ۰.۰۵ گرم" />
+               <input type="text" id="stoneWeight" name="stoneWeight" value={productData.stoneWeight} onChange={onProductDataChange} placeholder="مثال: ۰.۲۵ قیراط" />
              </div>
            </div>
         </fieldset>
       )}
-    </>
+    </div>
   );
 };
 export default ProductInfoForm;
