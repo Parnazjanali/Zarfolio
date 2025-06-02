@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Frontend (Vite)",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "group": "frontendGroup" // گروه پنل برای frontend
+      },
+      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+    },
+    {
+      "label": "Run Backend - API Gateway",
+      "type": "shell",
+      "command": "go run cmd/main.go",
+      "options": {
+        "cwd": "${workspaceFolder}/backend/src/apiGateway"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "group": "apiGatewayGroup" // گروه پنل برای apiGateway
+      },
+      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+    },
+    {
+      "label": "Run Backend - Profile Manager",
+      "type": "shell",
+      "command": "go run cmd/main.go",
+      "options": {
+        "cwd": "${workspaceFolder}/backend/src/profileManager"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "group": "profileManagerGroup" // گروه پنل برای profileManager
+      },
+      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+    },
+    {
+      "label": "Run All Services",
+      "dependsOn": [
+        "Run Frontend (Vite)",
+        "Run Backend - API Gateway",
+        "Run Backend - Profile Manager"
+      ],
+      "dependsOrder": "parallel", // اجرای موازی تسک‌ها
+      "group": {
+        "kind": "build",
+        "isDefault": true // این تسک به عنوان تسک build پیش‌فرض اجرا می‌شود
+      },
+      "problemMatcher": [] // برای جلوگیری از اسکن خروجی توسط VS Code برای خطاها
+    }
+  ]
+}

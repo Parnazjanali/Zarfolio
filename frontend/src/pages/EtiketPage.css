@@ -1,35 +1,54 @@
 /* frontend/src/pages/EtiketPage.css */
+
+:root {
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-color: #6c757d;
+  --secondary-hover-color: #5a6268;
+  --success-color: #28a745;
+  --success-hover-color: #218838;
+  --info-color: #17a2b8;
+  --info-hover-color: #138496;
+  --background-color: #f8f9fa;
+  --card-background-color: #ffffff;
+  --text-primary-color: #212529;
+  --text-secondary-color: #495057;
+  --border-color: #dee2e6;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --card-radius: 12px;
+}
+
 .etiket-page-container {
   padding: 25px 30px;
-  box-sizing: border-box;
   direction: rtl;
   font-family: 'Vazirmatn', sans-serif;
-  background-color: #f4f7f9;
+  background-color: var(--background-color);
+  color: var(--text-primary-color);
 }
 
-.etiket-page-container .page-header {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e0e0e0;
+.page-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.etiket-page-container .page-header h1 {
-  font-size: 2em;
-  color: #2c3e50;
-  margin: 0 0 5px 0;
-  font-weight: 700;
+.page-header h1 {
+  font-size: 2.2em;
+  font-weight: 800;
   display: flex;
   align-items: center;
-}
-.etiket-page-container .page-header h1 svg {
-  margin-left: 12px;
-  color: #007bff;
+  gap: 15px;
+  color: var(--text-primary-color);
 }
 
-.etiket-page-container .page-header p {
-  font-size: 1em;
-  color: #52616B;
-  margin: 0;
+.page-header h1 svg {
+  color: var(--primary-color);
+}
+
+.page-header p {
+  font-size: 1.1em;
+  color: var(--text-secondary-color);
+  margin-top: 5px;
 }
 
 .etiket-layout {
@@ -38,567 +57,272 @@
   gap: 30px;
 }
 
-@media (min-width: 1024px) {
-  .etiket-layout {
-    grid-template-columns: minmax(450px, 1.7fr) minmax(320px, 1fr);
-  }
-}
-
+/* --- Generic Card Style --- */
 .card-style {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+  background-color: var(--card-background-color);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 25px;
+  padding: 20px 25px;
 }
 
-.etiket-input-section h2 { /* عنوان اصلی فرم اطلاعات و قیمت گذاری */
-  font-size: 1.35em;
-  color: #343a40;
-  margin-top: 0;
-  margin-bottom: 25px; /* افزایش فاصله */
-  padding-bottom: 12px;
+.card-header {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  padding-bottom: 15px;
   border-bottom: 1px solid #e9ecef;
   display: flex;
   align-items: center;
-  font-weight: 600;
-}
-.etiket-input-section h2 svg {
-  margin-left: 10px;
-  font-size: 0.9em;
-  color: #007bff;
+  gap: 10px;
 }
 
-.form-fieldset {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 15px 20px 20px 20px;
-  margin-bottom: 25px;
-  background-color: #fdfdfd;
+/* --- Forms & Inputs --- */
+.form-section {
+  padding-top: 5px; /* Adjust padding due to card-header */
 }
-.form-fieldset legend {
-  font-size: 1.1em;
-  font-weight: 600;
-  color: #007bff;
-  padding: 0 10px;
-  margin-right: 10px;
-  display: flex;
-  align-items: center;
+input[type="text"], input[type="number"], select {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding and border are inside the element's total width and height */
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #f8f9fa;
 }
-.form-fieldset legend svg {
-  margin-left: 8px;
+input:focus, select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    outline: none;
+    background-color: #fff;
 }
-
-.nested-fieldset {
-  border-color: #e8f0fe;
-  background-color: #f8faff;
-  margin-top: 15px;
-}
-.nested-fieldset legend {
-  font-size: 1em;
-  color: #285a94;
-}
-
 .form-row {
-  margin-bottom: 18px;
-}
-.form-row:last-child {
-  margin-bottom: 0;
-}
-
-label.field-label-with-id, /* استایل برای کامپوننت FieldLabel */
-.form-group label { /* استایل برای لیبل‌های چک‌باکس‌ها و رادیوها */
-  display: block;
-  font-size: 0.9em;
-  color: #495057;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-label.field-label-with-id { /* استایل خاص‌تر برای FieldLabel */
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.field-id-tooltip {
-  font-size: 0.75em;
-  color: #888;
-  font-weight: normal;
-  direction: ltr;
-  margin-right: 5px;
-  cursor: help;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-}
-.field-id-tooltip svg {
-  margin-right: 3px;
-  font-size: 0.9em;
-}
-
-.form-row input[type="text"],
-.form-row input[type="number"],
-.form-row input[type="email"],
-.form-row select,
-.form-row textarea {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 0.9em;
-  font-family: 'Vazirmatn', sans-serif;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background-color: #fdfdfe;
-  color: #495057;
-}
-.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
-  border-color: #86b7fe;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
+  flex-direction: column;
+  margin-bottom: 18px;
 }
 
 .form-row-inline {
   display: flex;
   gap: 20px;
-  align-items: flex-end;
+  margin-bottom: 18px;
 }
+
 .form-row-inline .form-row {
   flex: 1;
   margin-bottom: 0;
 }
 
-.form-group {
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 0.9em;
-}
-.form-group input[type="checkbox"],
-.form-group input[type="radio"] {
-  margin-left: 8px;
-  transform: scale(1.1);
-  accent-color: #007bff;
-  cursor: pointer;
-}
-.form-group svg {
-    margin-right: 5px;
-    margin-left: 5px;
-    color: #555;
-}
-
-.form-group-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.settings-subtitle { /* عنوان‌های داخلی بخش‌ها مثل "محاسبه قیمت طلای ساده" */
-  font-size: 1em;
-  font-weight: 600;
-  color: #454d55;
-  margin-top: 20px;
-  margin-bottom: 15px; /* افزایش فاصله */
-  padding-bottom: 8px;
-  border-bottom: 1px dotted #d8dde2;
-  display: flex;
-  align-items: center;
-}
-.settings-subtitle svg {
-    margin-left: 8px;
-}
-
+/* --- Buttons --- */
 .form-actions {
-  margin-top: 30px;
   display: flex;
   gap: 15px;
-  justify-content: flex-start;
+  margin-top: 25px;
+  flex-wrap: wrap;
 }
 
 .action-button {
-  background-color: #6c757d;
-  color: white;
   padding: 10px 20px;
-  font-size: 0.95em;
-  font-weight: 500;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  display: inline-flex;
+  font-size: 1em;
+  font-weight: 600;
+  display: inline-flex; /* Changed from flex to inline-flex for better wrapping with other buttons */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease-in-out;
+  color: white;
+  text-decoration: none; /* In case it's used as a link */
+}
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-button.primary-action {
+  background-color: var(--primary-color);
+}
+.action-button.primary-action:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.action-button.secondary-action {
+  background-color: var(--info-color);
+}
+.action-button.secondary-action:hover {
+  background-color: var(--info-hover-color);
+}
+
+.action-button { /* Default style for non-primary/secondary buttons */
+  background-color: var(--secondary-color);
+}
+.action-button:hover {
+  background-color: var(--secondary-hover-color);
+}
+
+/* --- Preview Section --- */
+.preview-wrapper.card-style {
+    padding: 20px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 20px 0; /* Remove horizontal padding from here if .preview-wrapper handles it */
+  border-bottom: 1px solid #e9ecef;
+  padding: 0 0 15px 0; /* Padding only at the bottom */
+}
+
+.preview-header h4 {
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 700;
+  display: flex;
   align-items: center;
   gap: 8px;
 }
-.action-button:hover {
-  background-color: #5a6268;
-}
-.action-button:active {
-    transform: translateY(1px);
-}
-.action-button.primary-action {
-  background-color: #007bff;
-}
-.action-button.primary-action:hover {
-  background-color: #0056b3;
-}
-.action-button.full-width {
-  width: 100%;
-  justify-content: center;
-}
 
-/* بخش صف چاپ */
-.print-queue-area {
-  margin-top: 30px;
-}
-.print-queue-area h3 {
-  font-size: 1.35em;
-  color: #343a40;
-  margin-top: 0;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e9ecef;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-}
-.print-queue-area h3 svg {
-  margin-left: 10px;
+.edit-mode-btn {
+  padding: 6px 14px;
   font-size: 0.9em;
-  color: #007bff;
-}
-.print-queue-area ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 20px 0;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #eee;
-  border-radius: 6px;
-}
-.print-queue-area li {
-  padding: 12px 15px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9em;
-  transition: background-color 0.15s ease;
-}
-.print-queue-area li:hover {
-    background-color: #f8f9fa;
-}
-.print-queue-area li:last-child {
-  border-bottom: none;
-}
-.queue-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex-grow: 1;
-    margin-left: 10px;
-}
-.queue-item-info .item-name {
-  color: #333;
-  font-weight: 500;
-  margin-bottom: 3px;
-}
-.queue-item-info .item-code {
-  font-size: 0.85em;
-  color: #555;
-}
-.queue-item-actions button {
-  background: none;
-  border: none;
-  color: #6c757d;
-  cursor: pointer;
-  font-size: 1.1em;
-  padding: 6px;
-  border-radius: 4px;
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-.queue-item-actions button:hover {
-  color: #dc3545;
-  background-color: #f1f1f1;
 }
 
-/* نوع محصول و محاسبه قیمت */
-.form-radio-group {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
+.edit-mode-btn.active {
+  background-color: var(--success-color);
 }
-.form-radio-group label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 0.95em;
-  font-weight: 500;
-  color: #333;
-}
-.form-radio-group input[type="radio"] {
-  margin-left: 8px;
-  margin-right: 0;
-  transform: scale(1.1);
-  accent-color: #007bff;
+.edit-mode-btn.active:hover {
+  background-color: var(--success-hover-color);
 }
 
-.price-calculation-section {
-  padding: 15px;
-  background-color: #f5f9ff;
-  border: 1px solid #d9e6f7;
-  border-radius: 6px;
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-.price-calculation-section .settings-subtitle {
-  color: #0056b3;
+/* --- Styles for Integrated Label Type Selector in Accordion --- */
+.label-type-selector-inline {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-input.calculated-price {
-  background-color: #e9ecef;
-  font-weight: bold;
-  color: #28a745;
-}
-input.calculated-price::placeholder {
-    color: #6c757d;
-}
-
-.price-formula-note {
-    font-size: 0.8em;
-    color: #6c757d;
-    margin-top: 5px;
-    padding: 5px 0;
-    text-align: center;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-
-/* فرمول سفارشی */
-.custom-formula-section {
-  border-color: #d6c8ff;
-  background-color: #f9f7ff;
-  margin-top: 20px;
-}
-.custom-formula-section legend {
-  color: #6f42c1;
-}
-.custom-formula-section .form-group label {
-  font-weight: bold;
-}
-.available-vars-info {
-  font-size: 0.85em;
-  color: #555;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #efebf9;
-  border-radius: 4px;
-}
-.available-vars-info p {
-  margin-top: 0;
-  margin-bottom: 5px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-}
-.available-vars-info p svg {
-  margin-left: 5px;
-  color: #6f42c1;
-}
-.available-vars-info ul {
-  list-style-type: none;
-  padding-right: 15px;
-  margin-bottom: 0;
-}
-.available-vars-info li code {
-  font-family: monospace;
-  background-color: #e0d9f0;
-  padding: 1px 4px;
-  border-radius: 3px;
-  direction: ltr;
-  display: inline-block;
-}
-.formula-security-note {
-    font-size: 0.9em;
-    margin-top: 10px !important;
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    padding: 8px !important;
-    border-radius: 4px;
-}
-.formula-error-text {
-  color: #dc3545;
-  font-size: 0.9em;
-  margin-top: 8px;
-  font-weight: bold;
-}
-
-/* قیمت نهایی */
-.price-display-final {
-    margin-top: 20px;
-    border-top: 1px dashed #ccc;
-    padding-top: 20px;
-}
-.price-display-final label.field-label-with-id {
-    font-weight: bold;
-    color: #0056b3;
-}
-.price-display-final input.calculated-price {
-    font-size: 1.2em;
-    padding: 12px 15px;
-    text-align: center;
-}
-
-/* ستون پیش‌نمایش و تنظیمات ظاهری (چسبان) */
-.etiket-preview-appearance-section {
-  /* در حالت دسکتاپ، این ستون چسبان می‌شود */
-}
-
-.sticky-content-wrapper {
-  /* این wrapper برای گروه بندی آیتم‌های چسبان است، اما خود ستون اصلی چسبان می‌شود */
-}
-
-.preview-wrapper {
-  margin-bottom: 20px;
-}
-
-.appearance-settings-wrapper {
-  /* این wrapper برای AccordionAppearanceSettings است و استایل card-style را می‌گیرد */
-}
-
-/* عنوان اصلی بخش آکاردئون تنظیمات ظاهری */
-.appearance-settings-wrapper .accordion-main-title {
-  font-size: 1.35em;
-  color: #343a40;
-  margin-top: 0;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e9ecef;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-}
-.appearance-settings-wrapper .accordion-main-title svg {
-  margin-left: 10px;
-  font-size: 0.9em;
-  color: #007bff;
-}
-
-/* استایل‌های آکاردئون */
-.accordion-container {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.accordion-panel {
-  /* استایل خاصی لازم ندارد */
-}
-.accordion-header {
-  background-color: #f8f9fa;
-  border: none;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 12px 18px;
-  width: 100%;
-  text-align: right;
+.selector-title {
   font-size: 1em;
   font-weight: 600;
-  color: #34495e;
-  cursor: pointer;
+  margin: 0 0 15px 0;
+  color: var(--text-secondary-color);
+}
+
+.radio-group {
   display: flex;
+  gap: 15px;
+}
+
+.radio-label {
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  background-color: var(--background-color);
+  flex: 1;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  transition: background-color 0.2s ease;
 }
-.accordion-panel:last-child .accordion-header {
-    border-bottom: none; /* آخرین هدر خط زیرین ندارد اگر بسته باشد */
+
+.radio-label:hover {
+  border-color: #a7b0b8;
 }
-.accordion-panel:last-child .accordion-header.active {
-    border-bottom-color: #e0e0e0; /* اگر آخرین پنل باز است، خط زیرین هدرش را برگردانیم */
+
+.radio-label.selected {
+  border-color: var(--primary-color);
+  background-color: #e7f3ff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
 }
-.accordion-header:hover {
-  background-color: #e9ecef;
+
+.radio-label input[type="radio"] {
+  display: none;
 }
-.accordion-header.active {
-  background-color: #e0e6ef;
-  color: #0056b3;
-  border-bottom-color: transparent;
+
+.radio-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
 }
-.accordion-header.active .accordion-header-icon {
-    color: #0056b3;
+
+.radio-content svg {
+  flex-shrink: 0;
 }
-.accordion-header-icon {
-  margin-left: 10px;
-  font-size: 0.95em;
-  color: #555;
-  transition: color 0.2s ease;
-}
-.accordion-arrow {
+
+.radio-content span {
+  font-weight: 500;
   font-size: 0.9em;
-  transition: transform 0.3s ease;
+  color: #343a40;
 }
-.accordion-content {
-  padding: 20px; /* افزایش padding داخلی */
-  background-color: #ffffff;
-  border-top: 1px solid #d1dbe5;
-  animation: fadeInAccordion 0.3s ease-out;
-}
-@keyframes fadeInAccordion {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.accordion-content .form-fieldset {
-  margin-bottom: 0; padding: 0; border: none; background-color: transparent;
-}
-.accordion-content .form-fieldset legend { display: none; }
-.accordion-content .settings-subtitle { margin-top: 10px; font-size: 0.9em; }
 
 
-/* تنظیمات چسبان (Sticky) برای ستون راست در دسکتاپ */
+/* --- Responsive Layout --- */
 @media (min-width: 1024px) {
-  .etiket-preview-appearance-section {
+  .etiket-layout {
+    grid-template-columns: 1.7fr 1fr; /* نسبت ستون‌ها، ستون اول کمی بزرگتر */
+    align-items: flex-start;
+  }
+  .etiket-preview-appearance-section .sticky-content-wrapper {
     position: sticky;
-    top: 20px; /* فاصله از بالای والد (معمولاً main-content-area) */
-    align-self: flex-start; /* برای جلوگیری از کشیده شدن بیش از حد ستون */
-    max-height: calc(100vh - 40px); /* ارتفاع حداکثر، با در نظر گرفتن فاصله بالا و پایین */
-    overflow-y: auto; /* فعال کردن اسکرول داخلی برای این ستون */
-    /* padding-right: 10px; */ /* اگر اسکرول‌بار با محتوا تداخل داشت (برای فارسی) */
+    top: 20px;
   }
 }
 
-/* غیرفعال کردن چسبندگی در موبایل */
-@media (max-width: 1023px) {
-  .etiket-preview-appearance-section {
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-  }
-  .sticky-content-wrapper { /* اگر از این wrapper استفاده می‌شد، آن هم باید ریست شود */
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-  }
-}
-
-/* سایر تنظیمات واکنش‌گرایی */
 @media (max-width: 768px) {
   .etiket-page-container { padding: 20px 15px; }
-  .etiket-page-container .page-header h1 { font-size: 1.6em; }
-  .etiket-input-section h2,
-  .appearance-settings-wrapper .accordion-main-title,
-  .print-queue-area h3 { font-size: 1.2em; }
+  .page-header h1 { font-size: 1.8em; }
+  .form-row-inline { flex-direction: column; gap: 18px; }
+}
 
-  .form-row-inline { flex-direction: column; gap: 0; }
-  .form-row-inline .form-row { margin-bottom: 18px; }
-  .form-row-inline .form-row:last-child { margin-bottom: 0; }
 
-  .form-actions { flex-direction: column; gap: 10px; }
-  .action-button { width: 100%; justify-content: center; }
+/* ============== PRINT STYLES (اصلاح شده برای رفع مشکل به هم ریختگی) ============== */
+.print-only-area {
+  visibility: hidden;
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
 
-  .form-group-grid { grid-template-columns: 1fr; }
-  .form-radio-group { flex-direction: column; gap: 10px; }
+@media print {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #fff !important; /* اطمینان از پس‌زمینه سفید در چاپ */
+    -webkit-print-color-adjust: exact !important; /* برای چاپ صحیح رنگ‌ها در کروم */
+    print-color-adjust: exact !important; /* استاندارد */
+  }
 
-  .accordion-header { padding: 10px 15px; font-size: 0.95em; }
-  .accordion-content { padding: 15px; }
+  .visible-ui {
+    display: none !important;
+  }
+
+  .print-only-area {
+    visibility: visible !important;
+    position: static !important; /* بازگرداندن به جریان عادی صفحه برای چاپ */
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  /* قانون @page داینامیک از طریق JS اعمال می‌شود و نیازی به تعریف استاتیک آن در اینجا نیست */
+}
+/* استایل برای نمایش استاتیک نوع اتیکت */
+.static-label-type-display {
+  border: 2px solid var(--primary-color);
+  background-color: #e7f3ff;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
 }

@@ -1,4 +1,6 @@
-# Logs
+# This .gitignore file is for the frontend directory of a project.
+# Logs and debug files
+# --------------------
 logs
 *.log
 npm-debug.log*
@@ -7,14 +9,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+
+# Dependencies
+# ------------
 node_modules
+
+
+# Build output & compiled files
+# -----------------------------
 dist
 dist-ssr
 *.local
+frontend/dev-dist/sw.js # Specific rule from first .gitignore
+
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# ----------------------------
 .idea
 .DS_Store
 *.suo
@@ -22,12 +32,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-<<<<<<< HEAD
-=======
+# Keep VSCode extensions file, but ignore the rest of the directory
+.vscode/*
+!.vscode/extensions.json
 
-# Environment variables 
-.env                 # ignores a file named .env in the root of the .gitignore
-*.env                # ignores any file ending with .env (e.g., .env.development, .env.production)
-**/.env              # ignores any file named .env in any subdirectory (e.g., backend/src/apiGateway/.env)
 
->>>>>>> d83be28e480caad8639392f57deae2a074915b47
+# Environment variables
+# ---------------------
+# Ignore all .env files in the project, including subdirectories
+**/.env
