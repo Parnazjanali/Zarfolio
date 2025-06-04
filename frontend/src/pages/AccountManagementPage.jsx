@@ -1,7 +1,7 @@
 // frontend/src/pages/AccountManagementPage.jsx
-import React, { useState, useEffect } from 'react'; // Added useEffect
+import React, { useState, useEffect } from 'react';
 import './AuthForms.css'; // Reusing some auth form styles
-import { FaUserEdit, FaLock, FaKey, FaSpinner, FaShieldAlt, FaQrcode, FaMobileAlt, FaUserShield, FaListOl } from 'react-icons/fa'; // Additional icons
+import { FaUserEdit, FaLock, FaKey, FaSpinner, FaShieldAlt, FaQrcode, FaMobileAlt, FaUserShield, FaListOl, FaCamera, FaUserCircle as DefaultUserIcon } from 'react-icons/fa'; // Added FaCamera, DefaultUserIcon
 import QRCode from 'qrcode.react'; // For displaying QR codes
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
@@ -36,6 +36,14 @@ function AccountManagementPage() {
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [twoFASetupStage, setTwoFASetupStage] = useState('initial'); // 'initial', 'generated', 'enabled'
 
+  // State for Profile Picture
+  const [currentProfilePictureURL, setCurrentProfilePictureURL] = useState('');
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [profilePicturePreviewURL, setProfilePicturePreviewURL] = useState('');
+  const [profilePictureMessage, setProfilePictureMessage] = useState('');
+  const [profilePictureError, setProfilePictureError] = useState('');
+  const [isProfilePictureLoading, setIsProfilePictureLoading] = useState(false);
+
   const getAuthToken = () => localStorage.getItem('authToken');
 
   useEffect(() => {
@@ -43,25 +51,92 @@ function AccountManagementPage() {
     if (storedUserData) {
         try {
             const userData = JSON.parse(storedUserData);
-            if (userData && typeof userData.is_two_fa_enabled === 'boolean') {
-                setIsTwoFAEnabled(userData.is_two_fa_enabled);
-                if (userData.is_two_fa_enabled) {
-                    setTwoFASetupStage('enabled');
+            if (userData) {
+                if (typeof userData.is_two_fa_enabled === 'boolean') {
+                    setIsTwoFAEnabled(userData.is_two_fa_enabled);
+                    if (userData.is_two_fa_enabled) {
+                        setTwoFASetupStage('enabled');
+                    }
+                } else {
+                    console.warn("is_two_fa_enabled not found in userData, defaulting to false.");
+                    setIsTwoFAEnabled(false);
                 }
-            } else {
-                 // If not in userData, ideally fetch from a /me or /account/status endpoint
-                 // For now, assume false if not present.
-                 console.warn("is_two_fa_enabled not found in userData, defaulting to false.");
-                 setIsTwoFAEnabled(false);
+                if (userData.profile_picture_url) {
+                    // Assuming profile_picture_url is the full relative path from apiGateway's perspective
+                    setCurrentProfilePictureURL(userData.profile_picture_url);
+                }
             }
         } catch (e) {
-            console.error("Failed to parse userData for 2FA status:", e);
-            // Fallback or fetch from API
+            console.error("Failed to parse userData: ", e);
         }
     }
-    // TODO: Consider a dedicated API call to get current user details including 2FA status
-    // if not reliably available or to ensure freshness.
   }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            setProfilePictureError('فایل انتخاب شده بزرگتر از ۲ مگابایت است.');
+            setProfilePictureFile(null);
+            setProfilePicturePreviewURL('');
+            return;
+        }
+        const validTypes = ['image/jpeg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+            setProfilePictureError('نوع فایل معتبر نیست. فقط JPG و PNG مجاز است.');
+            setProfilePictureFile(null);
+            setProfilePicturePreviewURL('');
+            return;
+        }
+        setProfilePictureFile(file);
+        setProfilePicturePreviewURL(URL.createObjectURL(file));
+        setProfilePictureError(''); // Clear previous error
+    }
+  };
+
+  const handleProfilePictureUpload = async () => {
+    if (!profilePictureFile) {
+        setProfilePictureError('لطفاً ابتدا یک فایل عکس انتخاب کنید.');
+        return;
+    }
+    setIsProfilePictureLoading(true);
+    setProfilePictureMessage('');
+    setProfilePictureError('');
+
+    const formData = new FormData();
+    formData.append('profile_picture', profilePictureFile);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/account/profile-picture`, {
+            method: 'POST',
+            headers: {
+                // 'Content-Type': 'multipart/form-data' // Browser sets this with boundary
+                'Authorization': `Bearer ${getAuthToken()}`,
+            },
+            body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setProfilePictureMessage(data.message || 'عکس پروفایل با موفقیت آپلود شد.');
+            const newImageURL = data.profile_picture_url;
+            setCurrentProfilePictureURL(newImageURL);
+
+            const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+            storedUserData.profile_picture_url = newImageURL;
+            localStorage.setItem('userData', JSON.stringify(storedUserData));
+
+            setProfilePictureFile(null);
+            setProfilePicturePreviewURL('');
+        } else {
+            setProfilePictureError(data.message || 'خطا در آپلود عکس پروفایل.');
+        }
+    } catch (err) {
+        console.error('Profile picture upload error:', err);
+        setProfilePictureError('خطا در ارتباط با سرور هنگام آپلود عکس.');
+    } finally {
+        setIsProfilePictureLoading(false);
+    }
+  };
 
   const handleChangeUsername = async (e) => {
     e.preventDefault();
@@ -308,6 +383,49 @@ function AccountManagementPage() {
     <div style={pageStyles}>
       <h1 style={{textAlign: 'center', marginBottom: '40px', color: '#333'}}>تنظیمات حساب کاربری</h1>
 
+      {/* Profile Picture Section */}
+      <section style={sectionStyles}>
+        <h2 style={h2Styles}><FaCamera style={iconStyles} /> عکس پروفایل</h2>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          {currentProfilePictureURL ? (
+            <img
+              src={currentProfilePictureURL}
+              alt="Profile"
+              style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }}
+              onError={(e) => { e.target.style.display='none'; /* Hide if broken */ }}
+            />
+          ) : (
+            <DefaultUserIcon size={100} style={{ color: '#ccc', border: '2px solid #ddd', borderRadius: '50%', padding: '10px' }} />
+          )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="profilePictureInput">انتخاب عکس جدید (JPG, PNG, حداکثر ۲مگابایت)</label>
+          <input
+            type="file"
+            id="profilePictureInput"
+            className="form-control"
+            accept="image/jpeg, image/png"
+            onChange={handleFileChange}
+          />
+        </div>
+        {profilePicturePreviewURL && (
+          <div style={{ textAlign: 'center', margin: '10px 0' }}>
+            <p>پیش‌نمایش:</p>
+            <img src={profilePicturePreviewURL} alt="Preview" style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '4px', border: '1px solid #eee' }} />
+          </div>
+        )}
+        {profilePictureMessage && <div className="message-banner success visible">{profilePictureMessage}</div>}
+        {profilePictureError && <div className="message-banner error visible">{profilePictureError}</div>}
+        <button
+          onClick={handleProfilePictureUpload}
+          className="auth-button"
+          disabled={isProfilePictureLoading || !profilePictureFile}
+          style={{marginTop: '10px'}}
+        >
+          {isProfilePictureLoading ? <FaSpinner className="spinner-sm" /> : 'آپلود عکس'}
+        </button>
+      </section>
+
       {/* Change Username Section */}
       <section style={sectionStyles}>
         <h2 style={h2Styles}><FaUserEdit style={iconStyles} /> تغییر نام کاربری</h2>
@@ -343,7 +461,7 @@ function AccountManagementPage() {
       </section>
 
       {/* Change Password Section */}
-      <section style={{ ...sectionStyles /* Apply sectionStyles here too */ }}>
+      <section style={sectionStyles}> {/* Restore border-bottom if it's not the last section anymore */}
         <h2 style={h2Styles}><FaKey style={iconStyles} /> تغییر رمز عبور</h2>
         <form onSubmit={handleChangePassword} className="auth-form" style={{padding:0, boxShadow:'none'}}>
           <div className="form-group">
@@ -385,6 +503,90 @@ function AccountManagementPage() {
             {isPasswordLoading ? <FaSpinner className="spinner-sm" /> : 'تغییر رمز عبور'}
           </button>
         </form>
+      </section>
+
+      {/* 2FA Management Section - Re-adding from Subtask 17 plan */}
+      <section style={{ ...sectionStyles, borderBottom: 'none' }}>
+        <h2 style={h2Styles}><FaUserShield style={iconStyles} /> مدیریت تایید دو مرحله‌ای (2FA)</h2>
+
+        {twoFAMessage && <div className="message-banner success visible">{twoFAMessage}</div>}
+        {twoFAError && <div className="message-banner error visible">{twoFAError}</div>}
+
+        {!isTwoFAEnabled && twoFASetupStage === 'initial' && (
+          <button onClick={handleGenerate2FASecret} className="auth-button" disabled={isTwoFALoading}>
+            {isTwoFALoading ? <FaSpinner className="spinner-sm" /> : <><FaQrcode style={{marginRight:'5px'}}/> فعال‌سازی 2FA</>}
+          </button>
+        )}
+
+        {twoFASetupStage === 'generated' && !isTwoFAEnabled && qrCodeUrl && (
+          <div style={{ textAlign: 'center', margin: '20px 0' }}>
+            <p>1. برنامه Authenticator خود را باز کنید (مانند Google Authenticator, Authy).</p>
+            <p>2. کد QR زیر را اسکن کنید یا کلید مخفی را دستی وارد نمایید:</p>
+            <div style={{ margin: '20px 0', display: 'inline-block', border: '1px solid #ccc', padding: '10px' }}>
+              <QRCode value={qrCodeUrl} size={200} level="H" />
+            </div>
+            <p><strong>کلید مخفی (برای ورود دستی):</strong></p>
+            <p style={{ fontFamily: 'monospace', fontSize: '1.1em', padding: '10px', backgroundColor: '#f5f5f5', display: 'inline-block', borderRadius: '4px', border: '1px solid #ddd', userSelect: 'all' }}>
+              {twoFASecret}
+            </p>
+            <p style={{marginTop: '15px'}}>3. کد ۶ رقمی نمایش داده شده در برنامه Authenticator را وارد کنید:</p>
+            <form onSubmit={handleVerifyAndEnable2FA} className="auth-form" style={{padding:0, boxShadow:'none', maxWidth:'300px', margin:'10px auto'}}>
+              <div className="form-group">
+                <label htmlFor="totpCode"><FaMobileAlt /> کد تایید 2FA</label>
+                <input
+                  type="text"
+                  id="totpCode"
+                  className="form-control"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  placeholder="کد ۶ رقمی"
+                  maxLength={6}
+                  required
+                  style={{textAlign:'center', letterSpacing: '0.2em'}}
+                />
+              </div>
+              <button type="submit" className="auth-button" disabled={isTwoFALoading}>
+                {isTwoFALoading ? <FaSpinner className="spinner-sm" /> : 'تایید و فعال‌سازی نهایی'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {isTwoFAEnabled && twoFASetupStage === 'enabled' && (
+          <div>
+            <p style={{ color: 'green', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center' }}><FaShieldAlt style={{marginRight:'8px', color:'green'}}/> تایید دو مرحله‌ای (2FA) برای حساب شما فعال است.</p>
+
+            {showRecoveryCodes && recoveryCodes.length > 0 && (
+              <div className="recovery-codes-section" style={{border:'1px solid orange', padding:'15px', borderRadius:'5px', backgroundColor:'#fff9e6', marginBottom:'20px'}}> {/* Corrected #naranja to orange */}
+                <h3 style={{display:'flex', alignItems:'center', color:'#c67800'}}><FaListOl style={{marginRight:'8px'}}/> کدهای بازیابی (یکبار مصرف):</h3>
+                <p style={{color:'#c67800'}}>این کدها را در مکانی امن ذخیره کنید. اگر به برنامه Authenticator خود دسترسی نداشته باشید، می‌توانید از این کدها برای ورود استفاده کنید. <strong>این کدها دیگر نمایش داده نخواهند شد.</strong></p>
+                <ul style={{listStyleType:'none', paddingLeft:0, columns: 2, columnGap: '20px'}}>
+                  {recoveryCodes.map((code, index) => (
+                    <li key={index} style={{fontFamily:'monospace', fontSize:'1.1em', padding:'5px 0', borderBottom:'1px dashed #eee'}}>{code}</li>
+                  ))}
+                </ul>
+                <button onClick={() => setShowRecoveryCodes(false)} className="auth-button minimal" style={{marginTop:'10px', backgroundColor:'transparent', color:'var(--primary-color)'}}>پنهان کردن کدها</button>
+              </div>
+            )}
+
+            <form onSubmit={handleDisable2FA} className="auth-form" style={{padding:0, boxShadow:'none', marginTop: '20px'}}>
+              <div className="form-group">
+                <label htmlFor="passwordFor2FADisable">رمز عبور فعلی (برای غیرفعال‌سازی 2FA)</label>
+                <input
+                  type="password"
+                  id="passwordFor2FADisable"
+                  className="form-control"
+                  value={passwordFor2FADisable}
+                  onChange={(e) => setPasswordFor2FADisable(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="auth-button danger" disabled={isTwoFALoading} style={{backgroundColor:'var(--error-text)'}}>
+                {isTwoFALoading ? <FaSpinner className="spinner-sm" /> : 'غیرفعال‌سازی 2FA'}
+              </button>
+            </form>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -3,13 +3,20 @@ package handler
 import (
 	"errors"
 	"gold-api/internal/model"
+	"errors"
+	"fmt" // For fmt.Sprintf in error messages potentially
+	"gold-api/internal/model"
 	"gold-api/internal/service"
 	"gold-api/internal/utils"
+	"path/filepath" // For filepath.Ext
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
+
+// Note: multipart.FileHeader is not directly used here, but service layer expects it.
+// The handler receives it from Fiber and passes it on.
 
 // AccountHandlerAG handles account management requests for the API Gateway.
 type AccountHandlerAG struct {
@@ -196,4 +203,50 @@ func (h *AccountHandlerAG) HandleDisableTwoFA(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to disable 2FA.", Code: "500_INTERNAL_ERROR"})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "2FA has been successfully disabled."})
+}
+
+const maxProfilePictureUploadSize = 2 * 1024 * 1024 // 2MB - should match profileManager's limit or be slightly larger
+
+func (h *AccountHandlerAG) HandleProfilePictureUpload(c *fiber.Ctx) error {
+	userToken := getTokenFromContext(c) // Assuming this helper exists from previous step
+	if userToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
+	}
+	// We don't strictly need userID from claims here if service uses token, but can get for logging
+	// userID := c.Locals("userID").(string)
+
+	fileHeader, err := c.FormFile("profile_picture")
+	if err != nil {
+		utils.Log.Warn("API Gateway HandleProfilePictureUpload: No file or form error", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Profile picture file is required in 'profile_picture' field.", Code: "400_FILE_REQUIRED"})
+	}
+
+	// Validate file size at gateway as well
+	if fileHeader.Size > maxProfilePictureUploadSize {
+		utils.Log.Warn("API Gateway HandleProfilePictureUpload: File size exceeds limit", zap.Int64("size", fileHeader.Size))
+		return c.Status(fiber.StatusRequestEntityTooLarge).JSON(model.ErrorResponse{Message: "File too large.", Code: "413_FILE_TOO_LARGE"})
+	}
+
+	// Basic extension check at gateway
+	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid file type. Allowed: JPG, PNG.", Code: "400_INVALID_FILE_TYPE"})
+	}
+
+	newProfilePicURL, err := h.authService.UploadProfilePicture(fileHeader, userToken)
+	if err != nil {
+		utils.Log.Error("API Gateway HandleProfilePictureUpload: Error calling authService.UploadProfilePicture", zap.Error(err))
+		if strings.Contains(err.Error(), "rejected file") || strings.Contains(err.Error(), "failed with status 400") || strings.Contains(err.Error(), "failed with status 413") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "File rejected by server. Check type or size.", Code: "400_UPLOAD_REJECTED"})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "Account service unavailable.", Code: "503_SERVICE_DOWN"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Error uploading profile picture.", Code: "500_UPLOAD_ERROR"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":             "Profile picture uploaded successfully.",
+		"profile_picture_url": newProfilePicURL,
+	})
 }

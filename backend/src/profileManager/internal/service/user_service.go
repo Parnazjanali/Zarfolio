@@ -49,6 +49,7 @@ type UserService interface {
 	DisableTwoFA(userID string, currentPassword string) error
 	VerifyTOTP(userID string, totpCode string) (bool, error)
 	GetUserByIDForTokenGeneration(userID string) (*model.User, error)
+	UpdateProfilePictureURL(userID string, fileURL string) error
 }
 
 type userService struct {
@@ -629,4 +630,31 @@ func (s *userService) GetUserByIDForTokenGeneration(userID string) (*model.User,
 		return nil, fmt.Errorf("%w: failed to get user by ID: %v", ErrInternalService, err)
 	}
 	return user, nil
+}
+
+func (s *userService) UpdateProfilePictureURL(userID string, fileURL string) error {
+	if userID == "" { // fileURL can be empty if removing profile picture
+		return errors.New("userID is required")
+	}
+
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, postgresDb.ErrUserNotFound) {
+			utils.Log.Warn("UpdateProfilePictureURL: User not found", zap.String("userID", userID))
+			return ErrUserNotFound
+		}
+		utils.Log.Error("UpdateProfilePictureURL: Failed to get user by ID", zap.String("userID", userID), zap.Error(err))
+		return fmt.Errorf("%w: failed to retrieve user: %v", ErrInternalService, err)
+	}
+
+	user.ProfilePictureURL = fileURL // Update the URL
+	// user.UpdatedAt will be handled by userRepo.UpdateUser
+
+	if err := s.userRepo.UpdateUser(user); err != nil {
+		utils.Log.Error("UpdateProfilePictureURL: Failed to update user with new profile picture URL", zap.String("userID", userID), zap.Error(err))
+		return fmt.Errorf("%w: failed to update profile picture URL: %v", ErrInternalService, err)
+	}
+
+	utils.Log.Info("Profile picture URL updated successfully", zap.String("userID", userID), zap.String("fileURL", fileURL))
+	return nil
 }

@@ -14,6 +14,7 @@ import (
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
 	"io"
+	"mime/multipart" // Added for file uploads
 	"net/http"
 	"os"
 	"strings"
@@ -48,6 +49,7 @@ type ProfileManagerClient interface {
 	VerifyAndEnableTwoFA(req model.VerifyTwoFARequestAG, userToken string) (*model.EnableTwoFAResponseAG, error)
 	DisableTwoFA(req model.DisableTwoFARequestAG, userToken string) error
 	LoginTwoFA(req model.LoginTwoFARequestAG) (user *model.User, token string, exp int64, err error)
+	UploadProfilePicture(fileHeader *multipart.FileHeader, userToken string) (string, error) // Returns the new profile picture URL
 }
 
 type AuthService struct {
@@ -100,6 +102,79 @@ func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
 	}
 	utils.Log.Info("User registered successfully by Profile Manager", zap.String("username", req.Username))
 	return nil
+}
+
+func (c *profileManagerHTTPClient) UploadProfilePicture(fileHeader *multipart.FileHeader, userToken string) (string, error) {
+	// Create a pipe to stream the file content
+	pr, pw := io.Pipe()
+	// Create a new multipart writer with the pipe reader
+	writer := multipart.NewWriter(pw)
+
+	// Create a goroutine to write the file content to the pipe
+	go func() {
+		defer pw.Close()     // Close the writer side of the pipe
+		defer writer.Close() // Close the multipart writer
+
+		part, err := writer.CreateFormFile("profile_picture", fileHeader.Filename)
+		if err != nil {
+			utils.Log.Error("profileManagerHTTPClient.UploadProfilePicture: CreateFormFile error", zap.Error(err))
+			pw.CloseWithError(err) // Close pipe with error
+			return
+		}
+
+		srcFile, err := fileHeader.Open()
+		if err != nil {
+			utils.Log.Error("profileManagerHTTPClient.UploadProfilePicture: Open source file error", zap.Error(err))
+			pw.CloseWithError(err)
+			return
+		}
+		defer srcFile.Close()
+
+		if _, err := io.Copy(part, srcFile); err != nil {
+			utils.Log.Error("profileManagerHTTPClient.UploadProfilePicture: Copy file to part error", zap.Error(err))
+			pw.CloseWithError(err)
+			return
+		}
+	}()
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/profile-picture", pr)
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request for profile picture upload: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", writer.FormDataContentType())
+	httpReq.Header.Set("Authorization", "Bearer "+userToken)
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return "", fmt.Errorf("%w: cannot connect to profile manager for picture upload at %s", ErrProfileManagerDown, c.baseURL)
+		}
+		return "", fmt.Errorf("failed to send profile picture upload request to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read profile picture upload response body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusRequestEntityTooLarge {
+			utils.Log.Warn("profileManagerHTTPClient.UploadProfilePicture: Profile manager rejected file", zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+			return "", fmt.Errorf("profile manager rejected file (status %d): %s", resp.StatusCode, string(respBody))
+		}
+		utils.Log.Error("profileManagerHTTPClient.UploadProfilePicture: Profile manager returned non-OK status", zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+		return "", fmt.Errorf("profile manager picture upload failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var successResp struct {
+		Message           string `json:"message"`
+		ProfilePictureURL string `json:"profile_picture_url"`
+	}
+	if err := json.Unmarshal(respBody, &successResp); err != nil {
+		return "", fmt.Errorf("failed to decode profile picture upload success response: %w", err)
+	}
+	return successResp.ProfilePictureURL, nil
 }
 
 func (c *profileManagerHTTPClient) ChangeUsername(req model.ChangeUsernameRequest, userToken string) error {
@@ -467,6 +542,19 @@ func (s *AuthService) PerformPasswordReset(req model.ResetPasswordRequest) error
 		return ErrInternalService // Or return err
 	}
 	return nil
+}
+
+func (s *AuthService) UploadProfilePicture(fileHeader *multipart.FileHeader, userToken string) (string, error) {
+	newURL, err := s.profileMgrClient.UploadProfilePicture(fileHeader, userToken)
+	if err != nil {
+		utils.Log.Error("AuthService (apiGateway): UploadProfilePicture failed", zap.Error(err))
+		// Propagate specific errors if mapped by client, or return a generic one
+		if strings.Contains(err.Error(), "rejected file") { // Example check
+			return "", fmt.Errorf("file rejected by profile service: %w", err)
+		}
+		return "", ErrInternalService
+	}
+	return newURL, nil
 }
 
 func IsValidEmail(email string) bool {

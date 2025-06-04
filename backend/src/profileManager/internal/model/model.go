@@ -16,6 +16,9 @@ type User struct {
     // Alternatively, use datatypes.JSON if your GORM setup supports it well for arrays.
 	TwoFARecoveryCodes string `json:"-" gorm:"column:two_fa_recovery_codes;type:text"` // JSON array of HASHED recovery codes
 
+    // Profile Picture Field
+    ProfilePictureURL string `json:"profile_picture_url,omitempty" gorm:"column:profile_picture_url;type:text"` // Store URL to the picture
+
 	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }

@@ -1,9 +1,13 @@
 package server
 
 import (
+	"fmt" // For proxy
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/utils"
+	"net/http" // For proxy
+	"os"       // For proxy (Getenv)
+	"time"     // For proxy (http.Client timeout)
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -42,6 +46,8 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	utils.Log.Info("Configuring /api/v1/account routes")
 	accountGroup.Post("/change-username", accountHandlerAG.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandlerAG.HandleChangePassword)
+	accountGroup.Post("/profile-picture", accountHandlerAG.HandleProfilePictureUpload) // New route for upload
+	utils.Log.Info("Configuring /api/v1/account/profile-picture route")
 
 	// Add 2FA setup routes to the protected accountGroup
 	if accountHandlerAG != nil { // Ensure accountHandlerAG is not nil before using
@@ -52,6 +58,52 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 		twoFASetupGroup.Post("/disable", accountHandlerAG.HandleDisableTwoFA)
 	} else {
 		utils.Log.Warn("AccountHandlerAG is nil, skipping 2FA setup routes in API Gateway.")
+	}
+
+	// Simplified GET Proxy for /api/v1/uploads/* to profileManager
+	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
+	if profileManagerServiceURL != "" {
+		api.Get("/uploads/*", func(c *fiber.Ctx) error {
+			targetPath := c.Params("*")
+			targetURL := fmt.Sprintf("%s/uploads/%s", profileManagerServiceURL, targetPath)
+
+			utils.Log.Info("Attempting to proxy GET request for static file", zap.String("original_path", c.Path()), zap.String("target_url", targetURL))
+
+			proxyReq, err := http.NewRequest(http.MethodGet, targetURL, nil)
+			if err != nil {
+				utils.Log.Error("Failed to create proxy request", zap.Error(err))
+				return c.Status(fiber.StatusInternalServerError).SendString("Proxy error: Could not create request.")
+			}
+
+			// It's generally not recommended to copy all headers directly from client to backend for a proxy,
+			// especially for GET requests for static files. Only forward necessary ones if any.
+			// For simplicity, we are not copying any specific headers beyond what http.NewRequest might set by default.
+
+			client := http.Client{Timeout: 10 * time.Second}
+			resp, err := client.Do(proxyReq)
+			if err != nil {
+				utils.Log.Error("Failed to execute proxy request", zap.Error(err), zap.String("target_url", targetURL))
+				return c.Status(fiber.StatusBadGateway).SendString("Proxy error: Could not reach backend service.")
+			}
+			defer resp.Body.Close()
+
+			c.Status(resp.StatusCode)
+			// Copy relevant headers from backend response to client response
+			// Content-Type, Content-Length, ETag, Last-Modified are common for static files
+			for key, values := range resp.Header {
+				for _, value := range values {
+					// Filter or be selective about headers if needed
+					if key == "Content-Type" || key == "Content-Length" || key == "ETag" || key == "Last-Modified" || key == "Cache-Control" {
+						c.Set(key, value)
+					}
+				}
+			}
+			// Stream the body directly
+			return c.SendStream(resp.Body) // SendStream is more appropriate than c.Send(resp.Body)
+		})
+		utils.Log.Info("Configured basic GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
+	} else {
+		utils.Log.Warn("PROFILE_MANAGER_BASE_URL not set in env. Cannot configure proxy for profile pictures.")
 	}
 
 	app.Use(func(c *fiber.Ctx) error {

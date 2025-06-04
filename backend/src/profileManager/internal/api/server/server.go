@@ -19,6 +19,17 @@ func StartServer(port string) {
 	app := fiber.New()
 	utils.Log.Info("Profile Manager Fiber app instance created.")
 
+	// Configure static file serving for profile pictures
+	staticFilesRoot := "./uploads" // Physical directory on server
+	urlPrefix := "/uploads"       // URL prefix clients will use
+
+	app.Static(urlPrefix, staticFilesRoot, fiber.Static{
+		Compress:  true,
+		ByteRange: true,
+		Browse:    false,
+	})
+	utils.Log.Info("Static file serving configured", zap.String("url_prefix", urlPrefix), zap.String("filesystem_root", staticFilesRoot))
+
 	utils.Log.Info("Initializing Redis client for Profile Manager...")
 	if err := utils.InitRedisClient(); err != nil {
 		utils.Log.Fatal("Failed to initialize Redis client. Exiting application.", zap.Error(err))

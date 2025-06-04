@@ -2,9 +2,15 @@ package handler
 
 import (
 	"errors"
+	"errors"
+	"fmt" // For fmt.Sprintf
+	"mime/multipart" // For file uploads
+	"os"
+	"path/filepath"
 	"profile-gold/internal/model"
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
+	"strings" // For strings.ToLower and strings.ReplaceAll
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -227,4 +233,78 @@ func (h *AccountHandler) HandleDisableTwoFA(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "2FA has been successfully disabled."})
+}
+
+// Define constants for file upload constraints
+const (
+	maxUploadSize          = 2 * 1024 * 1024 // 2 MB
+	uploadPath             = "./uploads/profile_pictures" // Relative to app execution path
+	profilePicturesBaseURL = "/uploads/profile_pictures" // URL base path
+)
+
+func (h *AccountHandler) HandleProfilePictureUpload(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: User ID not found.", Code: "401_UNAUTHORIZED"})
+	}
+
+	// Ensure upload directory exists
+	if err := os.MkdirAll(uploadPath, os.ModePerm); err != nil {
+		utils.Log.Error("HandleProfilePictureUpload: Could not create upload directory", zap.Error(err), zap.String("path", uploadPath))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Server error: Could not prepare for file upload.", Code: "500_UPLOAD_DIR_ERROR"})
+	}
+
+	fileHeader, err := c.FormFile("profile_picture") // "profile_picture" is the form field name
+	if err != nil {
+		if errors.Is(err, multipart.ErrMessageTooLarge) || errors.Is(err, fiber.ErrRequestEntityTooLarge) {
+			utils.Log.Warn("HandleProfilePictureUpload: File too large", zap.String("userID", userID), zap.Error(err))
+			return c.Status(fiber.StatusRequestEntityTooLarge).JSON(model.ErrorResponse{Message: fmt.Sprintf("File too large. Maximum size is %dMB.", maxUploadSize/(1024*1024)), Code: "400_FILE_TOO_LARGE"})
+		}
+		utils.Log.Warn("HandleProfilePictureUpload: No file uploaded or form field error", zap.String("userID", userID), zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Profile picture file is required.", Code: "400_FILE_REQUIRED"})
+	}
+
+	// Validate file size
+	if fileHeader.Size > maxUploadSize {
+		utils.Log.Warn("HandleProfilePictureUpload: File size exceeds limit", zap.String("userID", userID), zap.Int64("size", fileHeader.Size))
+		return c.Status(fiber.StatusRequestEntityTooLarge).JSON(model.ErrorResponse{Message: fmt.Sprintf("File too large. Maximum size is %dMB.", maxUploadSize/(1024*1024)), Code: "400_FILE_TOO_LARGE"})
+	}
+
+	// Validate file type (extension and MIME type)
+	ext := filepath.Ext(fileHeader.Filename)
+	allowedExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	if !allowedExts[strings.ToLower(ext)] {
+		utils.Log.Warn("HandleProfilePictureUpload: Invalid file type (extension)", zap.String("userID", userID), zap.String("filename", fileHeader.Filename))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid file type. Allowed types: JPG, PNG.", Code: "400_INVALID_FILE_TYPE"})
+	}
+
+	// Generate a unique filename
+	newFileName := userID + ext
+	filePath := filepath.Join(uploadPath, newFileName)
+
+	// Save the file
+	if errSave := c.SaveFile(fileHeader, filePath); errSave != nil {
+		utils.Log.Error("HandleProfilePictureUpload: Could not save uploaded file", zap.String("userID", userID), zap.Error(errSave))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Server error: Could not save file.", Code: "500_FILE_SAVE_ERROR"})
+	}
+
+	// Construct the URL to be stored
+	fileURL := filepath.Join(profilePicturesBaseURL, newFileName)
+	fileURL = strings.ReplaceAll(fileURL, "\\\\", "/") // Ensure URL uses forward slashes
+
+	// Update user's profilePictureURL in the database
+	if errDbUpdate := h.userService.UpdateProfilePictureURL(userID, fileURL); errDbUpdate != nil {
+		// If DB update fails, attempt to delete the uploaded file to prevent orphans
+		if errRemove := os.Remove(filePath); errRemove != nil {
+			utils.Log.Error("HandleProfilePictureUpload: Failed to delete orphaned file after DB error", zap.String("filePath", filePath), zap.Error(errRemove))
+		}
+		utils.Log.Error("HandleProfilePictureUpload: Failed to update profile picture URL in DB", zap.String("userID", userID), zap.Error(errDbUpdate))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Server error: Could not update profile information.", Code: "500_DB_UPDATE_ERROR"})
+	}
+
+	utils.Log.Info("Profile picture uploaded and updated successfully", zap.String("userID", userID), zap.String("fileURL", fileURL))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":             "Profile picture uploaded successfully.",
+		"profile_picture_url": fileURL, // Send back the new URL
+	})
 }
