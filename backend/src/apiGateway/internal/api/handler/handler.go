@@ -21,10 +21,19 @@ func NewAuthHandler(as *service.AuthService) *AuthHandler {
 	}
 	return &AuthHandler{authService: as}
 }
-func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
-	var req model.RegisterRequest 
 
-	
+// min is a helper function to ensure we don't slice beyond string length
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
+	var req model.RegisterRequest
+
+
 	if err := c.BodyParser(&req); err != nil {
 		utils.Log.Error("Failed to parse register request body in API Gateway handler", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
@@ -171,5 +180,77 @@ func (h *AuthHandler) LogoutUser(c *fiber.Ctx) error {
 	utils.Log.Info("User logged out successfully", zap.String("token_prefix", tokenSrting[:min(len(tokenSrting), 10)]))
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Logout successful",
+	})
+}
+
+func (h *AuthHandler) HandleRequestPasswordReset(c *fiber.Ctx) error {
+	var req model.RequestPasswordResetRequest
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("API Gateway HandleRequestPasswordReset: Failed to parse request", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request format.", Code: "400_INVALID_FORMAT",
+		})
+	}
+
+	if req.Email == "" { // Basic validation
+		utils.Log.Warn("API Gateway HandleRequestPasswordReset: Email field is missing")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Email is required.", Code: "400_EMAIL_REQUIRED",
+		})
+	}
+	// Consider adding email format validation here if not done by a middleware
+	// if !service.IsValidEmail(req.Email) { ... }
+
+	err := h.authService.RequestPasswordReset(req)
+	if err != nil {
+		// Service layer should log specifics. Handler returns generic internal error.
+		// The actual success/failure of finding email is hidden from client to prevent enumeration.
+		utils.Log.Error("API Gateway HandleRequestPasswordReset: Error calling authService.RequestPasswordReset", zap.String("email", req.Email), zap.Error(err))
+		// Even if an internal error occurs, for security, we might still return the generic message.
+		// However, for dev/staging, a 500 might be more useful.
+		// For now, let's assume any error from authService here IS an internal server error.
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "An internal error occurred. Please try again later.", Code: "500_INTERNAL_ERROR",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "If your email address exists in our system, you will receive a password reset link shortly.",
+	})
+}
+
+func (h *AuthHandler) HandleResetPassword(c *fiber.Ctx) error {
+	var req model.ResetPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("API Gateway HandleResetPassword: Failed to parse request", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request format.", Code: "400_INVALID_FORMAT",
+		})
+	}
+
+	if req.Token == "" || req.NewPassword == "" { // Basic validation
+		utils.Log.Warn("API Gateway HandleResetPassword: Token or NewPassword field is missing")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Token and new password are required.", Code: "400_TOKEN_PASSWORD_REQUIRED",
+		})
+	}
+	// Add password strength validation here if desired, or rely on profileManager's potential validation.
+
+	err := h.authService.PerformPasswordReset(req)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) { // Check for specific error from AuthService
+			utils.Log.Warn("API Gateway HandleResetPassword: Invalid or expired token provided", zap.Error(err))
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+				Message: "Invalid or expired password reset token. Please request a new one.", Code: "400_INVALID_RESET_TOKEN",
+			})
+		}
+		utils.Log.Error("API Gateway HandleResetPassword: Error calling authService.PerformPasswordReset", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "An internal error occurred while resetting your password. Please try again later.", Code: "500_INTERNAL_ERROR",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Your password has been successfully reset. You can now log in with your new password.",
 	})
 }
