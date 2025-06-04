@@ -117,3 +117,83 @@ func (h *AccountHandlerAG) HandleChangePassword(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Password changed successfully."})
 }
+
+// --- New 2FA Handler Methods for AccountHandlerAG ---
+
+func (h *AccountHandlerAG) HandleGenerateTwoFASetup(c *fiber.Ctx) error {
+	userToken := getTokenFromContext(c)
+	if userToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
+	}
+
+	res, err := h.authService.GenerateTwoFASetup(userToken)
+	if err != nil {
+		// Error mapping based on potential errors from service/client
+		if errors.Is(err, service.ErrUserAlreadyExists) { // If using this for "2FA already enabled"
+			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{Message: "2FA is already enabled for this account.", Code: "409_2FA_ALREADY_ENABLED"})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "2FA service is temporarily unavailable.", Code: "503_SERVICE_UNAVAILABLE"})
+		}
+		utils.Log.Error("API Gateway HandleGenerateTwoFASetup: Internal server error", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to start 2FA setup.", Code: "500_INTERNAL_ERROR"})
+	}
+	return c.Status(fiber.StatusOK).JSON(res)
+}
+
+func (h *AccountHandlerAG) HandleVerifyAndEnableTwoFA(c *fiber.Ctx) error {
+	var req model.VerifyTwoFARequestAG
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid request format.", Code: "400_INVALID_FORMAT"})
+	}
+	if req.TOTPCode == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "TOTP code is required.", Code: "400_TOTP_CODE_REQUIRED"})
+	}
+
+	userToken := getTokenFromContext(c)
+	if userToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
+	}
+
+	res, err := h.authService.VerifyAndEnableTwoFA(req, userToken)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) { // Invalid TOTP code
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid TOTP code.", Code: "400_INVALID_TOTP_CODE"})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "2FA service is temporarily unavailable.", Code: "503_SERVICE_UNAVAILABLE"})
+		}
+		utils.Log.Error("API Gateway HandleVerifyAndEnableTwoFA: Internal server error", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to enable 2FA.", Code: "500_INTERNAL_ERROR"})
+	}
+	return c.Status(fiber.StatusOK).JSON(res)
+}
+
+func (h *AccountHandlerAG) HandleDisableTwoFA(c *fiber.Ctx) error {
+	var req model.DisableTwoFARequestAG
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid request format.", Code: "400_INVALID_FORMAT"})
+	}
+	if req.CurrentPassword == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Current password is required.", Code: "400_PASSWORD_REQUIRED"})
+	}
+
+	userToken := getTokenFromContext(c)
+	if userToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
+	}
+
+	err := h.authService.DisableTwoFA(req, userToken)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) { // Wrong password
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Incorrect current password.", Code: "401_INVALID_CURRENT_PASSWORD"})
+		}
+		// Could also check for a specific error if 2FA wasn't enabled.
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "2FA service is temporarily unavailable.", Code: "503_SERVICE_UNAVAILABLE"})
+		}
+		utils.Log.Error("API Gateway HandleDisableTwoFA: Internal server error", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to disable 2FA.", Code: "500_INTERNAL_ERROR"})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "2FA has been successfully disabled."})
+}

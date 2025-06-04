@@ -98,3 +98,18 @@ type EnableTwoFAResponse struct {
 type DisableTwoFARequest struct {
 	CurrentPassword string `json:"current_password" validate:"required"`
 }
+
+// LoginStep1Response is returned when 2FA is required after password validation.
+type LoginStep1Response struct {
+	TwoFARequired bool   `json:"two_fa_required"`
+	UserID        string `json:"user_id,omitempty"` // Sent if 2FA is required, for client to use in next step
+	Message       string `json:"message"`
+	// Alternatively, an interim_token could be sent instead of user_id.
+	// InterimToken  string `json:"interim_token,omitempty"`
+}
+
+// LoginTwoFARequest defines the request body for submitting the TOTP code.
+type LoginTwoFARequest struct {
+	UserID   string `json:"user_id" validate:"required"` // Or InterimToken
+	TOTPCode string `json:"totp_code" validate:"required,numeric,length=6"`
+}

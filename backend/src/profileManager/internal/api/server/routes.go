@@ -43,7 +43,8 @@ func SetupProfileManagerRoutes(
 
 	utils.Log.Info("Profile Manager: Configuring base authentication routes.")
 	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
+	app.Post("/login", authHandler.Login)                     // Step 1 login
+	app.Post("/login/2fa", authHandler.HandleLoginTwoFA)       // Step 2 2FA login
 	app.Post("/logout", authHandler.Logout)
 
 	passwordGroup := app.Group("/password")
@@ -57,6 +58,12 @@ func SetupProfileManagerRoutes(
 	utils.Log.Info("Configuring protected /account routes for Profile Manager...")
 	accountGroup.Post("/change-username", accountHandler.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandler.HandleChangePassword)
+
+	twoFAGroup := accountGroup.Group("/2fa") // Sub-group for 2FA under /account
+	utils.Log.Info("Configuring protected /account/2fa routes for Profile Manager...")
+	twoFAGroup.Post("/generate-secret", accountHandler.HandleGenerateTwoFASetup)
+	twoFAGroup.Post("/enable", accountHandler.HandleVerifyAndEnableTwoFA)
+	twoFAGroup.Post("/disable", accountHandler.HandleDisableTwoFA)
 
 	if profileHandler != nil {
 		utils.Log.Info("ProfileHandler is available. Configuring /profiles routes.")

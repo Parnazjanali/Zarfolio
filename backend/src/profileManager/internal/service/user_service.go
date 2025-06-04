@@ -47,7 +47,8 @@ type UserService interface {
 	GenerateTwoFASetup(userID string) (secret string, qrCodeURL string, err error)
 	VerifyAndEnableTwoFA(userID string, totpCode string) (recoveryCodes []string, err error)
 	DisableTwoFA(userID string, currentPassword string) error
-	VerifyTOTP(userID string, totpCode string) (bool, error) // Renamed for clarity during login
+	VerifyTOTP(userID string, totpCode string) (bool, error)
+	GetUserByIDForTokenGeneration(userID string) (*model.User, error)
 }
 
 type userService struct {
@@ -615,4 +616,17 @@ func (s *userService) VerifyTOTP(userID string, totpCode string) (bool, error) {
 		utils.Log.Warn("VerifyTOTP: Invalid TOTP code provided during login", zap.String("userID", userID))
 	}
 	return isValid, nil
+}
+
+func (s *userService) GetUserByIDForTokenGeneration(userID string) (*model.User, error) {
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, postgresDb.ErrUserNotFound) {
+			utils.Log.Warn("GetUserByIDForTokenGeneration: User not found", zap.String("userID", userID))
+			return nil, ErrUserNotFound
+		}
+		utils.Log.Error("GetUserByIDForTokenGeneration: Error retrieving user", zap.String("userID", userID), zap.Error(err))
+		return nil, fmt.Errorf("%w: failed to get user by ID: %v", ErrInternalService, err)
+	}
+	return user, nil
 }

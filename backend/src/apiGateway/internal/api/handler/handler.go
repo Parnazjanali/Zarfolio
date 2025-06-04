@@ -89,54 +89,106 @@ func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 	var req model.LoginRequest
-
-	if err := c.BodyParser(&req); err != nil {
-		utils.Log.Error("Failed to parse login request body", zap.Error(err))
+	if errParser := c.BodyParser(&req); errParser != nil {
+		utils.Log.Error("API Gateway LoginUser: Failed to parse request", zap.Error(errParser))
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
-			Message: "Invalid request body format",
-			Code:    "400",
+			Message: "Invalid request format.", Code: "400_INVALID_FORMAT",
 		})
 	}
 	if req.Username == "" || req.Password == "" {
-		utils.Log.Warn("Login attempt with empty credentials", zap.String("username", req.Username))
+		utils.Log.Warn("API Gateway LoginUser: Missing credentials")
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
-			Message: "Username and password are required",
-			Code:    "400",
+			Message: "Username and password are required.", Code: "400_MISSING_CREDENTIALS",
 		})
 	}
 
-	user, token, err := h.authService.LoginUser(req.Username, req.Password)
-	if err != nil {
-		utils.Log.Error("Authentication failed in service layer", zap.String("username", req.Username), zap.Error(err))
+	// Call the updated AuthService.LoginUser
+	user, token, exp, twoFARequired, userIDFor2FA, err := h.authService.LoginUser(req.Username, req.Password)
 
-		if errors.Is(err, service.ErrInvalidCredentials) {
+	if err != nil {
+		// Check for ErrTwoFARequiredAG first, as it's not a "hard" error for this step
+		if errors.Is(err, service.ErrTwoFARequiredAG) { // Assuming ErrTwoFARequiredAG is the specific error from AuthService
+			utils.Log.Info("API Gateway LoginUser: 2FA required", zap.String("userID", userIDFor2FA))
+			return c.Status(fiber.StatusOK).JSON(model.LoginStep1ResponseAG{ // Use the AG specific model
+				TwoFARequired: true,
+				UserID:        userIDFor2FA,
+				Message:       "2FA code required. Please submit your TOTP code.",
+			})
+		}
+		if errors.Is(err, service.ErrInvalidCredentials) || errors.Is(err, service.ErrUserNotFound) {
+			utils.Log.Warn("API Gateway LoginUser: Invalid credentials or user not found", zap.String("username", req.Username), zap.Error(err))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Code:    "401",
-				Message: "Invalid username or password",
+				Code: "401_INVALID_CREDENTIALS", Message: "Invalid username or password.",
 			})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
+			utils.Log.Error("API Gateway LoginUser: Profile manager down", zap.String("username", req.Username), zap.Error(err))
 			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{
-				Code:    "503",
-				Message: "Authentication service is temporarily unavailable. Please try again later.",
+				Code: "503_SERVICE_UNAVAILABLE", Message: "Authentication service is temporarily unavailable.",
 			})
 		}
+		// For other errors from authService (already logged there)
+		utils.Log.Error("API Gateway LoginUser: Internal error during authentication", zap.String("username", req.Username), zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-			Message: "Internal server error during authentication",
-			Code:    "500",
+			Message: "Internal server error during authentication.", Code: "500_INTERNAL_ERROR",
 		})
 	}
 
-	utils.Log.Info("User logged in successfully", zap.String("username", user.Username), zap.String("role", user.Role))
-
+	// This part is reached if 2FA was not required and login was successful
+	utils.Log.Info("API Gateway LoginUser: User logged in successfully", zap.String("username", user.Username))
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Login successful",
 		Token:   token,
 		User:    user,
-		Exp:     3600,
+		Exp:     exp,
 	})
-
 }
+
+func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
+	var req model.LoginTwoFARequestAG // Use AG specific model
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("API Gateway HandleLoginTwoFA: Failed to parse request", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request format.", Code: "400_INVALID_FORMAT",
+		})
+	}
+
+	if req.UserID == "" || req.TOTPCode == "" {
+		utils.Log.Warn("API Gateway HandleLoginTwoFA: UserID or TOTPCode missing")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "UserID and TOTP code are required.", Code: "400_MISSING_FIELDS",
+		})
+	}
+
+	user, token, exp, err := h.authService.LoginTwoFA(req)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) { // Covers invalid TOTP code
+			utils.Log.Warn("API Gateway HandleLoginTwoFA: Invalid TOTP code or user issue", zap.String("userID", req.UserID), zap.Error(err))
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Invalid 2FA code or user session.", Code: "401_INVALID_2FA_CODE",
+			})
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			utils.Log.Error("API Gateway HandleLoginTwoFA: Profile manager down", zap.String("userID", req.UserID), zap.Error(err))
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{
+				Code: "503_SERVICE_UNAVAILABLE", Message: "Authentication service is temporarily unavailable.",
+			})
+		}
+		utils.Log.Error("API Gateway HandleLoginTwoFA: Internal error during 2FA login", zap.String("userID", req.UserID), zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Internal server error during 2FA login.", Code: "500_INTERNAL_ERROR",
+		})
+	}
+
+	utils.Log.Info("API Gateway HandleLoginTwoFA: User successfully logged in with 2FA", zap.String("userID", req.UserID))
+	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
+		Message: "Login successful with 2FA.",
+		Token:   token,
+		User:    user,
+		Exp:     exp,
+	})
+}
+
 func (h *AuthHandler) LogoutUser(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {

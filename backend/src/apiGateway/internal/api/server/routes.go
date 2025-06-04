@@ -35,12 +35,24 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	// Add new password reset routes to the existing authGroup
 	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
 	authGroup.Post("/password/reset", authHandler.HandleResetPassword)
-	utils.Log.Info("Configuring /api/v1/auth/password routes for password reset")
+	authGroup.Post("/login/2fa", authHandler.HandleLoginTwoFA) // New route for 2FA login step
+	utils.Log.Info("Configuring /api/v1/auth/password and /api/v1/auth/login/2fa routes")
 
 	accountGroup := api.Group("/account", middleware.AuthUser) // Protected by existing AuthUser middleware
 	utils.Log.Info("Configuring /api/v1/account routes")
 	accountGroup.Post("/change-username", accountHandlerAG.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandlerAG.HandleChangePassword)
+
+	// Add 2FA setup routes to the protected accountGroup
+	if accountHandlerAG != nil { // Ensure accountHandlerAG is not nil before using
+		twoFASetupGroup := accountGroup.Group("/2fa")
+		utils.Log.Info("Configuring /api/v1/account/2fa routes for 2FA setup")
+		twoFASetupGroup.Post("/generate-secret", accountHandlerAG.HandleGenerateTwoFASetup)
+		twoFASetupGroup.Post("/enable", accountHandlerAG.HandleVerifyAndEnableTwoFA)
+		twoFASetupGroup.Post("/disable", accountHandlerAG.HandleDisableTwoFA)
+	} else {
+		utils.Log.Warn("AccountHandlerAG is nil, skipping 2FA setup routes in API Gateway.")
+	}
 
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("API Gateway: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))

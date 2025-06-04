@@ -1,7 +1,8 @@
 // frontend/src/pages/AccountManagementPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import './AuthForms.css'; // Reusing some auth form styles
-import { FaUserEdit, FaLock, FaKey, FaSpinner } from 'react-icons/fa';
+import { FaUserEdit, FaLock, FaKey, FaSpinner, FaShieldAlt, FaQrcode, FaMobileAlt, FaUserShield, FaListOl } from 'react-icons/fa'; // Additional icons
+import QRCode from 'qrcode.react'; // For displaying QR codes
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -21,7 +22,46 @@ function AccountManagementPage() {
   const [passwordError, setPasswordError] = useState('');
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
+  // State for 2FA Management
+  const [isTwoFAEnabled, setIsTwoFAEnabled] = useState(false); // Initial assumption, fetch actual status
+  const [twoFASecret, setTwoFASecret] = useState(''); // Raw secret for manual entry display
+  const [qrCodeUrl, setQrCodeUrl] = useState('');   // For QR code image
+  const [totpCode, setTotpCode] = useState('');     // For user to enter during enable
+  const [recoveryCodes, setRecoveryCodes] = useState([]);
+  const [passwordFor2FADisable, setPasswordFor2FADisable] = useState('');
+
+  const [twoFAMessage, setTwoFAMessage] = useState('');
+  const [twoFAError, setTwoFAError] = useState('');
+  const [isTwoFALoading, setIsTwoFALoading] = useState(false); // General loading for 2FA section
+  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+  const [twoFASetupStage, setTwoFASetupStage] = useState('initial'); // 'initial', 'generated', 'enabled'
+
   const getAuthToken = () => localStorage.getItem('authToken');
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+        try {
+            const userData = JSON.parse(storedUserData);
+            if (userData && typeof userData.is_two_fa_enabled === 'boolean') {
+                setIsTwoFAEnabled(userData.is_two_fa_enabled);
+                if (userData.is_two_fa_enabled) {
+                    setTwoFASetupStage('enabled');
+                }
+            } else {
+                 // If not in userData, ideally fetch from a /me or /account/status endpoint
+                 // For now, assume false if not present.
+                 console.warn("is_two_fa_enabled not found in userData, defaulting to false.");
+                 setIsTwoFAEnabled(false);
+            }
+        } catch (e) {
+            console.error("Failed to parse userData for 2FA status:", e);
+            // Fallback or fetch from API
+        }
+    }
+    // TODO: Consider a dedicated API call to get current user details including 2FA status
+    // if not reliably available or to ensure freshness.
+  }, []);
 
   const handleChangeUsername = async (e) => {
     e.preventDefault();
@@ -145,6 +185,124 @@ function AccountManagementPage() {
     color: 'var(--primary-color)', // Using CSS variable from AuthForms.css
   }
 
+  const handleGenerate2FASecret = async () => {
+    setIsTwoFALoading(true);
+    setTwoFAError('');
+    setTwoFAMessage('');
+    setQrCodeUrl('');
+    setTwoFASecret('');
+    setRecoveryCodes([]);
+    setShowRecoveryCodes(false);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/account/2fa/generate-secret`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setQrCodeUrl(data.qr_code_url);
+            setTwoFASecret(data.secret); // For manual entry display
+            setTwoFASetupStage('generated');
+        } else {
+            setTwoFAError(data.message || 'خطا در تولید اطلاعات 2FA.');
+        }
+    } catch (err) {
+        setTwoFAError('خطا در ارتباط با سرور برای تولید اطلاعات 2FA.');
+    } finally {
+        setIsTwoFALoading(false);
+    }
+  };
+
+  const handleVerifyAndEnable2FA = async (e) => {
+    e.preventDefault();
+    setIsTwoFALoading(true);
+    setTwoFAError('');
+    setTwoFAMessage('');
+    setRecoveryCodes([]);
+
+    if (!totpCode) {
+        setTwoFAError('کد تایید 2FA را وارد کنید.');
+        setIsTwoFALoading(false);
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/account/2fa/enable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`,
+            },
+            body: JSON.stringify({ totp_code: totpCode }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setIsTwoFAEnabled(true);
+            setRecoveryCodes(data.recovery_codes || []);
+            setShowRecoveryCodes(true); // Show recovery codes immediately
+            setTwoFAMessage('2FA با موفقیت فعال شد! کدهای بازیابی خود را ذخیره کنید.');
+            setTwoFASetupStage('enabled');
+            setTotpCode(''); // Clear TOTP input
+            // Update localStorage userData
+            const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+            storedUserData.is_two_fa_enabled = true;
+            localStorage.setItem('userData', JSON.stringify(storedUserData));
+
+        } else {
+            setTwoFAError(data.message || 'خطا در فعال‌سازی 2FA. کد ممکن است نامعتبر باشد.');
+        }
+    } catch (err) {
+        setTwoFAError('خطا در ارتباط با سرور برای فعال‌سازی 2FA.');
+    } finally {
+        setIsTwoFALoading(false);
+    }
+  };
+
+  const handleDisable2FA = async (e) => {
+    e.preventDefault();
+    setIsTwoFALoading(true);
+    setTwoFAError('');
+    setTwoFAMessage('');
+
+    if (!passwordFor2FADisable) {
+        setTwoFAError('برای غیرفعال‌سازی 2FA، رمز عبور فعلی خود را وارد کنید.');
+        setIsTwoFALoading(false);
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/account/2fa/disable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`,
+            },
+            body: JSON.stringify({ current_password: passwordFor2FADisable }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setIsTwoFAEnabled(false);
+            setTwoFAMessage(data.message || '2FA با موفقیت غیرفعال شد.');
+            setQrCodeUrl('');
+            setTwoFASecret('');
+            setRecoveryCodes([]);
+            setShowRecoveryCodes(false);
+            setPasswordFor2FADisable('');
+            setTwoFASetupStage('initial');
+             // Update localStorage userData
+            const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+            storedUserData.is_two_fa_enabled = false;
+            localStorage.setItem('userData', JSON.stringify(storedUserData));
+        } else {
+            setTwoFAError(data.message || 'خطا در غیرفعال‌سازی 2FA. رمز عبور ممکن است نادرست باشد.');
+        }
+    } catch (err) {
+        setTwoFAError('خطا در ارتباط با سرور برای غیرفعال‌سازی 2FA.');
+    } finally {
+        setIsTwoFALoading(false);
+    }
+  };
 
   return (
     <div style={pageStyles}>
@@ -185,7 +343,7 @@ function AccountManagementPage() {
       </section>
 
       {/* Change Password Section */}
-      <section>
+      <section style={{ ...sectionStyles /* Apply sectionStyles here too */ }}>
         <h2 style={h2Styles}><FaKey style={iconStyles} /> تغییر رمز عبور</h2>
         <form onSubmit={handleChangePassword} className="auth-form" style={{padding:0, boxShadow:'none'}}>
           <div className="form-group">
