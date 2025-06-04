@@ -1,8 +1,10 @@
 package server
 
 import (
-	"fmt"
+	"errors"
 	"profile-gold/internal/api/handler"
+	"profile-gold/internal/api/middleware" // Import middleware
+	"profile-gold/internal/model"          // For model.ErrorResponse in 404
 	"profile-gold/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,48 +12,79 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetupProfileManagerRoutes(app *fiber.App, authHandler *handler.AuthHandler, profileHandler *handler.ProfileHandler) error {
+func SetupProfileManagerRoutes(
+	app *fiber.App,
+	authHandler *handler.AuthHandler,
+	profileHandler *handler.ProfileHandler, // Can be nil if not used
+	accountHandler *handler.AccountHandler,
+) error {
 	if app == nil {
-		return fmt.Errorf("fiber app instance is nil in SetupProfileManagerRoutes")
+		utils.Log.Fatal("Fiber app is nil in SetupProfileManagerRoutes.")
+		return errors.New("fiber app cannot be nil")
 	}
 	if authHandler == nil {
-		utils.Log.Fatal("AuthHandler is nil in SetupProfileManagerRoutes, cannot set up auth routes.")
+		utils.Log.Fatal("AuthHandler is nil in SetupProfileManagerRoutes.")
+		return errors.New("authHandler cannot be nil")
 	}
-	if profileHandler == nil {
-        utils.Log.Fatal("ProfileHandler is nil in SetupProfileManagerRoutes, cannot set up profile management routes.")
-    }
-	
+	if accountHandler == nil { // Added check
+		utils.Log.Fatal("AccountHandler is nil in SetupProfileManagerRoutes.")
+		return errors.New("accountHandler cannot be nil")
+	}
+
+	utils.Log.Info("Configuring Profile Manager service routes...")
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:   "http://localhost:8080", 
-		AllowMethods:   "GET,POST,PUT,DELETE,OPTIONS",
-		AllowHeaders:   "Origin, Content-Type, Accept, Authorization",
+		AllowOrigins:     "http://localhost:8080,http://localhost:3000", // Allow both apiGateway and typical frontend dev port
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
 	}))
 	utils.Log.Info("Profile Manager: Global CORS middleware applied.")
 
-	
-	authGroup := app.Group("/") 
-	utils.Log.Info("Profile Manager: Configuring authentication routes.")
-	authGroup.Post("/register", authHandler.Register) 
-	authGroup.Post("/login", authHandler.Login) 
-	authGroup.Post("/logout", authHandler.Logout)
+	utils.Log.Info("Profile Manager: Configuring base authentication routes.")
+	app.Post("/register", authHandler.Register)
+	app.Post("/login", authHandler.Login)
+	app.Post("/logout", authHandler.Logout)
 
-	utils.Log.Info("Profile Manager: Authentication routes configured.")
+	passwordGroup := app.Group("/password")
+	utils.Log.Info("Configuring /password routes for Profile Manager...")
+	passwordGroup.Post("/request-reset", authHandler.HandleRequestPasswordReset)
+	passwordGroup.Post("/reset", authHandler.HandleResetPassword)
 
-	profileGroup := app.Group("/profiles")
-	utils.Log.Info("Profile Manager: Configuring /profiles routes.")
-	 profileGroup.Post("/", profileHandler.CreateProfile)      
-	 profileGroup.Get("/:id", profileHandler.GetProfile)       
-	 profileGroup.Put("/:id", profileHandler.UpdateProfile)    
-	 profileGroup.Delete("/:id", profileHandler.DeleteProfile) 
-	utils.Log.Info("Profile Manager: Profile management routes configured.")
+	// Account Management Routes (Protected)
+	// These routes require a valid token from apiGateway (or a direct authenticated call)
+	accountGroup := app.Group("/account", middleware.PlaceholderAuthMiddleware())
+	utils.Log.Info("Configuring protected /account routes for Profile Manager...")
+	accountGroup.Post("/change-username", accountHandler.HandleChangeUsername)
+	accountGroup.Post("/change-password", accountHandler.HandleChangePassword)
 
+	if profileHandler != nil {
+		utils.Log.Info("ProfileHandler is available. Configuring /profiles routes.")
+		// Example: Make profile routes also protected if they modify data
+		// profileProtectedGroup := app.Group("/profiles", middleware.PlaceholderAuthMiddleware())
+		// profileProtectedGroup.Post("/", profileHandler.CreateProfile)
+		// profileProtectedGroup.Put("/:id", profileHandler.UpdateProfile)
+		// profileProtectedGroup.Delete("/:id", profileHandler.DeleteProfile)
+
+		// Public profile GET route might be separate
+		// app.Get("/profiles/:id", profileHandler.GetProfile)
+
+		// For simplicity, keeping as is from before, but auth should be considered for POST/PUT/DELETE
+		profileGroup := app.Group("/profiles")
+		profileGroup.Post("/", profileHandler.CreateProfile)
+		profileGroup.Get("/:id", profileHandler.GetProfile)
+		profileGroup.Put("/:id", profileHandler.UpdateProfile)
+		profileGroup.Delete("/:id", profileHandler.DeleteProfile)
+	} else {
+		utils.Log.Warn("ProfileHandler is nil. Profile management routes will not be configured.")
+	}
 
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("Profile Manager: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Profile Manager: The requested resource was not found."})
+		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "Profile Manager: The requested resource was not found."})
 	})
 	utils.Log.Info("Profile Manager: 404 fallback route configured.")
 
-	return nil 
+	utils.Log.Info("Profile Manager service routes configured successfully.")
+	return nil
 }

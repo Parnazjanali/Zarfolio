@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage.jsx';
+import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import InvoicesPage from './pages/InvoicesPage.jsx';
 import NewInvoicePage from './pages/NewInvoicePage.jsx'; //  کامپوننت جدید را ایمپورت کنید
@@ -9,7 +11,8 @@ import InventoryPage from './pages/InventoryPage.jsx';
 import CustomersPage from './pages/CustomersPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
-import AccountSettingsPage from './pages/AccountSettingsPage.jsx';
+// import AccountSettingsPage from './pages/AccountSettingsPage.jsx'; // Remove this line
+import AccountManagementPage from './pages/AccountManagementPage.jsx'; // Add this line
 import EtiketPage from './pages/EtiketPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -19,7 +22,8 @@ import './App.css';
 function BackgroundManager() {
   const location = useLocation();
   useEffect(() => {
-    if (location.pathname === '/login') {
+    const authPaths = ['/login', '/request-password-reset', '/reset-password'];
+    if (authPaths.includes(location.pathname)) {
       document.body.classList.add('login-page-background');
     } else {
       document.body.classList.remove('login-page-background');
@@ -65,6 +69,8 @@ function App() {
       <BackgroundManager />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
 
@@ -83,7 +89,7 @@ function App() {
 
         <Route
           path="/account/settings"
-          element={<ProtectedRoute><MainLayout><AccountSettingsPage /></MainLayout></ProtectedRoute>}
+          element={<ProtectedRoute><MainLayout><AccountManagementPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/settings/system"

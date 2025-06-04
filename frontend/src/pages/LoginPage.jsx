@@ -118,7 +118,7 @@ function LoginPage() {
         return;
       }
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        const response = await fetch(`${API_BASE_URL}/register/user`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password }),
@@ -280,7 +280,7 @@ function LoginPage() {
             />
             مرا به خاطر بسپار
           </label>
-          {/* <Link to="/forgot-password" className="forgot-password-link">فراموشی رمز عبور؟</Link> */}
+          <Link to="/request-password-reset" className="forgot-password-link">فراموشی رمز عبور؟</Link>
         </div>
       )}
       {/* <<<< حذف چک‌باکس راهنمای رمز قوی از اینجا >>>> */}

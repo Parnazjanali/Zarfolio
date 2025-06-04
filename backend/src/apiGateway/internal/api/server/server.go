@@ -45,12 +45,17 @@ func StartServer(port string) {
 	if authHandler == nil {
 		utils.Log.Fatal("ERROR: Failed to initialize AuthHandler. Exiting application.")
 	}
+
+	accountHandlerAG := handler.NewAccountHandlerAG(authService) // Use the new AccountHandlerAG
+	if accountHandlerAG == nil {
+		utils.Log.Fatal("ERROR: Failed to initialize AccountHandlerAG. Exiting application.")
+	}
 	utils.Log.Info("All core dependencies initialized successfully.")
 
 	// 4. تنظیم تمامی مسیرهای API
 	// ما app و هندلرهای آماده شده را به تابع SetupApiRoutes می‌دهیم تا روت‌ها را ثبت کند.
 	utils.Log.Info("Setting up API routes for API Gateway...")
-	if err := SetUpApiRoutes(app, authHandler); err != nil { // این تابع روت‌ها را به Fiber App اضافه می‌کند.
+	if err := SetUpApiRoutes(app, authHandler, accountHandlerAG); err != nil { // Pass accountHandlerAG
 		utils.Log.Fatal("ERROR: Failed to set up API routes: %v. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("All API routes configured successfully.")

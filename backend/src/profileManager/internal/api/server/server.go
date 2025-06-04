@@ -42,8 +42,17 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("TokenRepository initialized successfully (using Redis).")
 
+	// Initialize PasswordResetTokenRepository
+	utils.Log.Info("Initializing PasswordResetTokenRepository (PostgreSQL)...")
+	passwordResetTokenRepo := postgresDb.NewPostgresPasswordResetTokenRepository(postgresDb.DB)
+	if passwordResetTokenRepo == nil {
+		utils.Log.Fatal("Failed to initialize PasswordResetTokenRepository. Exiting application.")
+	}
+	utils.Log.Info("PasswordResetTokenRepository initialized successfully.")
+
+	// Pass it to NewUserService
 	utils.Log.Info("Initializing UserService...")
-	userService := service.NewUserService(userRepo, tokenRepo)
+	userService := service.NewUserService(userRepo, tokenRepo, passwordResetTokenRepo) // Added passwordResetTokenRepo
 	if userService == nil {
 		utils.Log.Fatal("Failed to initialize UserService. Exiting application.")
 	}
@@ -63,9 +72,16 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("Handlers initialized successfully.")
 
+	utils.Log.Info("Initializing AccountHandler...")
+	accountHandler := handler.NewAccountHandler(userService)
+	if accountHandler == nil {
+		utils.Log.Fatal("Failed to initialize AccountHandler. Exiting application.")
+	}
+	utils.Log.Info("AccountHandler initialized successfully.")
+
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler); err != nil {
+	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler); err != nil { // Added accountHandler
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("Profile Manager API routes configured successfully.")
