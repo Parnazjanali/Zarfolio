@@ -27,6 +27,12 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	api := app.Group("/api/v1")
 	utils.Log.Info("Configuring /api/v1 routes")
 
+	// DEBUGGING ROUTE for 2FA generate-secret without AuthUser middleware
+	if accountHandlerAG != nil { // Ensure handler is available
+		api.Post("/account/2fa/generate-secret-debug", accountHandlerAG.HandleGenerateTwoFASetup)
+		utils.Log.Info("ADDED DEBUG ROUTE: POST /api/v1/account/2fa/generate-secret-debug (NO AUTH MIDDLEWARE)")
+	}
+
 	registerGroup := api.Group("/register")
 	utils.Log.Info("Configuring /api/v1/register routes")
 	registerGroup.Post("/user", authHandler.RegisterUser)
