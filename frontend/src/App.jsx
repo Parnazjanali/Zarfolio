@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage.jsx';
+import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import InvoicesPage from './pages/InvoicesPage.jsx';
 import NewInvoicePage from './pages/NewInvoicePage.jsx'; //  کامپوننت جدید را ایمپورت کنید
@@ -19,7 +21,8 @@ import './App.css';
 function BackgroundManager() {
   const location = useLocation();
   useEffect(() => {
-    if (location.pathname === '/login') {
+    const authPaths = ['/login', '/request-password-reset', '/reset-password'];
+    if (authPaths.includes(location.pathname)) {
       document.body.classList.add('login-page-background');
     } else {
       document.body.classList.remove('login-page-background');
@@ -65,6 +68,8 @@ function App() {
       <BackgroundManager />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
 

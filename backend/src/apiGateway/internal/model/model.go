@@ -30,3 +30,14 @@ type AuthResponse struct {
 	User    *User  `json:"user"`    
 	Exp     int64  `json:"exp"`
 }
+
+// RequestPasswordResetRequest defines the structure for a password reset request via API Gateway.
+type RequestPasswordResetRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+// ResetPasswordRequest defines the structure for resetting a password with a token via API Gateway.
+type ResetPasswordRequest struct {
+	Token       string `json:"token" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=8"`
+}

@@ -26,6 +26,11 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
 	authGroup.Post("/login", middleware.AuthUser, authHandler.LoginUser)
 	authGroup.Post("/logout", middleware.AuthUser, authHandler.LogoutUser)
 
+	// Add new password reset routes to the existing authGroup
+	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
+	authGroup.Post("/password/reset", authHandler.HandleResetPassword)
+	utils.Log.Info("Configuring /api/v1/auth/password routes for password reset")
+
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("API Gateway: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "API Gateway: The requested resource was not found."})

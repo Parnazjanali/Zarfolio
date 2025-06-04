@@ -280,7 +280,7 @@ function LoginPage() {
             />
             مرا به خاطر بسپار
           </label>
-          {/* <Link to="/forgot-password" className="forgot-password-link">فراموشی رمز عبور؟</Link> */}
+          <Link to="/request-password-reset" className="forgot-password-link">فراموشی رمز عبور؟</Link>
         </div>
       )}
       {/* <<<< حذف چک‌باکس راهنمای رمز قوی از اینجا >>>> */}
