@@ -72,9 +72,16 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("Handlers initialized successfully.")
 
+	utils.Log.Info("Initializing AccountHandler...")
+	accountHandler := handler.NewAccountHandler(userService)
+	if accountHandler == nil {
+		utils.Log.Fatal("Failed to initialize AccountHandler. Exiting application.")
+	}
+	utils.Log.Info("AccountHandler initialized successfully.")
+
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler); err != nil {
+	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler); err != nil { // Added accountHandler
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("Profile Manager API routes configured successfully.")

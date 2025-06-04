@@ -9,9 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
+// Add accountHandlerAG *handler.AccountHandlerAG to signature
+func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHandlerAG *handler.AccountHandlerAG) error {
 	if authHandler == nil {
-		utils.Log.Fatal("AuthHandler is nil in SetupAuthRoutes, cannot set up auth routes.")
+		utils.Log.Fatal("AuthHandler is nil in SetUpApiRoutes.")
+		// return errors.New("authHandler cannot be nil")
+	}
+	if accountHandlerAG == nil { // Add check
+		utils.Log.Fatal("AccountHandlerAG is nil in SetUpApiRoutes.")
+		// return errors.New("accountHandlerAG cannot be nil")
 	}
 
 	api := app.Group("/api/v1")
@@ -30,6 +36,11 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler) error {
 	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
 	authGroup.Post("/password/reset", authHandler.HandleResetPassword)
 	utils.Log.Info("Configuring /api/v1/auth/password routes for password reset")
+
+	accountGroup := api.Group("/account", middleware.AuthUser) // Protected by existing AuthUser middleware
+	utils.Log.Info("Configuring /api/v1/account routes")
+	accountGroup.Post("/change-username", accountHandlerAG.HandleChangeUsername)
+	accountGroup.Post("/change-password", accountHandlerAG.HandleChangePassword)
 
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("API Gateway: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))

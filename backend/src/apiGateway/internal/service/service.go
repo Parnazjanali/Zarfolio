@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
-	"io" // For io.ReadAll
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -36,8 +36,10 @@ type ProfileManagerClient interface {
 	RegisterUser(req model.RegisterRequest) error
 	AuthenticateUser(req model.LoginRequest) (*model.User, string, error)
 	LogoutUser(token string) error
-	RequestPasswordReset(req model.RequestPasswordResetRequest) error // New
-	PerformPasswordReset(req model.ResetPasswordRequest) error       // New
+	RequestPasswordReset(req model.RequestPasswordResetRequest) error
+	PerformPasswordReset(req model.ResetPasswordRequest) error
+	ChangeUsername(req model.ChangeUsernameRequest, userToken string) error
+	ChangePassword(req model.ChangePasswordRequest, userToken string) error
 }
 
 type AuthService struct {
@@ -81,6 +83,105 @@ func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
 		return fmt.Errorf("%w: failed to register user with profile manager", ErrInternalService)
 	}
 	utils.Log.Info("User registered successfully by Profile Manager", zap.String("username", req.Username))
+	return nil
+}
+
+func (c *profileManagerHTTPClient) ChangeUsername(req model.ChangeUsernameRequest, userToken string) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("failed to marshal change username request for profile manager: %w", err)
+	}
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/change-username", bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request for profile manager change username: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+userToken) // Forward the user's token
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return fmt.Errorf("%w: cannot connect to profile manager for change username at %s", ErrProfileManagerDown, c.baseURL)
+		}
+		return fmt.Errorf("failed to send change username request to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		// Specific error handling based on status codes from profileManager
+		if resp.StatusCode == http.StatusUnauthorized { // e.g. Wrong current password
+			return fmt.Errorf("%w: %s", ErrInvalidCredentials, string(respBody))
+		}
+		if resp.StatusCode == http.StatusConflict { // e.g. Username taken
+			return fmt.Errorf("%w: %s", ErrUserAlreadyExists, string(respBody)) // Reusing ErrUserAlreadyExists for username taken
+		}
+		if resp.StatusCode == http.StatusNotFound { // e.g. User not found by ID in profileManager (shouldn't happen if token is valid)
+			return fmt.Errorf("%w: %s", ErrUserNotFound, string(respBody))
+		}
+		utils.Log.Error("profileManagerHTTPClient.ChangeUsername: Profile manager returned non-OK status",
+			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+		return fmt.Errorf("profile manager change username failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func (c *profileManagerHTTPClient) ChangePassword(req model.ChangePasswordRequest, userToken string) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("failed to marshal change password request for profile manager: %w", err)
+	}
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/change-password", bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request for profile manager change password: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+userToken) // Forward the user's token
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return fmt.Errorf("%w: cannot connect to profile manager for change password at %s", ErrProfileManagerDown, c.baseURL)
+		}
+		return fmt.Errorf("failed to send change password request to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == http.StatusUnauthorized { // Wrong current password
+			return fmt.Errorf("%w: %s", ErrInvalidCredentials, string(respBody))
+		}
+		if resp.StatusCode == http.StatusBadRequest { // e.g. new password policy violation from profileManager
+			utils.Log.Error("profileManagerHTTPClient.ChangePassword: Profile manager returned Bad Request status",
+				zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+			return fmt.Errorf("bad request from profile manager for change password (status %d): %s", resp.StatusCode, string(respBody))
+		}
+		utils.Log.Error("profileManagerHTTPClient.ChangePassword: Profile manager returned non-OK status",
+			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+		return fmt.Errorf("profile manager change password failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func (s *AuthService) ChangeUsername(req model.ChangeUsernameRequest, userToken string) error {
+	err := s.profileMgrClient.ChangeUsername(req, userToken)
+	if err != nil {
+		// Specific errors are already wrapped by client, or can be checked here
+		utils.Log.Error("AuthService (apiGateway): ChangeUsername failed via ProfileManagerClient", zap.Error(err))
+		return err // Propagate error from client
+	}
+	return nil
+}
+
+func (s *AuthService) ChangePassword(req model.ChangePasswordRequest, userToken string) error {
+	err := s.profileMgrClient.ChangePassword(req, userToken)
+	if err != nil {
+		utils.Log.Error("AuthService (apiGateway): ChangePassword failed via ProfileManagerClient", zap.Error(err))
+		return err // Propagate error from client
+	}
 	return nil
 }
 
