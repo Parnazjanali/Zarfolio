@@ -15,7 +15,7 @@ var RedisClient *redis.Client
 func InitRedisClient() error {
 	redisHost := os.Getenv("REDIS_HOST")
 	redisPort := os.Getenv("REDIS_PORT")
-	redisPassword := os.Getenv("REDIS_PASSWORD") // <-- این مقدار "" خواهد بود اگر در .env خالی باشد
+	redisPassword := os.Getenv("REDIS_PASSWORD") // <-- This value will be "" if it's empty in .env
 	redisDbStr := os.Getenv("REDIS_DB")
 
 	if redisHost == "" || redisPort == "" {
@@ -32,26 +32,26 @@ func InitRedisClient() error {
 		Log.Warn("Failed to parse REDIS_DB, defaulting to 0", zap.String("redis_db_env", redisDbStr), zap.Error(err))
 	}
 
-	// --- اصلاح اصلی: فیلد Password را فقط در صورت غیرخالی بودن تنظیم کن ---
+	// --- Main fix: Set the Password field only if it's not empty ---
 	redisOptions := &redis.Options{
 		Addr:        redisAddr,
 		DB:          dbIndex,
 		PoolSize:    10,
-		PoolTimeout: 30 * time.Second, // Timeout برای عملیات‌های پول
+		PoolTimeout: 30 * time.Second, // Timeout for pool operations
 		IdleTimeout: 5 * time.Minute,
 	}
 
-	if redisPassword != "" { // <-- این شرط اضافه شد!
-		redisOptions.Password = redisPassword // <-- فقط اگر رمز عبور در env خالی نبود، آن را تنظیم کن
+	if redisPassword != "" { // <-- This condition was added!
+		redisOptions.Password = redisPassword // <-- Set it only if the password in env was not empty
 		Log.Debug("Redis password configured, attempting authentication.")
 	} else {
 		Log.Debug("No Redis password provided in .env, attempting connection without authentication.")
 	}
 	// ---------------------------------------------------------------------
 
-	RedisClient = redis.NewClient(redisOptions) // <-- از redisOptions جدید استفاده کن
+	RedisClient = redis.NewClient(redisOptions) // <-- Use the new redisOptions
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // Timeout برای Ping
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // Timeout for Ping
 	defer cancel()
 
 	pong, err := RedisClient.Ping(ctx).Result()

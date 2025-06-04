@@ -2,9 +2,12 @@ package handler
 
 import (
 	"errors"
+	// "fmt" // Removed, not used
 	"profile-gold/internal/model"
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
+
+	// "strings" // Removed, not used
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -70,7 +73,7 @@ func (h *AccountHandler) HandleChangeUsername(c *fiber.Ctx) error {
 		// So, no specific error string check needed here for that case.
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Internal server error while changing username.", Code: "500_INTERNAL_ERROR"})
 	}
-    // If err is nil and username was same, service returns nil. Client gets success.
+	// If err is nil and username was same, service returns nil. Client gets success.
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Username change request processed successfully."})
 }
 
@@ -113,14 +116,13 @@ func (h *AccountHandler) HandleChangePassword(c *fiber.Ctx) error {
 		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Incorrect current password.", Code: "401_INVALID_CURRENT_PASSWORD"})
 		}
+		if errors.Is(err, service.ErrPasswordPolicyViolation) {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "New password does not meet policy requirements.", Code: "400_PASSWORD_POLICY_VIOLATION"})
+		}
 		// As per service logic, if password is same, err is nil.
-		// If password too short from service:
-        if err.Error() == "new password must be at least 8 characters long" {
-             return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: err.Error(), Code: "400_PASSWORD_POLICY_VIOLATION"})
-        }
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Internal server error while changing password.", Code: "500_INTERNAL_ERROR"})
 	}
-    // If err is nil and password was same, service returns nil. Client gets success.
+	// If err is nil and password was same, service returns nil. Client gets success.
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Password change request processed successfully."})
 }
 

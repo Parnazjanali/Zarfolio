@@ -13,11 +13,10 @@ import (
 )
 
 var (
-	
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound  = errors.New("user not found")
 	ErrTokenNotFound = errors.New("token not found in blacklist")
+	ErrDuplicateUser = errors.New("user already exists (duplicate username or email)") // New error for duplicate user
 )
-
 
 type UserRepository interface {
 	CreateUser(user *model.User) error
@@ -29,8 +28,8 @@ type UserRepository interface {
 }
 
 type inMemoryUserRepository struct {
-	users map[string]*model.User 
-	mu    sync.RWMutex          
+	users map[string]*model.User
+	mu    sync.RWMutex
 }
 
 func NewInMemoryUserRepository() UserRepository {
@@ -47,7 +46,7 @@ func (r *inMemoryUserRepository) CreateUser(user *model.User) error {
 	if _, exists := r.users[user.Username]; exists {
 		return fmt.Errorf("user with username '%s' already exists", user.Username)
 	}
-	if user.ID == "" { 
+	if user.ID == "" {
 		user.ID = fmt.Sprintf("in-mem-user-%d", len(r.users)+1)
 	}
 	user.CreatedAt = time.Now()
@@ -104,46 +103,53 @@ func (r *inMemoryUserRepository) UpdateUser(user *model.User) error {
 	// This means we can't directly update a user if their username is also changed, unless we remove old key and add new.
 	// A robust in-memory repo might need a map by ID: `usersByID map[string]*model.User`
 
-	// Let's find by username first, assuming username is not changed or is the primary key for map access.
-	// If username can be changed, this logic needs to be more complex (e.g. find by ID, then update).
-	// For now, if user.Username is the key in r.users:
-	if oldUser, exists := r.users[user.Username]; !exists {
-		// If not found by current username, try to find by ID to see if it's a username change
-		var foundByID *model.User
-		var oldUsernameKey string
-		for key, u := range r.users {
-			if u.ID == user.ID {
-				foundByID = u
-				oldUsernameKey = key
-				break
-			}
-		}
-		if foundByID == nil {
-			utils.Log.Warn("UpdateUser: User not found in in-memory repo for update", zap.String("username", user.Username), zap.String("userID", user.ID))
-			return ErrUserNotFound
-		}
-		// If username changed, delete old entry and add new one
-		if oldUsernameKey != user.Username {
-			delete(r.users, oldUsernameKey)
+	// Check if a user with the new username already exists, if it's not the same user ID
+	if existingUserWithNewName, nameTaken := r.users[user.Username]; nameTaken && existingUserWithNewName.ID != user.ID {
+		utils.Log.Warn("UpdateUser: Target username is already taken by another user in in-memory repo",
+			zap.String("targetUsername", user.Username), zap.String("requestingUserID", user.ID))
+		return fmt.Errorf("username '%s' is already taken", user.Username) // Or a specific error type
+	}
+
+	var oldUsername string
+	var foundByPreviousState bool
+
+	// Try to find the user by ID to get their current state / old username
+	for _, u := range r.users { // Changed 'key' to '_'
+		if u.ID == user.ID {
+			oldUsername = u.Username // This is the current key in the map
+			foundByPreviousState = true
+			break
 		}
 	}
 
+	if !foundByPreviousState {
+		// This means it's a new user if we consider UpdateUser as an upsert,
+		// or an error if we expect the user to always exist for an update.
+		// Given typical repository patterns, UpdateUser usually expects the item to exist.
+		utils.Log.Warn("UpdateUser: User not found by ID in in-memory repo for update", zap.String("userID", user.ID))
+		return ErrUserNotFound
+	}
+
+	// If the username has changed, delete the old entry.
+	if oldUsername != user.Username {
+		delete(r.users, oldUsername)
+	}
+
 	user.UpdatedAt = time.Now()
-	r.users[user.Username] = user // Replace existing user or add if username changed
+	r.users[user.Username] = user // Add/update with the new username key
 	utils.Log.Info("User updated in in-memory repo", zap.String("username", user.Username), zap.String("userID", user.ID))
 	return nil
 }
 
-
 type postgresUserRepository struct {
-	db *gorm.DB 
+	db *gorm.DB
 }
 
 func NewPostgresUserRepository(db *gorm.DB) UserRepository {
 	if db == nil {
 		utils.Log.Fatal("GORM DB instance is nil for PostgresUserRepository.")
 	}
-	
+
 	err := db.AutoMigrate(&model.User{})
 	if err != nil {
 		utils.Log.Fatal("Failed to auto migrate User table", zap.Error(err))
@@ -155,12 +161,13 @@ func NewPostgresUserRepository(db *gorm.DB) UserRepository {
 func (r *postgresUserRepository) CreateUser(user *model.User) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	
 
 	result := r.db.Create(user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return fmt.Errorf("user creation failed: duplicate key error. %w", result.Error)
+			// Check if it's related to username or email if possible (driver dependent, GORM might not give enough info)
+			// For now, any duplicate key error on user creation is considered ErrDuplicateUser
+			return ErrDuplicateUser
 		}
 		return fmt.Errorf("failed to create user in DB: %w", result.Error)
 	}
@@ -217,7 +224,9 @@ func (r *postgresUserRepository) UpdateUser(user *model.User) error {
 	result := r.db.Save(user)
 	if result.Error != nil {
 		// Check for duplicate key errors if unique constraints are violated during update (e.g., changing email to an existing one)
-		// This might require more specific error checking based on your DB driver.
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return ErrDuplicateUser // Username or email might have been changed to an existing one
+		}
 		return fmt.Errorf("failed to update user in DB: %w", result.Error)
 	}
 	if result.RowsAffected == 0 {
