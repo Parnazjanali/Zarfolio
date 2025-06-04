@@ -19,6 +19,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isNewEntryDropdownOpen, setIsNewEntryDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
+  const [profileImgError, setProfileImgError] = useState(false);
 
   const newEntryButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
@@ -213,15 +214,24 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   };
 
   let currentUserName = "ادمین";
+  let profilePictureUrl = null;
+
   try {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
-      const userData = JSON.parse(userDataString);
-      currentUserName = userData.fullName || userData.name || userData.username || "ادمین";
+        const userData = JSON.parse(userDataString);
+        currentUserName = userData.fullName || userData.name || userData.username || "ادمین";
+        if (userData.profile_picture_url) {
+            profilePictureUrl = userData.profile_picture_url;
+        }
     }
   } catch (error) {
-    console.error("Sidebar: Error parsing user data from localStorage", error);
+      console.error("Sidebar: Error parsing user data from localStorage", error);
   }
+
+  useEffect(() => {
+    setProfileImgError(false);
+  }, [profilePictureUrl]);
 
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
@@ -252,7 +262,17 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
               aria-expanded={isProfileDropdownOpen}
               aria-haspopup="true"
             >
-              <FaUserCircle className="profile-icon" />
+              {profilePictureUrl && !profileImgError ? (
+                <img
+                  src={profilePictureUrl}
+                  alt="Profile"
+                  className="profile-icon"
+                  style={{ borderRadius: '50%', objectFit: 'cover', width: '32px', height: '32px' }} // Added explicit size
+                  onError={() => setProfileImgError(true)}
+                />
+              ) : (
+                <FaUserCircle className="profile-icon" />
+              )}
               {!isCollapsed && <span className="profile-name">{currentUserName}</span>}
               {!isCollapsed && currentUserName && (
                 isProfileDropdownOpen

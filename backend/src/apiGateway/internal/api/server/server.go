@@ -6,7 +6,6 @@ import (
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/service"
 	"gold-api/internal/utils"
-	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -40,7 +39,7 @@ func StartServer(port string) {
 		utils.Log.Fatal("ERROR: Failed to initialize AuthService. Exiting application.")
 	}
 
-	// ساخت هندلر احراز هویت (AuthHandler) و دادن AuthService به آن.
+	// Create AuthHandler and provide AuthService to it.
 	authHandler := handler.NewAuthHandler(authService)
 	if authHandler == nil {
 		utils.Log.Fatal("ERROR: Failed to initialize AuthHandler. Exiting application.")
@@ -52,16 +51,18 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("All core dependencies initialized successfully.")
 
-	// 4. تنظیم تمامی مسیرهای API
-	// ما app و هندلرهای آماده شده را به تابع SetupApiRoutes می‌دهیم تا روت‌ها را ثبت کند.
+	// 4. Setting up all API routes
+	// We provide the app and prepared handlers to the SetupApiRoutes function to register the routes.
 	utils.Log.Info("Setting up API routes for API Gateway...")
 	if err := SetUpApiRoutes(app, authHandler, accountHandlerAG); err != nil { // Pass accountHandlerAG
 		utils.Log.Fatal("ERROR: Failed to set up API routes: %v. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("All API routes configured successfully.")
 
-	// 5. شروع گوش دادن سرور به درخواست‌ها
+	// 5. Start server listening for requests
 	utils.Log.Info("API Gateway is attempting to listen", zap.String("address", fmt.Sprintf("0.0.0.0%s", port)))
-	// log.Fatal برنامه را در صورت خطای شروع سرور (مثلاً پورت اشغال شده) متوقف می‌کند.
-	log.Fatal(app.Listen(port))
+	// Use utils.Log for fatal errors to ensure consistent logging
+	if err := app.Listen(port); err != nil {
+		utils.Log.Fatal("API Gateway server failed to start", zap.Error(err))
+	}
 }

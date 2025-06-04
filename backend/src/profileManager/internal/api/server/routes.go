@@ -3,8 +3,9 @@ package server
 import (
 	"errors"
 	"profile-gold/internal/api/handler"
-	"profile-gold/internal/api/middleware" // Import middleware
-	"profile-gold/internal/model"          // For model.ErrorResponse in 404
+	"profile-gold/internal/api/middleware"                // Import middleware
+	"profile-gold/internal/model"                         // For model.ErrorResponse in 404
+	redisdb "profile-gold/internal/repository/db/redisDb" // Import for TokenRepository
 	"profile-gold/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,7 @@ func SetupProfileManagerRoutes(
 	authHandler *handler.AuthHandler,
 	profileHandler *handler.ProfileHandler, // Can be nil if not used
 	accountHandler *handler.AccountHandler,
+	tokenRepo redisdb.TokenRepository, // Corrected type to redisdb.TokenRepository
 ) error {
 	if app == nil {
 		utils.Log.Fatal("Fiber app is nil in SetupProfileManagerRoutes.")
@@ -43,7 +45,8 @@ func SetupProfileManagerRoutes(
 
 	utils.Log.Info("Profile Manager: Configuring base authentication routes.")
 	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
+	app.Post("/login", authHandler.Login)                // Step 1 login
+	app.Post("/login/2fa", authHandler.HandleLoginTwoFA) // Step 2 2FA login
 	app.Post("/logout", authHandler.Logout)
 
 	passwordGroup := app.Group("/password")
@@ -53,10 +56,16 @@ func SetupProfileManagerRoutes(
 
 	// Account Management Routes (Protected)
 	// These routes require a valid token from apiGateway (or a direct authenticated call)
-	accountGroup := app.Group("/account", middleware.PlaceholderAuthMiddleware())
+	accountGroup := app.Group("/account", middleware.AuthMiddleware(tokenRepo)) // Pass tokenRepo
 	utils.Log.Info("Configuring protected /account routes for Profile Manager...")
 	accountGroup.Post("/change-username", accountHandler.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandler.HandleChangePassword)
+
+	twoFAGroup := accountGroup.Group("/2fa") // Sub-group for 2FA under /account
+	utils.Log.Info("Configuring protected /account/2fa routes for Profile Manager...")
+	twoFAGroup.Post("/generate-secret", accountHandler.HandleGenerateTwoFASetup)
+	twoFAGroup.Post("/enable", accountHandler.HandleVerifyAndEnableTwoFA)
+	twoFAGroup.Post("/disable", accountHandler.HandleDisableTwoFA)
 
 	if profileHandler != nil {
 		utils.Log.Info("ProfileHandler is available. Configuring /profiles routes.")

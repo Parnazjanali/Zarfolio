@@ -47,8 +47,8 @@ func PlaceholderAuthMiddleware() fiber.Handler {
 		}
 		// --- END JWT Validation Placeholder ---
 
-        // If token is not our dummy one, or if real validation fails:
-        utils.Log.Warn("AuthMiddleware (PM): Invalid token (placeholder)", zap.String("token", tokenString))
+		// If token is not our dummy one, or if real validation fails:
+		utils.Log.Warn("AuthMiddleware (PM): Invalid token (placeholder)", zap.String("token", tokenString))
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 			Message: "Unauthorized: Invalid or expired token.", Code: "401_INVALID_TOKEN",
 		})

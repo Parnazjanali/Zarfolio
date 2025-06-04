@@ -3,21 +3,21 @@ package model
 import "time"
 
 type User struct {
-	ID           string    `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Username     string    `json:"username" gorm:"unique;not null"`
-	PasswordHash string    `json:"-" gorm:"column:password_hash;not null"`
-	Email        string    `json:"email" gorm:"unique;not null"`
-	Role         string    `json:"role" gorm:"default:'user';not null"`
+	ID           string `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Username     string `json:"username" gorm:"unique;not null"`
+	PasswordHash string `json:"-" gorm:"column:password_hash;not null"`
+	Email        string `json:"email" gorm:"unique;not null"`
+	Role         string `json:"role" gorm:"default:'user';not null"`
 
 	// 2FA Fields
-	TwoFASecret      string    `json:"-" gorm:"column:two_fa_secret;type:text"`      // Encrypted TOTP secret
-	IsTwoFAEnabled   bool      `json:"is_two_fa_enabled" gorm:"column:is_two_fa_enabled;default:false"`
+	TwoFASecret    string `json:"-" gorm:"column:two_fa_secret;type:text"` // Encrypted TOTP secret
+	IsTwoFAEnabled bool   `json:"is_two_fa_enabled" gorm:"column:is_two_fa_enabled;default:false"`
 	// Storing recovery codes: Using TEXT and assuming service layer will handle (e.g., JSON array of hashed codes)
-    // Alternatively, use datatypes.JSON if your GORM setup supports it well for arrays.
+	// Alternatively, use datatypes.JSON if your GORM setup supports it well for arrays.
 	TwoFARecoveryCodes string `json:"-" gorm:"column:two_fa_recovery_codes;type:text"` // JSON array of HASHED recovery codes
 
-	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 type RegisterRequest struct {
@@ -50,7 +50,7 @@ type PasswordResetToken struct {
 	Token     string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"-"` // Token itself is not usually sent in JSON response
 	UserID    string    `gorm:"type:uuid;not null" json:"user_id"`
 	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"` // Foreign key relationship
-	Email     string    `gorm:"type:varchar(255);not null" json:"email"` // Store email for auditing/verification
+	Email     string    `gorm:"type:varchar(255);not null" json:"email"`                         // Store email for auditing/verification
 	ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 }
@@ -80,7 +80,7 @@ type ChangePasswordRequest struct {
 
 // GenerateTwoFAResponse defines the data returned when generating a 2FA secret.
 type GenerateTwoFAResponse struct {
-	Secret    string `json:"secret"`     // The raw TOTP secret (to be shown to user for manual entry)
+	Secret    string `json:"secret"`      // The raw TOTP secret (to be shown to user for manual entry)
 	QRCodeURL string `json:"qr_code_url"` // The otpauth:// URL for QR code generation
 }
 
@@ -97,4 +97,19 @@ type EnableTwoFAResponse struct {
 // DisableTwoFARequest defines the request body for disabling 2FA.
 type DisableTwoFARequest struct {
 	CurrentPassword string `json:"current_password" validate:"required"`
+}
+
+// LoginStep1Response is returned when 2FA is required after password validation.
+type LoginStep1Response struct {
+	TwoFARequired bool   `json:"two_fa_required"`
+	UserID        string `json:"user_id,omitempty"` // Sent if 2FA is required, for client to use in next step
+	Message       string `json:"message"`
+	// Alternatively, an interim_token could be sent instead of user_id.
+	// InterimToken  string `json:"interim_token,omitempty"`
+}
+
+// LoginTwoFARequest defines the request body for submitting the TOTP code.
+type LoginTwoFARequest struct {
+	UserID   string `json:"user_id" validate:"required"` // Or InterimToken
+	TOTPCode string `json:"totp_code" validate:"required,numeric,length=6"`
 }

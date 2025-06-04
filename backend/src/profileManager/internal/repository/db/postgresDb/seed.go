@@ -56,12 +56,12 @@ func SeedAdminUsers(userRepo UserRepository) error {
 
 		err = userRepo.CreateUser(adminToCreate)
 		if err != nil {
-			
+
 			if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key") {
 				utils.Log.Warn("User with this username or email already exists (duplicate key error), skipping seed",
 					zap.String("username", adminData.Username),
 					zap.String("email", adminData.Email))
-				continue 
+				continue
 			}
 
 			utils.Log.Error("Failed to create admin user during seed", zap.String("username", adminData.Username), zap.Error(err))

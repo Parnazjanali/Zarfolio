@@ -1,15 +1,16 @@
 package service
 
 import (
+	"context" // Added for context.Background()
 	"errors"
 	"fmt"
-	"profile-gold/internal/model"
-	"encoding/json" // Added for marshaling recovery codes
-	"profile-gold/internal/model"
+
+	// "profile-gold/internal/model" // First occurrence removed
+	"encoding/json"                                  // Added for marshaling recovery codes
+	"profile-gold/internal/model"                    // Second occurrence kept, or consolidate to one
 	"profile-gold/internal/repository/db/postgresDb" // Corrected import path
 	redisdb "profile-gold/internal/repository/db/redisDb"
-	"profile-gold/internal/utils"
-	"strings" // Added import for strings package
+	"profile-gold/internal/utils" // Added import for strings package
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -18,20 +19,21 @@ import (
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid username or password")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserAlreadyExists  = errors.New("user with this username or email already exists")
-	ErrInternalService    = errors.New("internal service error")
+	ErrInvalidCredentials        = errors.New("invalid username or password")
+	ErrUserNotFound              = errors.New("user not found")
+	ErrUserAlreadyExists         = errors.New("user with this username or email already exists")
+	ErrInternalService           = errors.New("internal service error")
 	ErrPasswordResetTokenInvalid = errors.New("password reset token is invalid or expired")
-	ErrUsernameTaken = errors.New("username is already taken")
-	ErrTwoFARequired           = errors.New("2FA code required")
-	ErrTwoFAAlreadyEnabled     = errors.New("2FA is already enabled for this account")
-	ErrTwoFANotEnabled         = errors.New("2FA is not enabled for this account")
-	ErrTwoFAInvalidCode        = errors.New("invalid 2FA code")
-	ErrTwoFASecretGeneration = errors.New("failed to generate 2FA secret")
-	ErrTwoFAEnableFailed       = errors.New("failed to enable 2FA")
-	ErrTwoFADisableFailed      = errors.New("failed to disable 2FA")
-	ErrRecoveryCodeInvalid   = errors.New("invalid recovery code")
+	ErrUsernameTaken             = errors.New("username is already taken")
+	ErrTwoFARequired             = errors.New("2FA code required")
+	ErrTwoFAAlreadyEnabled       = errors.New("2FA is already enabled for this account")
+	ErrTwoFANotEnabled           = errors.New("2FA is not enabled for this account")
+	ErrTwoFAInvalidCode          = errors.New("invalid 2FA code")
+	ErrTwoFASecretGeneration     = errors.New("failed to generate 2FA secret")
+	ErrTwoFAEnableFailed         = errors.New("failed to enable 2FA")
+	ErrTwoFADisableFailed        = errors.New("failed to disable 2FA")
+	ErrRecoveryCodeInvalid       = errors.New("invalid recovery code")
+	ErrPasswordPolicyViolation   = errors.New("new password does not meet policy requirements")
 )
 
 type UserService interface {
@@ -47,12 +49,13 @@ type UserService interface {
 	GenerateTwoFASetup(userID string) (secret string, qrCodeURL string, err error)
 	VerifyAndEnableTwoFA(userID string, totpCode string) (recoveryCodes []string, err error)
 	DisableTwoFA(userID string, currentPassword string) error
-	VerifyTOTP(userID string, totpCode string) (bool, error) // Renamed for clarity during login
+	VerifyTOTP(userID string, totpCode string) (bool, error)
+	GetUserByIDForTokenGeneration(userID string) (*model.User, error)
 }
 
 type userService struct {
-	userRepo              postgresDb.UserRepository
-	tokenRepo             redisdb.TokenRepository
+	userRepo               postgresDb.UserRepository
+	tokenRepo              redisdb.TokenRepository
 	passwordResetTokenRepo postgresDb.PasswordResetTokenRepository // New field
 }
 
@@ -73,8 +76,8 @@ func NewUserService(
 	}
 	utils.Log.Info("UserService initialized successfully with UserRepo, TokenRepo, and PasswordResetTokenRepo.")
 	return &userService{
-		userRepo:              r,
-		tokenRepo:             t,
+		userRepo:               r,
+		tokenRepo:              t,
 		passwordResetTokenRepo: prtr, // Initialize new field
 	}
 }
@@ -124,11 +127,10 @@ func (s *userService) RegisterUser(req model.RegisterRequest) error {
 		// Check if the error from CreateUser is because the user already exists (e.g. due to a race condition or other constraint)
 		// This specific check might be redundant if GetUserByUsername/Email are reliable and cover all cases.
 		// However, some DB drivers might return a generic duplicate error rather than a specific one that can be easily mapped to ErrUserAlreadyExists.
-		// For now, we rely on the GORM's ErrDuplicatedKey being handled in the repo layer if possible,
-		// or a more generic error here. The primary checks are above.
-		if strings.Contains(strings.ToLower(err.Error()), "duplicate key") || strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
-			utils.Log.Warn("CreateUser returned a duplicate error, implies race condition or unhandled constraint", zap.Error(err))
-			return ErrUserAlreadyExists
+		// The repository layer (user_repo.go) should now return postgresDb.ErrDuplicateUser for these cases.
+		if errors.Is(err, postgresDb.ErrDuplicateUser) {
+			utils.Log.Warn("RegisterUser: Duplicate user error from repository", zap.String("username", newUser.Username), zap.Error(err))
+			return ErrUserAlreadyExists // Map to service layer's specific error
 		}
 		return fmt.Errorf("%w: failed to create user in repository: %v", ErrInternalService, err)
 	}
@@ -211,7 +213,8 @@ func (s *userService) LogoutUser(tokenString string) error {
 			zap.String("username", claims.Username), zap.Time("expires_at", expirationTime))
 		return nil
 	}
-	err = s.tokenRepo.AddTokenToBlacklist(tokenString, ttl)
+	// Pass context.Background() to AddTokenToBlacklist
+	err = s.tokenRepo.AddTokenToBlacklist(context.Background(), tokenString, ttl)
 	if err != nil {
 		utils.Log.Error("UserService: Failed to add token to blacklist", zap.String("username", claims.Username), zap.Error(err))
 		return fmt.Errorf("%w: failed to blacklist token", ErrInternalService)
@@ -386,9 +389,17 @@ func (s *userService) ChangeUsername(userID string, newUsername string, currentP
 	// Update username
 	user.Username = newUsername
 	// user.UpdatedAt = time.Now(); // This is handled by userRepo.UpdateUser
-	if err := s.userRepo.UpdateUser(user); err != nil {
-		utils.Log.Error("ChangeUsername: Failed to update username in repository", zap.String("userID", userID), zap.String("newUsername", newUsername), zap.Error(err))
-		return fmt.Errorf("%w: failed to update username: %v", ErrInternalService, err)
+	if errUpdate := s.userRepo.UpdateUser(user); errUpdate != nil {
+		// Check for unique constraint violation (e.g., from PostgreSQL)
+		// This check is database-dependent and might need adjustment.
+		// Common keywords: "unique constraint", "duplicate key", "23505" (PostgreSQL error code)
+		// The repository layer (user_repo.go) should now return postgresDb.ErrDuplicateUser for these cases.
+		if errors.Is(errUpdate, postgresDb.ErrDuplicateUser) {
+			utils.Log.Warn("ChangeUsername: Username or email taken due to duplicate error from repository on update", zap.String("userID", userID), zap.String("newUsername", newUsername), zap.Error(errUpdate))
+			return ErrUsernameTaken // Map to service layer's specific error (ErrUsernameTaken implies a duplicate)
+		}
+		utils.Log.Error("ChangeUsername: Failed to update username in repository", zap.String("userID", userID), zap.String("newUsername", newUsername), zap.Error(errUpdate))
+		return fmt.Errorf("%w: failed to update username: %v", ErrInternalService, errUpdate)
 	}
 
 	utils.Log.Info("Username changed successfully", zap.String("userID", userID), zap.String("newUsername", newUsername))
@@ -402,7 +413,7 @@ func (s *userService) ChangePassword(userID string, currentPassword string, newP
 
 	// Basic validation for new password (e.g. length)
 	if len(newPassword) < 8 { // Example: align with frontend or define centrally
-		return errors.New("new password must be at least 8 characters long")
+		return ErrPasswordPolicyViolation
 	}
 
 	user, err := s.userRepo.GetUserByID(userID)
@@ -452,7 +463,7 @@ func (s *userService) ChangePassword(userID string, currentPassword string, newP
 func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) {
 	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
-		if errors.Is(err, postgresDb.ErrUserNotFound) {
+		if errors.Is(err, postgresDb.ErrUserNotFound) { // Ensure this is the correct package for ErrUserNotFound
 			utils.Log.Warn("GenerateTwoFASetup: User not found by ID", zap.String("userID", userID))
 			return "", "", ErrUserNotFound
 		}
@@ -465,31 +476,56 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 		return "", "", ErrTwoFAAlreadyEnabled
 	}
 
-	encryptionKey := utils.GetEncryptionKey() // Assume this utility exists
+	encryptionKey := utils.GetEncryptionKey()
 	if len(encryptionKey) == 0 {
-		utils.Log.Error("GenerateTwoFASetup: Encryption key not configured")
-		return "", "", ErrInternalService
+		utils.Log.Error("GenerateTwoFASetup: Encryption key not configured or is empty. This is a critical security risk and operational failure.")
+		return "", "", fmt.Errorf("%w: encryption key not configured", ErrInternalService)
 	}
+	utils.Log.Debug("GenerateTwoFASetup: Retrieved encryption key", zap.String("userID", userID), zap.Int("key_length", len(encryptionKey)))
 
-	rawSecret, err := utils.GenerateTOTPSecret()
+	// Use user.Email for the account name in TOTP, common practice. Username could also be used.
+	rawSecret, err := utils.GenerateTOTPSecret(user.Email)
 	if err != nil {
-		utils.Log.Error("GenerateTwoFASetup: GenerateTOTPSecret failed", zap.String("userID", userID), zap.Error(err))
+		utils.Log.Error("GenerateTwoFASetup: utils.GenerateTOTPSecret failed", zap.String("userID", userID), zap.String("userEmail", user.Email), zap.Error(err))
 		return "", "", ErrTwoFASecretGeneration
 	}
+	utils.Log.Debug("GenerateTwoFASetup: Generated raw TOTP secret", zap.String("userID", userID), zap.String("rawSecretPrefix", rawSecret[:min(len(rawSecret), 5)]))
 
 	encryptedSecret, err := utils.Encrypt(rawSecret, encryptionKey)
 	if err != nil {
-		utils.Log.Error("GenerateTwoFASetup: Failed to encrypt TOTP secret", zap.String("userID", userID), zap.Error(err))
-		return "", "", ErrInternalService
+		utils.Log.Error("GenerateTwoFASetup: utils.Encrypt failed for TOTP secret", zap.String("userID", userID), zap.Error(err))
+		return "", "", fmt.Errorf("%w: failed to encrypt 2FA secret: %v", ErrInternalService, err)
 	}
+	// Logging hash of secret: HashRecoveryCode returns (string, error). For logging, we'll ignore error or log simple placeholder if hash fails.
+	hashedSecretForLog, _ := utils.HashRecoveryCode(encryptedSecret) // Best effort for logging
+	utils.Log.Debug("GenerateTwoFASetup: Encrypted TOTP secret", zap.String("userID", userID), zap.String("encryptedSecretHashForLog", hashedSecretForLog))
 
+	// Store the encrypted secret. user.IsTwoFAEnabled remains false until verification.
 	user.TwoFASecret = encryptedSecret
-	if err := s.userRepo.UpdateUser(user); err != nil {
-		utils.Log.Error("GenerateTwoFASetup: Failed to save temporary secret to user", zap.String("userID", userID), zap.Error(err))
-		return "", "", ErrInternalService
-	}
 
-	qrCodeURL := utils.GenerateTOTPQRCodeURL("YourAppName", user.Email, rawSecret) // Use user's email or username
+	// For logging the hash of the secret to be stored.
+	newTwoFASecretHashForLog, _ := utils.HashRecoveryCode(user.TwoFASecret)
+	utils.Log.Debug("GenerateTwoFASetup: Attempting to update user with new TwoFASecret",
+		zap.String("userID", user.ID),
+		zap.String("username", user.Username),
+		zap.String("newTwoFASecretHashForLog", newTwoFASecretHashForLog))
+
+	if errUpdate := s.userRepo.UpdateUser(user); errUpdate != nil {
+		// For logging the hash of what was attempted, in case of failure.
+		attemptedTwoFASecretHashForLog, _ := utils.HashRecoveryCode(user.TwoFASecret)
+		utils.Log.Error("GenerateTwoFASetup: Failed to save TwoFASecret to user via userRepo.UpdateUser",
+			zap.String("userID", userID),
+			zap.String("username", user.Username),
+			zap.String("attemptedTwoFASecretHashForLog", attemptedTwoFASecretHashForLog),
+			zap.Error(errUpdate))
+		return "", "", fmt.Errorf("%w: failed to save 2FA secret to user profile: %v", ErrInternalService, errUpdate)
+	}
+	utils.Log.Info("GenerateTwoFASetup: Successfully updated user with TwoFASecret (still disabled)", zap.String("userID", user.ID))
+
+	// Use user.Email for account name in QR code URL as well.
+	// The issuer "ProfileGoldApp" should ideally come from config/env.
+	// For now, using the same default as used internally by GenerateTOTPSecret.
+	qrCodeURL := utils.GenerateTOTPQRCodeURL("ProfileGoldApp", user.Email, rawSecret)
 
 	return rawSecret, qrCodeURL, nil
 }
@@ -514,27 +550,38 @@ func (s *userService) VerifyAndEnableTwoFA(userID string, totpCode string) ([]st
 		return nil, errors.New("2FA secret not generated or found for user; please start setup again")
 	}
 
-	encryptionKey := utils.GetEncryptionKey()
+	encryptionKey := utils.GetEncryptionKey() // Assuming this handles its own errors e.g. by fatal log
 	decryptedSecret, err := utils.Decrypt(user.TwoFASecret, encryptionKey)
 	if err != nil {
-		utils.Log.Error("VerifyAndEnableTwoFA: Failed to decrypt secret", zap.String("userID", userID), zap.Error(err))
-		return nil, ErrInternalService
+		utils.Log.Error("VerifyAndEnableTwoFA: Failed to decrypt 2FA secret", zap.String("userID", userID), zap.Error(err))
+		return nil, fmt.Errorf("%w: could not decrypt 2FA secret for verification", ErrInternalService)
 	}
 
-	if !utils.ValidateTOTP(decryptedSecret, totpCode) {
-		utils.Log.Warn("VerifyAndEnableTwoFA: Invalid TOTP code", zap.String("userID", userID))
+	validTOTP, errValidate := utils.ValidateTOTP(decryptedSecret, totpCode)
+	if errValidate != nil {
+		// This error is from our application logic in ValidateTOTP if code is invalid
+		utils.Log.Warn("VerifyAndEnableTwoFA: TOTP validation failed (app logic error)", zap.String("userID", userID), zap.Error(errValidate))
+		return nil, ErrTwoFAInvalidCode
+	}
+	if !validTOTP {
+		utils.Log.Warn("VerifyAndEnableTwoFA: Invalid TOTP code provided by user", zap.String("userID", userID))
 		return nil, ErrTwoFAInvalidCode
 	}
 
 	plainRecoveryCodes, err := utils.GenerateRecoveryCodes(10, 12) // 10 codes, 12 chars each
 	if err != nil {
 		utils.Log.Error("VerifyAndEnableTwoFA: Failed to generate recovery codes", zap.String("userID", userID), zap.Error(err))
-		return nil, ErrInternalService
+		return nil, fmt.Errorf("%w: failed to generate recovery codes: %v", ErrInternalService, err)
 	}
 
 	hashedRecoveryCodes := make([]string, len(plainRecoveryCodes))
 	for i, code := range plainRecoveryCodes {
-		hashedRecoveryCodes[i] = utils.HashRecoveryCode(code)
+		hashedCode, errHash := utils.HashRecoveryCode(code)
+		if errHash != nil {
+			utils.Log.Error("VerifyAndEnableTwoFA: Failed to hash a recovery code", zap.String("userID", userID), zap.Error(errHash))
+			return nil, fmt.Errorf("%w: failed to hash recovery code: %v", ErrInternalService, errHash)
+		}
+		hashedRecoveryCodes[i] = hashedCode
 	}
 
 	codesJSON, err := json.Marshal(hashedRecoveryCodes)
@@ -603,16 +650,37 @@ func (s *userService) VerifyTOTP(userID string, totpCode string) (bool, error) {
 		return false, ErrTwoFANotEnabled
 	}
 
-	encryptionKey := utils.GetEncryptionKey()
+	encryptionKey := utils.GetEncryptionKey() // Assuming this handles its own errors e.g. by fatal log
 	decryptedSecret, err := utils.Decrypt(user.TwoFASecret, encryptionKey)
 	if err != nil {
 		utils.Log.Error("VerifyTOTP: Failed to decrypt 2FA secret during login", zap.String("userID", userID), zap.Error(err))
-		return false, ErrInternalService
+		return false, fmt.Errorf("%w: could not decrypt 2FA secret for login TOTP check", ErrInternalService)
 	}
 
-	isValid := utils.ValidateTOTP(decryptedSecret, totpCode)
-	if !isValid {
-		utils.Log.Warn("VerifyTOTP: Invalid TOTP code provided during login", zap.String("userID", userID))
+	isValid, errValidate := utils.ValidateTOTP(decryptedSecret, totpCode)
+	if errValidate != nil {
+		// This error is from our application logic in ValidateTOTP if code is invalid
+		utils.Log.Warn("VerifyTOTP: TOTP validation failed (app logic error)", zap.String("userID", userID), zap.Error(errValidate))
+		return false, ErrTwoFAInvalidCode
 	}
-	return isValid, nil
+	if !isValid {
+		utils.Log.Warn("VerifyTOTP: Invalid TOTP code provided by user during login", zap.String("userID", userID))
+		// No specific error here, isValid will be false, and the caller (login handler) will use this.
+		// Or, if we want to always return an error on failure:
+		// return false, ErrTwoFAInvalidCode
+	}
+	return isValid, nil // If valid, errValidate is nil. If not valid, errValidate might be our own error.
+}
+
+func (s *userService) GetUserByIDForTokenGeneration(userID string) (*model.User, error) {
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, postgresDb.ErrUserNotFound) {
+			utils.Log.Warn("GetUserByIDForTokenGeneration: User not found", zap.String("userID", userID))
+			return nil, ErrUserNotFound
+		}
+		utils.Log.Error("GetUserByIDForTokenGeneration: Error retrieving user", zap.String("userID", userID), zap.Error(err))
+		return nil, fmt.Errorf("%w: failed to get user by ID: %v", ErrInternalService, err)
+	}
+	return user, nil
 }

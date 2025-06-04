@@ -52,10 +52,14 @@ func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
 	return tokenString, claims, nil
 }
 func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY") 
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecret == "" {
-		Log.Error("JWT_SECRET_KEY environment variable is not set. Cannot validate JWT.")
-		return nil, errors.New("jwt secret key not configured")
+		// This should be a fatal error as the application cannot securely validate tokens.
+		// Ensure Log is initialized before this function could be called in a real scenario,
+		// or use log.Fatalf if Log might not be ready. Given InitLogger is called early in main, Log.Fatal is okay.
+		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot validate JWT.")
+		// Log.Fatal will exit, so the return below is effectively unreachable but good for clarity.
+		return nil, errors.New("critical: jwt secret key not configured")
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -75,7 +79,7 @@ func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
 	}
 
 	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
-		return nil, jwt.ErrTokenExpired 
+		return nil, jwt.ErrTokenExpired
 	}
 
 	return claims, nil

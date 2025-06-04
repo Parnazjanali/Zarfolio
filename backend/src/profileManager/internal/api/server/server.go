@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"profile-gold/internal/api/handler"
 	"profile-gold/internal/repository/db/postgresDb"
 	redisdb "profile-gold/internal/repository/db/redisDb"
@@ -18,6 +17,17 @@ func StartServer(port string) {
 
 	app := fiber.New()
 	utils.Log.Info("Profile Manager Fiber app instance created.")
+
+	// Configure static file serving for profile pictures
+	staticFilesRoot := "./uploads" // Physical directory on server
+	urlPrefix := "/uploads"        // URL prefix clients will use
+
+	app.Static(urlPrefix, staticFilesRoot, fiber.Static{
+		Compress:  true,
+		ByteRange: true,
+		Browse:    false,
+	})
+	utils.Log.Info("Static file serving configured", zap.String("url_prefix", urlPrefix), zap.String("filesystem_root", staticFilesRoot))
 
 	utils.Log.Info("Initializing Redis client for Profile Manager...")
 	if err := utils.InitRedisClient(); err != nil {
@@ -81,7 +91,7 @@ func StartServer(port string) {
 
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler); err != nil { // Added accountHandler
+	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler, tokenRepo); err != nil { // Added tokenRepo
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("Profile Manager API routes configured successfully.")
@@ -89,5 +99,7 @@ func StartServer(port string) {
 	fullAddr := fmt.Sprintf("0.0.0.0%s", port)
 	utils.Log.Info("Profile Manager is attempting to listen", zap.String("address", fullAddr))
 
-	log.Fatal(app.Listen(port))
+	if err := app.Listen(port); err != nil {
+		utils.Log.Fatal("Profile Manager server failed to start", zap.Error(err))
+	}
 }
