@@ -11,7 +11,8 @@ import InventoryPage from './pages/InventoryPage.jsx';
 import CustomersPage from './pages/CustomersPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
-import AccountSettingsPage from './pages/AccountSettingsPage.jsx';
+// import AccountSettingsPage from './pages/AccountSettingsPage.jsx'; // Remove this line
+import AccountManagementPage from './pages/AccountManagementPage.jsx'; // Add this line
 import EtiketPage from './pages/EtiketPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -88,7 +89,7 @@ function App() {
 
         <Route
           path="/account/settings"
-          element={<ProtectedRoute><MainLayout><AccountSettingsPage /></MainLayout></ProtectedRoute>}
+          element={<ProtectedRoute><MainLayout><AccountManagementPage /></MainLayout></ProtectedRoute>}
         />
         <Route
           path="/settings/system"

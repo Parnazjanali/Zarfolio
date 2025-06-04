@@ -8,6 +8,14 @@ type User struct {
 	PasswordHash string    `json:"-" gorm:"column:password_hash;not null"`
 	Email        string    `json:"email" gorm:"unique;not null"`
 	Role         string    `json:"role" gorm:"default:'user';not null"`
+
+	// 2FA Fields
+	TwoFASecret      string    `json:"-" gorm:"column:two_fa_secret;type:text"`      // Encrypted TOTP secret
+	IsTwoFAEnabled   bool      `json:"is_two_fa_enabled" gorm:"column:is_two_fa_enabled;default:false"`
+	// Storing recovery codes: Using TEXT and assuming service layer will handle (e.g., JSON array of hashed codes)
+    // Alternatively, use datatypes.JSON if your GORM setup supports it well for arrays.
+	TwoFARecoveryCodes string `json:"-" gorm:"column:two_fa_recovery_codes;type:text"` // JSON array of HASHED recovery codes
+
 	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
@@ -56,4 +64,37 @@ type RequestPasswordResetRequest struct {
 type ResetPasswordRequest struct {
 	Token       string `json:"token" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=8"` // Add password complexity validation if desired
+}
+
+// ChangeUsernameRequest defines the structure for changing a username.
+type ChangeUsernameRequest struct {
+	NewUsername     string `json:"new_username" validate:"required,alphanum,min=3,max=30"`
+	CurrentPassword string `json:"current_password" validate:"required"`
+}
+
+// ChangePasswordRequest defines the structure for changing a password.
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"required,min=8"` // Add password complexity validation if desired
+}
+
+// GenerateTwoFAResponse defines the data returned when generating a 2FA secret.
+type GenerateTwoFAResponse struct {
+	Secret    string `json:"secret"`     // The raw TOTP secret (to be shown to user for manual entry)
+	QRCodeURL string `json:"qr_code_url"` // The otpauth:// URL for QR code generation
+}
+
+// VerifyTwoFARequest defines the request body for verifying a TOTP code during 2FA setup.
+type VerifyTwoFARequest struct {
+	TOTPCode string `json:"totp_code" validate:"required,numeric,length=6"`
+}
+
+// EnableTwoFAResponse defines the data returned upon successful 2FA enablement.
+type EnableTwoFAResponse struct {
+	RecoveryCodes []string `json:"recovery_codes"` // Plaintext recovery codes (show ONCE)
+}
+
+// DisableTwoFARequest defines the request body for disabling 2FA.
+type DisableTwoFARequest struct {
+	CurrentPassword string `json:"current_password" validate:"required"`
 }
