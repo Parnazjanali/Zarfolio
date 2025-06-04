@@ -454,7 +454,7 @@ func (s *userService) ChangePassword(userID string, currentPassword string, newP
 func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) {
 	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
-		if errors.Is(err, postgresDb.ErrUserNotFound) {
+		if errors.Is(err, postgresDb.ErrUserNotFound) { // Ensure this is the correct package for ErrUserNotFound
 			utils.Log.Warn("GenerateTwoFASetup: User not found by ID", zap.String("userID", userID))
 			return "", "", ErrUserNotFound
 		}
@@ -467,31 +467,51 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 		return "", "", ErrTwoFAAlreadyEnabled
 	}
 
-	encryptionKey := utils.GetEncryptionKey() // Assume this utility exists
+	encryptionKey := utils.GetEncryptionKey()
 	if len(encryptionKey) == 0 {
-		utils.Log.Error("GenerateTwoFASetup: Encryption key not configured")
-		return "", "", ErrInternalService
+		utils.Log.Error("GenerateTwoFASetup: Encryption key not configured or is empty. This is a critical security risk and operational failure.")
+		return "", "", fmt.Errorf("%w: encryption key not configured", ErrInternalService)
 	}
+	utils.Log.Debug("GenerateTwoFASetup: Retrieved encryption key", zap.String("userID", userID), zap.Int("key_length", len(encryptionKey)))
+
 
 	rawSecret, err := utils.GenerateTOTPSecret()
 	if err != nil {
-		utils.Log.Error("GenerateTwoFASetup: GenerateTOTPSecret failed", zap.String("userID", userID), zap.Error(err))
+		utils.Log.Error("GenerateTwoFASetup: utils.GenerateTOTPSecret failed", zap.String("userID", userID), zap.Error(err))
 		return "", "", ErrTwoFASecretGeneration
 	}
+	utils.Log.Debug("GenerateTwoFASetup: Generated raw TOTP secret", zap.String("userID", userID), zap.String("rawSecretPrefix", rawSecret[:min(len(rawSecret), 5)]))
+
 
 	encryptedSecret, err := utils.Encrypt(rawSecret, encryptionKey)
 	if err != nil {
-		utils.Log.Error("GenerateTwoFASetup: Failed to encrypt TOTP secret", zap.String("userID", userID), zap.Error(err))
-		return "", "", ErrInternalService
+		utils.Log.Error("GenerateTwoFASetup: utils.Encrypt failed for TOTP secret", zap.String("userID", userID), zap.Error(err))
+		// Return a more specific error here instead of generic ErrInternalService for this particular failure
+		return "", "", fmt.Errorf("%w: failed to encrypt 2FA secret: %v", ErrInternalService, err)
 	}
+	utils.Log.Debug("GenerateTwoFASetup: Encrypted TOTP secret", zap.String("userID", userID), zap.String("encryptedSecretHash", utils.HashRecoveryCode(encryptedSecret))) // Log a hash, not the secret
 
+	// Store the encrypted secret temporarily or directly in user.TwoFASecret
+	// For this flow, we'll store it and expect verification to finalize.
 	user.TwoFASecret = encryptedSecret
-	if err := s.userRepo.UpdateUser(user); err != nil {
-		utils.Log.Error("GenerateTwoFASetup: Failed to save temporary secret to user", zap.String("userID", userID), zap.Error(err))
-		return "", "", ErrInternalService
-	}
+	// user.IsTwoFAEnabled remains false until verification
 
-	qrCodeURL := utils.GenerateTOTPQRCodeURL("YourAppName", user.Email, rawSecret) // Use user's email or username
+	utils.Log.Debug("GenerateTwoFASetup: Attempting to update user with new TwoFASecret",
+		zap.String("userID", user.ID),
+		zap.String("username", user.Username),
+		zap.String("newTwoFASecretHash", utils.HashRecoveryCode(user.TwoFASecret)))
+
+	if err := s.userRepo.UpdateUser(user); err != nil {
+		utils.Log.Error("GenerateTwoFASetup: Failed to save TwoFASecret to user via userRepo.UpdateUser",
+			zap.String("userID", userID),
+			zap.String("username", user.Username),
+			zap.String("attemptedTwoFASecretHash", utils.HashRecoveryCode(user.TwoFASecret)), // Log hash of what was attempted
+			zap.Error(err))
+		return "", "", fmt.Errorf("%w: failed to save 2FA secret to user profile: %v", ErrInternalService, err)
+	}
+	utils.Log.Info("GenerateTwoFASetup: Successfully updated user with TwoFASecret (still disabled)", zap.String("userID", user.ID))
+
+	qrCodeURL := utils.GenerateTOTPQRCodeURL("YourAppName", user.Email, rawSecret)
 
 	return rawSecret, qrCodeURL, nil
 }
