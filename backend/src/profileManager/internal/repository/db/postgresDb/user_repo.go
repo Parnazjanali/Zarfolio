@@ -22,6 +22,7 @@ var (
 type UserRepository interface {
 	CreateUser(user *model.User) error
 	GetUserByUsername(username string) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error) // Add this line
 	// GetUserByID(id string) (*model.User, error) // (بعدا)
 	// UpdateUser(user *model.User) error // (بعدا)
 	// DeleteUser(id string) error // (بعدا)
@@ -68,6 +69,19 @@ func (r *inMemoryUserRepository) GetUserByUsername(username string) (*model.User
 	return user, nil
 }
 
+func (r *inMemoryUserRepository) GetUserByEmail(email string) (*model.User, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, user := range r.users {
+		if user.Email == email {
+			utils.Log.Info("User found by email in in-memory repo", zap.String("email", email), zap.String("username", user.Username))
+			return user, nil
+		}
+	}
+	return nil, ErrUserNotFound
+}
+
 
 type postgresUserRepository struct {
 	db *gorm.DB 
@@ -112,5 +126,18 @@ func (r *postgresUserRepository) GetUserByUsername(username string) (*model.User
 		return nil, fmt.Errorf("failed to get user by username from DB: %w", result.Error)
 	}
 	utils.Log.Info("User found in PostgreSQL", zap.String("username", user.Username))
+	return &user, nil
+}
+
+func (r *postgresUserRepository) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	result := r.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to get user by email from DB: %w", result.Error)
+	}
+	utils.Log.Info("User found by email in PostgreSQL", zap.String("email", user.Email), zap.String("username", user.Username))
 	return &user, nil
 }

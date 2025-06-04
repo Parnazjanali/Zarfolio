@@ -3,12 +3,12 @@ package service
 import (
 	"errors"
 	"fmt"
-	"time"
-
 	"profile-gold/internal/model"
-	"profile-gold/internal/repository/db/postgresDb"
+	"profile-gold/internal/repository/db/postgresDb" // Corrected import path
 	redisdb "profile-gold/internal/repository/db/redisDb"
 	"profile-gold/internal/utils"
+	"strings" // Added import for strings package
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
@@ -45,13 +45,29 @@ func NewUserService(r postgresDb.UserRepository, t redisdb.TokenRepository) User
 }
 
 func (s *userService) RegisterUser(req model.RegisterRequest) error {
-
+	// Check for existing username
 	_, err := s.userRepo.GetUserByUsername(req.Username)
 	if err == nil {
+		utils.Log.Warn("RegisterUser: Username already exists", zap.String("username", req.Username))
 		return ErrUserAlreadyExists
 	}
+	if !errors.Is(err, postgresDb.ErrUserNotFound) { // Ensure it's specifically ErrUserNotFound from the correct package
+		utils.Log.Error("RegisterUser: Failed to check existing username", zap.String("username", req.Username), zap.Error(err))
+		return fmt.Errorf("%w: failed to check existing user by username during registration: %v", ErrInternalService, err)
+	}
+
+	// Check for existing email
+	_, err = s.userRepo.GetUserByEmail(req.Email)
+	if err == nil {
+		utils.Log.Warn("RegisterUser: Email already exists", zap.String("email", req.Email))
+		return ErrUserAlreadyExists // Return the same error, frontend message is generic
+	}
+	// Ensure it's specifically ErrUserNotFound from the correct package (postgresDb.ErrUserNotFound)
+	// We need to import postgresDb or use a more generic error check if GetUserByEmail can return other ErrUserNotFound types
+	// For now, assuming GetUserByEmail from postgresUserRepository returns postgresDb.ErrUserNotFound
 	if !errors.Is(err, postgresDb.ErrUserNotFound) {
-		return fmt.Errorf("%w: failed to check existing user during registration", ErrInternalService)
+		utils.Log.Error("RegisterUser: Failed to check existing email", zap.String("email", req.Email), zap.Error(err))
+		return fmt.Errorf("%w: failed to check existing user by email during registration: %v", ErrInternalService, err)
 	}
 
 	hashedPassword, err := utils.HashPassword(req.Password)
@@ -70,10 +86,16 @@ func (s *userService) RegisterUser(req model.RegisterRequest) error {
 	err = s.userRepo.CreateUser(newUser)
 	if err != nil {
 		utils.Log.Error("Failed to create user in repository", zap.String("username", newUser.Username), zap.Error(err))
-		if errors.Is(err, fmt.Errorf("user with username '%s' already exists", newUser.Username)) {
+		// Check if the error from CreateUser is because the user already exists (e.g. due to a race condition or other constraint)
+		// This specific check might be redundant if GetUserByUsername/Email are reliable and cover all cases.
+		// However, some DB drivers might return a generic duplicate error rather than a specific one that can be easily mapped to ErrUserAlreadyExists.
+		// For now, we rely on the GORM's ErrDuplicatedKey being handled in the repo layer if possible,
+		// or a more generic error here. The primary checks are above.
+		if strings.Contains(strings.ToLower(err.Error()), "duplicate key") || strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
+			utils.Log.Warn("CreateUser returned a duplicate error, implies race condition or unhandled constraint", zap.Error(err))
 			return ErrUserAlreadyExists
 		}
-		return fmt.Errorf("%w: failed to create user", ErrInternalService)
+		return fmt.Errorf("%w: failed to create user in repository: %v", ErrInternalService, err)
 	}
 
 	utils.Log.Info("User registered successfully in service", zap.String("username", newUser.Username))
