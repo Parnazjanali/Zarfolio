@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
-	"profile-gold/internal/model"
+	// "profile-gold/internal/model" // First occurrence removed
 	"encoding/json" // Added for marshaling recovery codes
-	"profile-gold/internal/model"
+	"profile-gold/internal/model" // Second occurrence kept, or consolidate to one
 	"profile-gold/internal/repository/db/postgresDb" // Corrected import path
 	redisdb "profile-gold/internal/repository/db/redisDb"
 	"profile-gold/internal/utils"
