@@ -193,3 +193,94 @@ func (h *ProfileHandler) DeleteProfile(c *fiber.Ctx) error {
 	utils.Log.Info("DeleteProfile endpoint hit. Placeholder.", zap.String("id", profileID), zap.String("ip", c.IP()))
 	return c.Status(fiber.StatusNoContent).SendString("")
 }
+
+func (h *AuthHandler) HandleRequestPasswordReset(c *fiber.Ctx) error {
+	var req model.RequestPasswordResetRequest
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("HandleRequestPasswordReset: Failed to parse request body", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request body format.",
+			Code:    "400",
+		})
+	}
+
+	// TODO: Add validation for req.Email (e.g., using a validator library or simple checks)
+	if req.Email == "" { // Basic validation
+		utils.Log.Warn("HandleRequestPasswordReset: Email field is missing")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Email is required.",
+			Code:    "400_EMAIL_REQUIRED",
+		})
+	}
+
+	_, err := h.userService.RequestPasswordReset(req.Email) // Token is logged by service for now
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			// To prevent email enumeration, it's often better to return a generic success message.
+			// However, for easier debugging during development, we can be more specific.
+			// Or, the service itself can handle this logging and return a generic nil error.
+			utils.Log.Info("HandleRequestPasswordReset: Password reset requested for potentially non-existent email", zap.String("email", req.Email))
+			// Return a success-like response to avoid revealing if an email exists or not.
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"message": "If an account with that email exists, a password reset link has been sent.",
+			})
+		}
+		utils.Log.Error("HandleRequestPasswordReset: Error in RequestPasswordReset service call", zap.String("email", req.Email), zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Internal server error while requesting password reset.",
+			Code:    "500",
+		})
+	}
+
+	utils.Log.Info("HandleRequestPasswordReset: Password reset process initiated successfully for email (actual email sending TBD)", zap.String("email", req.Email))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "If an account with that email exists, a password reset link has been sent.",
+	})
+}
+
+func (h *AuthHandler) HandleResetPassword(c *fiber.Ctx) error {
+	var req model.ResetPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		utils.Log.Error("HandleResetPassword: Failed to parse request body", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request body format.",
+			Code:    "400",
+		})
+	}
+
+	// TODO: Add validation for req.Token and req.NewPassword
+	if req.Token == "" || req.NewPassword == "" { // Basic validation
+		utils.Log.Warn("HandleResetPassword: Token or NewPassword field is missing")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Token and new password are required.",
+			Code:    "400_TOKEN_PASSWORD_REQUIRED",
+		})
+	}
+
+	err := h.userService.ResetPassword(req.Token, req.NewPassword)
+	if err != nil {
+		// Determine token prefix for safe logging
+		tokenPrefix := req.Token
+		if len(req.Token) > 10 {
+			tokenPrefix = req.Token[:10]
+		}
+
+		if errors.Is(err, service.ErrPasswordResetTokenInvalid) {
+			utils.Log.Warn("HandleResetPassword: Invalid or expired token used", zap.String("token_prefix", tokenPrefix), zap.Error(err))
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{ // 400 or 401 could be argued
+				Message: "Invalid or expired password reset token.",
+				Code:    "400_INVALID_TOKEN",
+			})
+		}
+		utils.Log.Error("HandleResetPassword: Error in ResetPassword service call", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Internal server error while resetting password.",
+			Code:    "500",
+		})
+	}
+
+	utils.Log.Info("HandleResetPassword: Password has been reset successfully.")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Password has been reset successfully. You can now login with your new password.",
+	})
+}

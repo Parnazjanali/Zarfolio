@@ -42,8 +42,17 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("TokenRepository initialized successfully (using Redis).")
 
+	// Initialize PasswordResetTokenRepository
+	utils.Log.Info("Initializing PasswordResetTokenRepository (PostgreSQL)...")
+	passwordResetTokenRepo := postgresDb.NewPostgresPasswordResetTokenRepository(postgresDb.DB)
+	if passwordResetTokenRepo == nil {
+		utils.Log.Fatal("Failed to initialize PasswordResetTokenRepository. Exiting application.")
+	}
+	utils.Log.Info("PasswordResetTokenRepository initialized successfully.")
+
+	// Pass it to NewUserService
 	utils.Log.Info("Initializing UserService...")
-	userService := service.NewUserService(userRepo, tokenRepo)
+	userService := service.NewUserService(userRepo, tokenRepo, passwordResetTokenRepo) // Added passwordResetTokenRepo
 	if userService == nil {
 		utils.Log.Fatal("Failed to initialize UserService. Exiting application.")
 	}

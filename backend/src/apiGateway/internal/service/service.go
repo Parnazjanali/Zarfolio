@@ -6,9 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
-	"io/ioutil"
+	"io" // For io.ReadAll
 	"net/http"
 	"os"
 	"strings"
@@ -31,6 +36,8 @@ type ProfileManagerClient interface {
 	RegisterUser(req model.RegisterRequest) error
 	AuthenticateUser(req model.LoginRequest) (*model.User, string, error)
 	LogoutUser(token string) error
+	RequestPasswordReset(req model.RequestPasswordResetRequest) error // New
+	PerformPasswordReset(req model.ResetPasswordRequest) error       // New
 }
 
 type AuthService struct {
@@ -205,22 +212,135 @@ func (c *profileManagerHTTPClient) LogoutUser(token string) error {
 	return nil
 }
 
-func (s *AuthService) Logout(token string) error {
-	utils.Log.Info("Attempting to logout user via Profile Manager", zap.String("token_prefix", token[:min(len(token), 10)]))
-	err := s.profileMgrClient.LogoutUser(token) 
+func (c *profileManagerHTTPClient) RequestPasswordReset(req model.RequestPasswordResetRequest) error {
+	body, err := json.Marshal(req)
 	if err != nil {
-		utils.Log.Error("Logout failed in ProfileManagerClient", zap.Error(err), zap.String("token_prefix", token[:min(len(token), 10)]))
-		if errors.Is(err, ErrInvalidCredentials) { 
+		return fmt.Errorf("failed to marshal request password reset for profile manager: %w", err)
+	}
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/password/request-reset", bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request for profile manager password reset request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return fmt.Errorf("%w: cannot connect to profile manager service at %s for password reset request", ErrProfileManagerDown, c.baseURL)
+		}
+		return fmt.Errorf("failed to send password reset request to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Profile manager is expected to return 200 OK even if email not found (to prevent enumeration)
+	// or a specific error if something else went wrong.
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body) // Replaced ioutil.ReadAll
+		utils.Log.Error("profileManagerHTTPClient.RequestPasswordReset: Profile manager returned non-OK status",
+			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+		// We don't return specific errors like UserNotFound from here to the main handler,
+		// as the handler should return a generic success message.
+		// If profile manager has an internal error, that should be propagated.
+		if resp.StatusCode >= 500 {
+			return fmt.Errorf("profile manager internal error during password reset request (status %d): %s", resp.StatusCode, string(respBody))
+		}
+		// For 4xx errors from profile manager (e.g. bad request if it implements stricter validation), let them pass through
+		// but they will likely be caught as a generic internal error by the apiGateway's service layer if not specifically handled.
+		// For now, any non-200 from profile manager that isn't a 5xx is treated as an unexpected error.
+		return fmt.Errorf("unexpected response from profile manager during password reset request (status %d): %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func (c *profileManagerHTTPClient) PerformPasswordReset(req model.ResetPasswordRequest) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("failed to marshal perform password reset for profile manager: %w", err)
+	}
+
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/password/reset", bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request for profile manager password reset: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, syscall.ECONNREFUSED) {
+			return fmt.Errorf("%w: cannot connect to profile manager service at %s for password reset", ErrProfileManagerDown, c.baseURL)
+		}
+		return fmt.Errorf("failed to send password reset to profile manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body) // Replaced ioutil.ReadAll
+		utils.Log.Error("profileManagerHTTPClient.PerformPasswordReset: Profile manager returned non-OK status",
+			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
+		if resp.StatusCode == http.StatusBadRequest { // Assuming profileManager returns 400 for invalid/expired token
+			return fmt.Errorf("%w: invalid token or request: %s", ErrInvalidCredentials, string(respBody)) // Reuse ErrInvalidCredentials or define a new one like ErrPasswordResetFailed
+		}
+		return fmt.Errorf("profile manager password reset failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+// min is a helper function to ensure we don't slice beyond string length
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (s *AuthService) Logout(token string) error {
+	// Use a safe prefix for logging, ensuring not to panic if token is too short
+	var tokenPrefix string
+	if len(token) > 10 {
+		tokenPrefix = token[:10]
+	} else {
+		tokenPrefix = token
+	}
+	utils.Log.Info("Attempting to logout user via Profile Manager", zap.String("token_prefix", tokenPrefix))
+	err := s.profileMgrClient.LogoutUser(token)
+	if err != nil {
+		utils.Log.Error("Logout failed in ProfileManagerClient", zap.Error(err), zap.String("token_prefix", tokenPrefix))
+		if errors.Is(err, ErrInvalidCredentials) {
 			return ErrInvalidCredentials
 		}
-		if errors.Is(err, ErrProfileManagerDown) { 
+		if errors.Is(err, ErrProfileManagerDown) {
 			return ErrProfileManagerDown
 		}
 		return fmt.Errorf("%w: failed to logout user with profile manager", ErrInternalService)
 	}
-	utils.Log.Info("User logout successfully by Profile Manager", zap.String("token_prefix", token[:min(len(token), 10)]))
+	utils.Log.Info("User logout successfully by Profile Manager", zap.String("token_prefix", tokenPrefix))
 	return nil
 }
+
+func (s *AuthService) RequestPasswordReset(req model.RequestPasswordResetRequest) error {
+	err := s.profileMgrClient.RequestPasswordReset(req)
+	if err != nil {
+		// The client method should already log details.
+		// This layer just propagates the error or a generic one.
+		utils.Log.Error("AuthService: RequestPasswordReset failed via ProfileManagerClient", zap.String("email", req.Email), zap.Error(err))
+		return ErrInternalService // Or return err directly if it's already well-formed for the handler
+	}
+	return nil
+}
+
+func (s *AuthService) PerformPasswordReset(req model.ResetPasswordRequest) error {
+	err := s.profileMgrClient.PerformPasswordReset(req)
+	if err != nil {
+		utils.Log.Error("AuthService: PerformPasswordReset failed via ProfileManagerClient", zap.Error(err))
+		if errors.Is(err, ErrInvalidCredentials) { // Check if client returned this specific error
+			return ErrInvalidCredentials
+		}
+		return ErrInternalService // Or return err
+	}
+	return nil
+}
+
 func IsValidEmail(email string) bool {
 	// Simple email validation
 	if len(email) < 3 || len(email) > 254 {
