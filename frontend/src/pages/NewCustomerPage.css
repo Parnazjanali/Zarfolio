@@ -30,11 +30,21 @@
 }
 
 .form-column {
-  flex: 1;
+  /* flex: 1; حذف شد تا با flex-basis کنترل شود */
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
+/* تخصیص فضای بیشتر به ستون اول و فضای کمتر به ستون دوم */
+.form-column.main-column { /* ستون اول (اطلاعات پایه) */
+  flex-basis: 60%; 
+}
+
+.form-column.side-column { /* ستون دوم (تلفن و آدرس) */
+  flex-basis: 40%;
+}
+
 
 .form-row {
   display: flex;
@@ -43,6 +53,13 @@
   align-items: flex-end; 
 }
 
+/* برای ردیفی که دو فیلد دارد (کشور و استان) */
+.form-row.two-fields .form-group {
+  flex: 1; /* هر گروه فرم نیمی از فضا را اشغال می‌کند */
+  margin-bottom: 0;
+}
+
+
 .form-row.four-fields .form-group {
   margin-bottom: 0;
   display: flex;
@@ -50,17 +67,18 @@
   justify-content: flex-end; 
 }
 .form-row.four-fields .form-group:nth-child(1) { 
-  flex-basis: 22%; 
+  flex-basis: 20%; 
 }
 .form-row.four-fields .form-group:nth-child(2) { 
-  flex-basis: 23%;
+  flex-basis: 20%;
 }
 .form-row.four-fields .form-group:nth-child(3) { 
-  flex-basis: 23%;
+  flex-basis: 20%;
 }
 .form-row.four-fields .form-group:nth-child(4) { 
-  flex-basis: 32%; 
+  flex-basis: 40%; 
 }
+
 
 .form-group {
   display: flex;
@@ -79,7 +97,7 @@
 
 .form-group input[type="text"],
 .form-group input[type="tel"],
-.form-group input[type="number"], /* استایل برای type=number هم اضافه شود */
+.form-group input[type="number"], 
 .form-group select,
 .form-group textarea {
   padding: 9px 12px;
@@ -96,9 +114,9 @@
   height: auto;
   min-height: 85px;
 }
-/* برای اینکه input[type="number"] در فایرفاکس اسپینر نشان ندهد (اختیاری) */
 .form-group input[type="number"] {
-  -moz-appearance: textfield;
+  appearance: textfield;
+  -moz-appearance: textfield; 
 }
 .form-group input[type="number"]::-webkit-outer-spin-button,
 .form-group input[type="number"]::-webkit-inner-spin-button {
@@ -161,7 +179,7 @@
     border-right: 1px solid #ced4da !important; 
 }
 .input-with-button select + .improved-add-button,
-.input-with-button input[type="text"] + .improved-add-button { /* برای دکمه + بعد از فیلد */
+.input-with-button input[type="text"] + .improved-add-button { 
     border-left: 1px solid #208c3a !important; 
 }
 
@@ -249,29 +267,39 @@
 .balance-subsection-container {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 20px; 
 }
 
-.balance-subsection {
+.balance-row-combined {
+    display: flex;
+    gap: 20px; 
+    align-items: flex-start; 
+}
+.combined-balance-item {
+    flex: 1; 
+    background-color: #fdfdfd;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #e7e9ec;
+    display: flex; 
+    flex-direction: column; 
+}
+
+.balance-subsection { 
   display: flex;
-  gap: 20px;
-  align-items: flex-end;
-  background-color: #fdfdfd;
-  padding: 15px;
-  border-radius: 5px;
-  border: 1px solid #e7e9ec;
+  flex-direction: column; 
+  gap: 10px; 
 }
 
 .balance-subsection .form-group {
-  flex: 2;
-}
-.balance-subsection .form-group:last-child {
-    flex: 1;
+  width: 100%; 
 }
 
-.balance-subsection .form-group.sms-checkbox-group {
-    align-self: center;
-    padding-bottom: 0;
+.currency-section-wrapper { 
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+    margin-top: 15px; 
 }
 
 .balance-input {
@@ -282,6 +310,7 @@
 }
 .balance-group {
   position: relative; 
+  width: 100%; 
 }
 
 .balance-text-equivalent { 
@@ -296,16 +325,17 @@
 
 .radio-group {
   display: flex;
-  gap: 20px;
+  gap: 10px; 
   margin-top: 10px;
+  flex-wrap: wrap; 
 }
 
 .radio-group label {
   font-weight: normal;
-  font-size: 0.9em;
+  font-size: 0.85em; 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px; 
   color: #333;
   cursor: pointer;
   min-height: auto; 
@@ -317,39 +347,118 @@
     height: auto; 
 }
 
-.sms-checkbox-group {
+.add-currency-button-wrapper {
+    display: flex; 
+    justify-content: flex-start; 
+    margin-bottom: 10px; 
+}
+
+.action-button.currency-action-button.small-currency-add-button {
+    background-color: #007bff !important; 
+    color: white !important;
+    padding: 5px 10px !important; 
+    font-size: 0.8em !important; 
+    height: 32px !important; 
+    border-radius: 4px !important;
+}
+.action-button.currency-action-button.small-currency-add-button:hover {
+    background-color: #0056b3 !important;
+}
+.action-button.currency-action-button.small-currency-add-button svg {
+    font-size: 0.85em; 
+    margin-left: 3px !important;
+}
+
+.currency-balances-horizontal-scroll {
+    display: flex; 
+    overflow-x: auto; 
+    overflow-y: hidden; 
+    padding-bottom: 10px; 
+    width: 100%; 
+    max-width: 100%;
+}
+
+.currency-balances-dynamic-section-horizontal {
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100%; 
+    flex-direction: row; 
+    gap: 12px; 
+    padding: 5px 0; 
 }
-.sms-checkbox-group input[type="checkbox"] {
-    width: auto;
-    margin-left: 8px;
-    cursor: pointer;
-    height: auto; 
+
+.currency-balance-entry-horizontal {
+    display: flex;
+    flex-direction: column; 
+    gap: 8px; 
+    align-items: stretch; 
+    background-color: #f0f4f7; 
+    padding: 12px; 
+    border-radius: 5px;
+    border: 1px solid #dfe3e7;
+    min-width: 300px; 
+    box-sizing: border-box;
+    flex-shrink: 0; 
 }
-.sms-label {
-    font-weight: normal !important;
-    font-size: 0.85em !important;
-    color: #555 !important;
-    cursor: pointer;
-    margin-bottom: 0 !important;
-    min-height: auto; 
+
+.currency-balance-entry-horizontal .form-group {
+    margin-bottom: 0; 
+    display: flex;
+    flex-direction: column; 
 }
+
+.currency-balance-entry-horizontal .form-group select,
+.currency-balance-entry-horizontal .form-group .balance-input.currency-amount-input {
+    font-size: 0.9rem !important; 
+    height: 36px !important; 
+    padding: 7px 10px !important; 
+}
+
+.currency-balance-entry-horizontal .currency-type-group,
+.currency-balance-entry-horizontal .currency-amount-group {
+    width: 100%; 
+}
+
+.currency-balance-entry-horizontal .currency-balance-type-group { 
+    display: flex;
+    flex-direction: row; 
+    justify-content: flex-start !important; 
+    gap: 8px !important; 
+    margin-top: 3px; 
+    align-items: center !important;
+}
+.currency-balance-entry-horizontal .radio-group label {
+    font-size: 0.8rem; 
+}
+.currency-balance-entry-horizontal .radio-group input[type="radio"] {
+    margin-top: 0; 
+}
+
+
+.currency-balance-entry-horizontal .currency-delete-button-group {
+    align-self: flex-end; 
+    margin-top: 8px;
+}
+.currency-balance-entry-horizontal .remove-phone-button.remove-currency-button { 
+    width: auto; 
+    padding: 5px 8px !important; 
+    height: 30px !important; 
+    font-size: 0.8em;
+}
+.currency-balance-entry-horizontal .remove-phone-button.remove-currency-button svg {
+    font-size: 0.9em;
+}
+
 
 .form-actions {
   margin-top: 35px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding-top: 20px;
   border-top: 1px solid #ecf0f1;
 }
 
-.main-actions {
-    display: flex;
-    gap: 12px;
+.form-actions.centered-actions { 
+    justify-content: center; 
+    gap: 20px; 
 }
 
 .action-button {
@@ -362,35 +471,34 @@
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+.action-button.list-button { 
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 18px; 
+  font-size: 0.9em; 
+}
+.action-button.list-button:hover {
+  background-color: #5a6268;
+}
+
+.action-button.submit-button-redesigned.large-submit-button { 
+  background-color: #27ae60;
+  color: white;
+  padding: 14px 40px !important; 
+  font-size: 1.15em !important; 
+  font-weight: 600;
+}
+.action-button.submit-button-redesigned.large-submit-button:hover {
+  background-color: #218838; 
+}
+
+
 .action-button:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 .action-button:active {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.exit-button {
-  background-color: #7f8c8d;
-  color: white;
-}
-.exit-button:hover {
-  background-color: #95a5a6;
-}
-
-.submit-button-redesigned {
-  background-color: #27ae60;
-  color: white;
-}
-.submit-button-redesigned:hover {
-  background-color: #2ecc71;
-}
-
-.more-details-button, .apply-button, .find-id-button {
-  background-color: #3498db;
-  color: white;
-}
-.more-details-button:hover, .apply-button:hover, .find-id-button:hover {
-  background-color: #5dade2;
 }
 
 .error-message, .success-message {
