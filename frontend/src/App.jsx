@@ -9,6 +9,7 @@ import InvoicesPage from './pages/InvoicesPage.jsx';
 import NewInvoicePage from './pages/NewInvoicePage.jsx'; //  کامپوننت جدید را ایمپورت کنید
 import InventoryPage from './pages/InventoryPage.jsx';
 import CustomersPage from './pages/CustomersPage.jsx';
+import NewCustomerPage from './pages/NewCustomerPage.jsx'; // Import the new page
 import ReportsPage from './pages/ReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
 // import AccountSettingsPage from './pages/AccountSettingsPage.jsx'; // Remove this line
@@ -83,7 +84,8 @@ function App() {
 
 
         <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/customers/*" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
+        <Route path="/customers" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
+        <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} /> {/* Add this route */}
         <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} />
         <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
 

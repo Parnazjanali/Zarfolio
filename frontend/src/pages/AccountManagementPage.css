@@ -1,0 +1,148 @@
+/* AccountManagementPage.css */
+
+.account-management-page {
+    padding: 20px;
+    max-width: 700px;
+    margin: 40px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .page-title {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #333;
+    font-size: 2em; /* Adjusted title size */
+  }
+  
+  .account-section {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .last-section {
+    border-bottom: none;
+  }
+  
+  .section-title {
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    font-size: 1.6em; /* Adjusted section title size */
+  }
+  
+  .section-icon {
+    margin-right: 10px;
+    color: var(--primary-color);
+    font-size: 1.8em; /* Adjusted icon size */
+  }
+  
+  .auth-form.no-shadow {
+    padding: 0;
+    box-shadow: none;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-size: 1em; /* Adjusted label size */
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em; /* Adjusted input size */
+    box-sizing: border-box;
+  }
+  
+  .auth-button {
+    padding: 10px 15px;
+    font-size: 1em; /* Adjusted button size */
+  }
+  
+  .auth-button .spinner-sm {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .two-fa-setup {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .two-fa-setup p {
+    font-size: 1em; /* Adjusted text size in 2FA setup */
+    margin-bottom: 10px;
+  }
+  
+  .totp-form {
+    max-width: 300px;
+    margin: 10px auto;
+  }
+  
+  .totp-form input {
+    text-align: center;
+    letter-spacing: 0.2em;
+  }
+  
+  .two-fa-enabled-message {
+    color: green;
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 1.1em; /* Adjusted message size */
+  }
+  
+  .enabled-icon {
+    margin-right: 8px;
+    color: green;
+  }
+  
+  .recovery-codes-section {
+    border: 1px solid orange;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff9e6;
+    margin-bottom: 20px;
+  }
+  
+  .recovery-codes-section h3 {
+    display: flex;
+    align-items: center;
+    color: #c67800;
+    font-size: 1.2em; /* Adjusted recovery codes title size */
+  }
+  
+  .recovery-codes-section p {
+    color: #c67800;
+    font-size: 0.9em; /* Adjusted recovery codes text size */
+  }
+  
+  .recovery-icon {
+    margin-right: 8px;
+  }
+  
+  .auth-button.minimal {
+    margin-top: 10px;
+    background-color: transparent;
+    color: var(--primary-color);
+  }
+  
+  .auth-button.danger {
+    background-color: var(--error-text);
+  }
+  
+  .button-icon {
+    margin-right: 5px;
+  }
