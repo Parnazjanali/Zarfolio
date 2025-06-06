@@ -4,6 +4,7 @@ import (
 	"errors"
 	"profile-gold/internal/api/handler"
 	"profile-gold/internal/api/middleware"                // Import middleware
+	"profile-gold/internal/service"                       // Import service
 	"profile-gold/internal/model"                         // For model.ErrorResponse in 404
 	redisdb "profile-gold/internal/repository/db/redisDb" // Import for TokenRepository
 	"profile-gold/internal/utils"
@@ -18,7 +19,9 @@ func SetupProfileManagerRoutes(
 	authHandler *handler.AuthHandler,
 	profileHandler *handler.ProfileHandler, // Can be nil if not used
 	accountHandler *handler.AccountHandler,
+	counterpartyHandler *handler.CounterpartyHandler, // Added CounterpartyHandler
 	tokenRepo redisdb.TokenRepository, // Corrected type to redisdb.TokenRepository
+	redisService *service.RedisService, // Added RedisService
 ) error {
 	if app == nil {
 		utils.Log.Fatal("Fiber app is nil in SetupProfileManagerRoutes.")
@@ -28,9 +31,13 @@ func SetupProfileManagerRoutes(
 		utils.Log.Fatal("AuthHandler is nil in SetupProfileManagerRoutes.")
 		return errors.New("authHandler cannot be nil")
 	}
-	if accountHandler == nil { // Added check
+	if accountHandler == nil {
 		utils.Log.Fatal("AccountHandler is nil in SetupProfileManagerRoutes.")
 		return errors.New("accountHandler cannot be nil")
+	}
+	if counterpartyHandler == nil { // Added check for CounterpartyHandler
+		utils.Log.Fatal("CounterpartyHandler is nil in SetupProfileManagerRoutes.")
+		return errors.New("counterpartyHandler cannot be nil")
 	}
 
 	utils.Log.Info("Configuring Profile Manager service routes...")
@@ -56,7 +63,12 @@ func SetupProfileManagerRoutes(
 
 	// Account Management Routes (Protected)
 	// These routes require a valid token from apiGateway (or a direct authenticated call)
-	accountGroup := app.Group("/account", middleware.AuthMiddleware(tokenRepo)) // Pass tokenRepo
+
+	// Create instance of our new AuthMiddleware
+	authMw := middleware.NewAuthMiddleware(redisService, utils.Log) // Assuming utils.Log is a compatible logger
+
+	// Apply the new authentication middleware
+	accountGroup := app.Group("/account", authMw.Authenticate()) // Use the new middleware
 	utils.Log.Info("Configuring protected /account routes for Profile Manager...")
 	accountGroup.Post("/change-username", accountHandler.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandler.HandleChangePassword)
@@ -66,6 +78,15 @@ func SetupProfileManagerRoutes(
 	twoFAGroup.Post("/generate-secret", accountHandler.HandleGenerateTwoFASetup)
 	twoFAGroup.Post("/enable", accountHandler.HandleVerifyAndEnableTwoFA)
 	twoFAGroup.Post("/disable", accountHandler.HandleDisableTwoFA)
+
+	// Counterparty Routes (Protected)
+	counterpartyGroup := app.Group("/counterparties", authMw.Authenticate())
+	utils.Log.Info("Configuring protected /counterparties routes for Profile Manager...")
+	counterpartyGroup.Post("/", counterpartyHandler.CreateCounterparty)
+	counterpartyGroup.Get("/:id", counterpartyHandler.GetCounterparty)
+	counterpartyGroup.Get("/", counterpartyHandler.ListCounterparties)
+	counterpartyGroup.Put("/:id", counterpartyHandler.UpdateCounterparty)
+	counterpartyGroup.Delete("/:id", counterpartyHandler.DeleteCounterparty)
 
 	if profileHandler != nil {
 		utils.Log.Info("ProfileHandler is available. Configuring /profiles routes.")

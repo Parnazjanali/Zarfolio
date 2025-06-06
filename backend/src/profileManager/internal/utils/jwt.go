@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid" // Added for JTI
 	"go.uber.org/zap"
 )
 
@@ -25,6 +26,7 @@ func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
 	}
 
 	expirationTime := time.Now().Add(24 * time.Hour)
+	jti := uuid.NewString() // Generate a new UUID for JTI
 
 	claims := &CustomClaims{
 		UserID:   user.ID,
@@ -34,6 +36,7 @@ func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
+			ID:        jti, // Set the JTI claim
 		},
 	}
 
@@ -47,6 +50,7 @@ func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
 	Log.Info("JWT token generated successfully",
 		zap.String("username", user.Username),
 		zap.String("role", user.Role),
+		zap.String("jti", jti), // Log JTI
 		zap.Time("expires_at", expirationTime))
 
 	return tokenString, claims, nil

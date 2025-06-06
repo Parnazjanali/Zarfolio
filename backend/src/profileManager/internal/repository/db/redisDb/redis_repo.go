@@ -6,7 +6,7 @@ import (
 	"profile-gold/internal/utils"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -30,38 +30,34 @@ func NewRedisTokenRepository(client *redis.Client) TokenRepository {
 }
 
 // IsTokenBlacklisted checks if a token exists in the blacklist.
-// It now accepts a context.
 func (r *redisTokenRepository) IsTokenBlacklisted(ctx context.Context, token string) (bool, error) {
 	key := fmt.Sprintf("jwt_blacklist:%s", token)
-	// It's generally good practice for the caller to manage context timeouts.
-	// If no timeout is on ctx, this could block. For Fiber, c.Context() is request-scoped.
+
 	result, err := r.client.Exists(ctx, key).Result()
 	if err != nil {
-		// Log error but don't return raw redis error to avoid leaking details.
 		utils.Log.Error("Redis: Error checking if token is blacklisted",
 			zap.String("key", key),
-			zap.String("token_prefix", token[:utils.Min(len(token), 10)]), // Corrected to utils.Min
+			zap.String("token_prefix", token[:utils.Min(len(token), 10)]),
 			zap.Error(err))
-		return false, fmt.Errorf("error checking token blacklist status") // Generic error
+		return false, fmt.Errorf("error checking token blacklist status")
 	}
 	return result == 1, nil
 }
 
 // AddTokenToBlacklist adds a token to the Redis blacklist with a given expiration.
-// It now accepts a context.
 func (r *redisTokenRepository) AddTokenToBlacklist(ctx context.Context, token string, expiration time.Duration) error {
 	key := fmt.Sprintf("jwt_blacklist:%s", token)
 
-	// Using the passed-in context directly. If it's request-scoped, it should be fine.
-	statusCmd := r.client.SetEX(ctx, key, "blacklisted", expiration)
+	// FIX: Changed SetEX to SetEx to match the go-redis/v9 API.
+	statusCmd := r.client.SetEx(ctx, key, "blacklisted", expiration)
 	if statusCmd.Err() != nil {
 		utils.Log.Error("Failed to add token to Redis blacklist",
-			zap.String("token_prefix", token[:utils.Min(len(token), 10)]), // Corrected to utils.Min
+			zap.String("token_prefix", token[:utils.Min(len(token), 10)]),
 			zap.Error(statusCmd.Err()))
 		return fmt.Errorf("failed to add token to blacklist: %w", statusCmd.Err())
 	}
 	utils.Log.Debug("Token added to Redis blacklist",
-		zap.String("token_prefix", token[:utils.Min(len(token), 10)]), // Corrected to utils.Min
+		zap.String("token_prefix", token[:utils.Min(len(token), 10)]),
 		zap.Duration("expiration", expiration))
 
 	return nil

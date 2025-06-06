@@ -59,10 +59,15 @@ func InitDB() {
 
 	utils.Log.Info("PostgreSQL database connected successfully. Attempting AutoMigrate...")
 
-	err = DB.AutoMigrate(&model.User{})
+	// Add all models that need to be auto-migrated here
+	err = DB.AutoMigrate(
+		&model.User{},
+		&model.PasswordResetToken{}, // Added PasswordResetToken
+		&model.Counterparty{},       // Added Counterparty
+	)
 	if err != nil {
-		utils.Log.Fatal("Failed to auto migrate database schema for User model", zap.Error(err))
+		utils.Log.Fatal("Failed to auto-migrate database schemas", zap.Error(err))
 	}
-	utils.Log.Info("Database auto-migration completed successfully for User model.")
+	utils.Log.Info("Database auto-migration completed successfully for all registered models.")
 
 }
