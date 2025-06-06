@@ -7,20 +7,27 @@ import (
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
 	"strings"
+	"time" // Added for TTL calculation
 
+	"github.com/golang-jwt/jwt/v5" // Added for token parsing
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
-	userService service.UserService
+	userService  service.UserService
+	redisService *service.RedisService // Added RedisService
 }
 
-func NewAuthHandler(us service.UserService) *AuthHandler {
+// NewAuthHandler now accepts RedisService
+func NewAuthHandler(us service.UserService, rs *service.RedisService) *AuthHandler {
 	if us == nil {
 		utils.Log.Fatal("UserService cannot be nil for AuthHandler in Profile Manager.")
 	}
-	return &AuthHandler{userService: us}
+	if rs == nil {
+		utils.Log.Fatal("RedisService cannot be nil for AuthHandler in Profile Manager.")
+	}
+	return &AuthHandler{userService: us, redisService: rs}
 }
 
 type ProfileHandler struct {
@@ -207,30 +214,87 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	}
 	tokenString := tokenParts[1]
 
-	err := h.userService.LogoutUser(tokenString)
+	// 1. Validate the token and get claims
+	claims, err := utils.ValidateJWTToken(tokenString)
 	if err != nil {
-		utils.Log.Error("Profile Manager Handler: Logout failed in service layer", zap.Error(err), zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
-		if errors.Is(err, service.ErrInvalidCredentials) {
+		// Handle different error types from ValidateJWTToken
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			utils.Log.Warn("Logout attempt with already expired token", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]), zap.Error(err))
+			// No need to blacklist an already expired token. Still, proceed with other logout operations.
+		} else if errors.Is(err, jwt.ErrTokenMalformed) || errors.Is(err, jwt.ErrTokenSignatureInvalid) || errors.Is(err, jwt.ErrTokenNotValidYet) {
+			utils.Log.Warn("Logout attempt with invalid token", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]), zap.Error(err))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Message: "Invalid or expired token.",
-				Code:    "401",
+				Message: "Invalid token provided for logout.",
+				Code:    "401_INVALID_TOKEN_LOGOUT",
+			})
+		} else {
+			// Other validation errors (e.g. claim validation if added, or unexpected errors)
+			utils.Log.Error("Error validating token during logout", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]), zap.Error(err))
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Token validation failed during logout.",
+				Code:    "401_VALIDATION_FAILED_LOGOUT",
 			})
 		}
-		if errors.Is(err, service.ErrInternalService) {
-			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-				Message: "Internal server error during logout.",
-				Code:    "500",
-			})
-		}
+		// If token was expired, we still continue to h.userService.LogoutUser for any other cleanup.
+		// If it was invalid, we returned early.
+	}
 
+	// 2. If token is valid and not expired, add to blacklist
+	if claims != nil && claims.ExpiresAt != nil {
+		remainingValidity := time.Until(claims.ExpiresAt.Time)
+		if remainingValidity > 0 {
+			jti := claims.RegisteredClaims.ID
+			if jti == "" {
+				utils.Log.Error("Logout: JTI claim is missing in token, cannot blacklist", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
+				// Potentially return an error or just log, depending on policy
+			} else {
+				errBlacklist := h.redisService.AddToBlacklist(jti, remainingValidity)
+				if errBlacklist != nil {
+					utils.Log.Error("Logout: Failed to add token to Redis blacklist", zap.String("jti", jti), zap.Error(errBlacklist))
+					// Depending on policy, this might be a critical failure or just logged.
+					// For now, we log it and proceed with other logout logic.
+				} else {
+					utils.Log.Info("Logout: Token successfully blacklisted", zap.String("jti", jti), zap.Duration("ttl", remainingValidity))
+				}
+			}
+		} else {
+			utils.Log.Info("Logout: Token already expired, no need to blacklist", zap.String("jti", claims.RegisteredClaims.ID))
+		}
+	}
+
+
+	// 3. Perform other logout operations via userService (e.g., audit logging, session clearing if any)
+	// This was the original call in the Logout function.
+	// Note: If userService.LogoutUser also validates the token, there might be redundant validation.
+	// For now, we assume it performs other duties beyond just token validation.
+	errUserServiceLogout := h.userService.LogoutUser(tokenString)
+	if errUserServiceLogout != nil {
+		utils.Log.Error("Profile Manager Handler: Error from userService.LogoutUser", zap.Error(errUserServiceLogout), zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
+		// This error handling might need to be more nuanced.
+		// If the token was invalid to begin with, this might also return an error.
+		// We've already handled some token validation, so we might not need to be as strict here,
+		// or we could consolidate error responses.
+		// For now, mirroring original logic for errors from this service call:
+		if errors.Is(errUserServiceLogout, service.ErrInvalidCredentials) { // Assuming this means invalid/expired token to the service
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Invalid or expired token according to user service.", // Message could be improved
+				Code:    "401_USER_SERVICE_TOKEN_ISSUE",
+			})
+		}
+		if errors.Is(errUserServiceLogout, service.ErrInternalService) {
+			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+				Message: "Internal server error during user service logout.",
+				Code:    "500_USER_SERVICE_LOGOUT_ERROR",
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-			Message: "An unexpected error occurred during logout.",
-			Code:    "500",
+			Message: "An unexpected error occurred during user service logout.",
+			Code:    "500_USER_SERVICE_UNEXPECTED_LOGOUT_ERROR",
 		})
 	}
 
 	utils.Log.Info("Profile Manager Handler: User logged out successfully", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
-	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
+	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{ // model.AuthResponse might not be the most semantically correct for logout. A simple success message might be better.
 		Message: "Logged out successfully!",
 	})
 

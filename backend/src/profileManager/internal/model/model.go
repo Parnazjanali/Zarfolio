@@ -113,3 +113,23 @@ type LoginTwoFARequest struct {
 	UserID   string `json:"user_id" validate:"required"` // Or InterimToken
 	TOTPCode string `json:"totp_code" validate:"required,numeric,length=6"`
 }
+
+// Counterparty defines the structure for counterparties associated with a user/company.
+type Counterparty struct {
+	ID           string    `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	NationalID   string    `json:"national_id" gorm:"type:varchar(10);uniqueIndex:idx_counterparty_user_national_id;not null"` // Unique per UserID
+	FirstName    string    `json:"first_name" gorm:"type:varchar(100);not null"`
+	LastName     string    `json:"last_name" gorm:"type:varchar(100);not null"`
+	AccountCode  string    `json:"account_code" gorm:"type:varchar(50);uniqueIndex:idx_counterparty_user_account_code;not null"` // Unique per UserID
+	Debit        float64   `json:"debit" gorm:"type:decimal(18,2);default:0.0"`
+	Credit       float64   `json:"credit" gorm:"type:decimal(18,2);default:0.0"`
+	UserID       string    `json:"user_id" gorm:"type:uuid;not null;index;uniqueIndex:idx_counterparty_user_national_id;uniqueIndex:idx_counterparty_user_account_code"`
+	User         User      `json:"-" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"` // Foreign key relationship
+	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+// TableName specifies the table name for GORM.
+func (Counterparty) TableName() string {
+	return "counterparties"
+}

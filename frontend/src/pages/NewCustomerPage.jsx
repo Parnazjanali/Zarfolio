@@ -68,7 +68,7 @@ function NewCustomerPage() {
 
 
   const [formData, setFormData] = useState({
-    accountCode: '', name: '', lastName: '',
+    accountCode: '', name: '', lastName: '', idNumber: '', // Added idNumber
     customerGroup: groupOptions[0], 
     country: defaultCountry, 
     province: defaultProvince, 
@@ -305,28 +305,86 @@ function NewCustomerPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const parseFinancialValue = (value) => {
-        const strValue = String(value).replace(/,/g, '');
-        if (strValue === '' || isNaN(parseInt(strValue, 10))) return 0;
-        return parseInt(strValue, 10);
+
+    const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+
+    if (!token) {
+      alert('Authentication token not found. Please login again.');
+      // Potentially navigate to login page: navigate('/login');
+      return;
+    }
+
+    // Helper to parse string numbers (potentially with commas) to float, default to 0 if invalid
+    const parseFloatOrDefault = (value) => {
+      const strValue = String(value).replace(/,/g, '');
+      const num = parseFloat(strValue);
+      return isNaN(num) ? 0.0 : num;
     };
-    const parseGoldValue = (value) => { 
-        const strValue = String(value).replace(/,/g, '');
-        if (strValue === '' || isNaN(parseFloat(strValue))) return 0;
-        return parseFloat(strValue);
+
+    let debit = 0;
+    let credit = 0;
+    const financialBalanceFloat = parseFloatOrDefault(formData.financialBalance);
+
+    if (formData.financialBalanceType === 'debtor') {
+      debit = financialBalanceFloat;
+    } else if (formData.financialBalanceType === 'creditor') {
+      credit = financialBalanceFloat;
+    }
+
+    const payload = {
+      national_id: formData.idNumber || '', // Assuming idNumber corresponds to national_id
+      first_name: formData.name,
+      last_name: formData.lastName,
+      account_code: formData.accountCode,
+      debit: debit,
+      credit: credit,
+      // UserID will be set by the backend based on the token
     };
-    const dataToSubmit = {
-      ...formData,
-      financialBalance: parseFinancialValue(formData.financialBalance),
-      goldBalance: parseGoldValue(formData.goldBalance),
-      currencyBalances: formData.currencyBalances.map(cb => ({
-          currencyType: cb.currencyType,
-          amount: parseGoldValue(cb.amount), 
-          balanceType: cb.balanceType,
-      }))
-    };
-    console.log('اطلاعات فرم برای ارسال:', dataToSubmit);
-    alert('اطلاعات فرم در کنسول ثبت شد.');
+
+    // GoldBalance and CurrencyBalances are not part of the Counterparty model per previous step.
+    // If they were, they would be processed here.
+    // console.log('Data being sent to backend:', payload);
+
+    try {
+      const response = await fetch('/api/v1/profile-manager/counterparties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('مشتری جدید با موفقیت ثبت شد!');
+        console.log('Customer created successfully:', result);
+        // Reset form (optional, or navigate)
+        setFormData({
+          accountCode: '', name: '', lastName: '', idNumber: '', // Added idNumber to reset
+          customerGroup: groupOptions[0],
+          country: defaultCountry,
+          province: defaultProvince,
+          city: (cityOptionsInitial[defaultProvince] && cityOptionsInitial[defaultProvince][0]) || cityOptionsInitial["-- بدون انتخاب --"]?.[0] || '',
+          birthDate: '',
+          phones: [''], address: '',
+          goldBalance: '', goldBalanceType: 'debtor',
+          financialBalance: '', financialBalanceType: 'debtor',
+          currencyBalances: [],
+        });
+        setDisplayFinancialBalance('');
+        setDisplayGoldBalance('');
+        setFinancialBalanceText('');
+        // navigate('/customers'); // Optional: navigate to customer list
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to create customer:', errorData);
+        alert(`خطا در ثبت مشتری: ${errorData.message || response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Network or other error:', error);
+      alert('خطا در ارتباط با سرور. لطفا دوباره تلاش کنید.');
+    }
   };
 
   return (
@@ -340,9 +398,13 @@ function NewCustomerPage() {
               <div className="form-group">
                 <label htmlFor="accountCode">کد حساب</label>
                 <div className="input-with-button">
-                  <button type="button" className="icon-button" title="راهنما/جستجو کد حساب">?</button>
+                  {/* <button type="button" className="icon-button" title="راهنما/جستجو کد حساب">?</button> */}
                   <input type="text" id="accountCode" name="accountCode" value={formData.accountCode} onChange={handleMainFormChange} />
                 </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="idNumber">کد/شناسه ملی</label> {/* Added idNumber field */}
+                <input type="text" id="idNumber" name="idNumber" value={formData.idNumber} onChange={handleMainFormChange} />
               </div>
               <div className="form-group">
                 <label htmlFor="name">نام</label>

@@ -12,7 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func StartServer(port string) {
+// StartServer now accepts RedisService and CounterpartyService
+func StartServer(port string, redisServiceInstance *service.RedisService, counterpartyServiceInstance service.CounterpartyService) {
 	utils.Log.Info("Initializing Profile Manager Fiber server...")
 
 	app := fiber.New()
@@ -29,11 +30,11 @@ func StartServer(port string) {
 	})
 	utils.Log.Info("Static file serving configured", zap.String("url_prefix", urlPrefix), zap.String("filesystem_root", staticFilesRoot))
 
-	utils.Log.Info("Initializing Redis client for Profile Manager...")
-	if err := utils.InitRedisClient(); err != nil {
-		utils.Log.Fatal("Failed to initialize Redis client. Exiting application.", zap.Error(err))
-	}
-	utils.Log.Info("Redis client initialized successfully.")
+	// Redis client initialization is now expected to be done in main.go before StartServer is called.
+	// The redisServiceInstance is passed in.
+	// Ensure that the redis client used by other parts (like tokenRepo below) is consistent
+	// with the one initialized for redisServiceInstance if they are intended to be the same.
+	// For now, we assume utils.RedisClient is populated by the same InitRedis in main.go or is a separate client.
 
 	utils.Log.Info("Initializing UserRepository...")
 	userRepo := postgresDb.NewPostgresUserRepository(postgresDb.DB)
@@ -45,7 +46,8 @@ func StartServer(port string) {
 
 	utils.Log.Info("Initializing TokenRepository (Redis)...")
 
-	var tokenRepo redisdb.TokenRepository = redisdb.NewRedisTokenRepository(utils.RedisClient)
+	// FIX: Changed utils.RedisClient to service.GetClient() to use the correctly initialized client.
+	var tokenRepo redisdb.TokenRepository = redisdb.NewRedisTokenRepository(service.GetClient())
 
 	if tokenRepo == nil {
 		utils.Log.Fatal("Failed to initialize TokenRepository. Exiting application.")
@@ -70,17 +72,18 @@ func StartServer(port string) {
 
 	utils.Log.Info("Initializing AuthHandler and ProfileHandler...")
 
-	authHandler := handler.NewAuthHandler(userService)
+	// Pass redisServiceInstance to NewAuthHandler
+	authHandler := handler.NewAuthHandler(userService, redisServiceInstance)
 	if authHandler == nil {
 		utils.Log.Fatal("Failed to initialize AuthHandler. Exiting application.")
 	}
 
-	profileHandler := handler.NewProfileHandler(userService)
+	profileHandler := handler.NewProfileHandler(userService) // Assuming ProfileHandler does not need Redis/CounterpartyService for now
 
 	if profileHandler == nil {
-		utils.Log.Fatal("Failed to initialize AuthHandler. Exiting application.")
+		utils.Log.Fatal("Failed to initialize ProfileHandler. Exiting application.") // Corrected log message from AuthHandler
 	}
-	utils.Log.Info("Handlers initialized successfully.")
+	utils.Log.Info("AuthHandler and ProfileHandler initialized successfully.")
 
 	utils.Log.Info("Initializing AccountHandler...")
 	accountHandler := handler.NewAccountHandler(userService)
@@ -89,9 +92,19 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("AccountHandler initialized successfully.")
 
+	// Initialize CounterpartyHandler
+	utils.Log.Info("Initializing CounterpartyHandler...")
+	counterpartyHandler := handler.NewCounterpartyHandler(counterpartyServiceInstance, utils.Log)
+	if counterpartyHandler == nil {
+		utils.Log.Fatal("Failed to initialize CounterpartyHandler. Exiting application.")
+	}
+	utils.Log.Info("CounterpartyHandler initialized successfully.")
+
+
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler, tokenRepo); err != nil { // Added tokenRepo
+	// Pass redisServiceInstance and counterpartyHandler to SetupProfileManagerRoutes
+	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler, counterpartyHandler, tokenRepo, redisServiceInstance); err != nil {
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("Profile Manager API routes configured successfully.")
