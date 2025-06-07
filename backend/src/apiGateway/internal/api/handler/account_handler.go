@@ -12,9 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// Note: multipart.FileHeader is not directly used here, but service layer expects it.
-// The handler receives it from Fiber and passes it on.
-
 // AccountHandlerAG handles account management requests for the API Gateway.
 type AccountHandlerAG struct {
 	authService *service.AuthService // Reusing AuthService as it contains the methods now
@@ -29,7 +26,6 @@ func NewAccountHandlerAG(as *service.AuthService) *AccountHandlerAG {
 }
 
 // getTokenFromContext extracts the JWT from the Authorization header.
-// This is a helper, actual middleware might put the token string directly in locals.
 func getTokenFromContext(c *fiber.Ctx) string {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
@@ -47,7 +43,6 @@ func (h *AccountHandlerAG) HandleChangeUsername(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid request format.", Code: "400_INVALID_FORMAT"})
 	}
-	// Basic validation (could be enhanced with a library)
 	if req.NewUsername == "" || req.CurrentPassword == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "New username and current password are required.", Code: "400_MISSING_FIELDS"})
 	}
@@ -55,25 +50,20 @@ func (h *AccountHandlerAG) HandleChangeUsername(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "New username must be at least 3 characters.", Code: "400_USERNAME_POLICY"})
 	}
 
-	userToken := getTokenFromContext(c) // Helper to get token string
+	userToken := getTokenFromContext(c)
 	if userToken == "" {
-		// This case should ideally be caught by the AuthUser middleware first.
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
 	}
-	// userID from c.Locals("userID") can be used for logging if needed, but service call needs the token.
-	// userID := c.Locals("userID").(string)
-	// utils.Log.Debug("HandleChangeUsername in apiGateway", zap.String("userID_from_claims", userID))
 
 	err := h.authService.ChangeUsername(req, userToken)
 	if err != nil {
-		// Translate errors from service/client layer to HTTP responses
 		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Incorrect current password.", Code: "401_INVALID_CURRENT_PASSWORD"})
 		}
-		if errors.Is(err, service.ErrUserAlreadyExists) { // Username taken
+		if errors.Is(err, service.ErrUserAlreadyExists) {
 			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{Message: "New username is already taken.", Code: "409_USERNAME_TAKEN"})
 		}
-		if errors.Is(err, service.ErrUserNotFound) { // Should not happen if token is valid
+		if errors.Is(err, service.ErrUserNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "User not found.", Code: "404_USER_NOT_FOUND"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -104,12 +94,9 @@ func (h *AccountHandlerAG) HandleChangePassword(c *fiber.Ctx) error {
 
 	err := h.authService.ChangePassword(req, userToken)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidCredentials) { // Incorrect current password
+		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Incorrect current password.", Code: "401_INVALID_CURRENT_PASSWORD"})
 		}
-		// Check for specific Bad Request from profile manager (e.g. password policy)
-		// The client might wrap this in a generic error, or pass it through.
-		// For now, other errors are treated as internal or service down.
 		if errors.Is(err, service.ErrBadRequestFromProfileManager) {
 			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Password policy violation or bad request.", Code: "400_POLICY_VIOLATION"})
 		}
@@ -122,8 +109,6 @@ func (h *AccountHandlerAG) HandleChangePassword(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Password changed successfully."})
 }
 
-// --- New 2FA Handler Methods for AccountHandlerAG ---
-
 func (h *AccountHandlerAG) HandleGenerateTwoFASetup(c *fiber.Ctx) error {
 	userToken := getTokenFromContext(c)
 	if userToken == "" {
@@ -132,8 +117,7 @@ func (h *AccountHandlerAG) HandleGenerateTwoFASetup(c *fiber.Ctx) error {
 
 	res, err := h.authService.GenerateTwoFASetup(userToken)
 	if err != nil {
-		// Error mapping based on potential errors from service/client
-		if errors.Is(err, service.ErrUserAlreadyExists) { // If using this for "2FA already enabled"
+		if strings.Contains(err.Error(), "2FA is already enabled") { // Check for specific error message string
 			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{Message: "2FA is already enabled for this account.", Code: "409_2FA_ALREADY_ENABLED"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -161,7 +145,7 @@ func (h *AccountHandlerAG) HandleVerifyAndEnableTwoFA(c *fiber.Ctx) error {
 
 	res, err := h.authService.VerifyAndEnableTwoFA(req, userToken)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidCredentials) { // Invalid TOTP code
+		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid TOTP code.", Code: "400_INVALID_TOTP_CODE"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -178,9 +162,13 @@ func (h *AccountHandlerAG) HandleDisableTwoFA(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid request format.", Code: "400_INVALID_FORMAT"})
 	}
-	if req.CurrentPassword == "" {
+
+	// ##### START OF FIX #####
+	// از req.Password به جای req.CurrentPassword استفاده شد
+	if req.Password == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Current password is required.", Code: "400_PASSWORD_REQUIRED"})
 	}
+	// ##### END OF FIX #####
 
 	userToken := getTokenFromContext(c)
 	if userToken == "" {
@@ -192,7 +180,6 @@ func (h *AccountHandlerAG) HandleDisableTwoFA(c *fiber.Ctx) error {
 		if errors.Is(err, service.ErrInvalidCredentials) { // Wrong password
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Incorrect current password.", Code: "401_INVALID_CURRENT_PASSWORD"})
 		}
-		// Could also check for a specific error if 2FA wasn't enabled.
 		if errors.Is(err, service.ErrProfileManagerDown) {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "2FA service is temporarily unavailable.", Code: "503_SERVICE_UNAVAILABLE"})
 		}
@@ -202,15 +189,13 @@ func (h *AccountHandlerAG) HandleDisableTwoFA(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "2FA has been successfully disabled."})
 }
 
-const maxProfilePictureUploadSize = 2 * 1024 * 1024 // 2MB - should match profileManager's limit or be slightly larger
+const maxProfilePictureUploadSize = 2 * 1024 * 1024 // 2MB
 
 func (h *AccountHandlerAG) HandleProfilePictureUpload(c *fiber.Ctx) error {
-	userToken := getTokenFromContext(c) // Assuming this helper exists from previous step
+	userToken := getTokenFromContext(c)
 	if userToken == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing or invalid token.", Code: "401_UNAUTHORIZED"})
 	}
-	// We don't strictly need userID from claims here if service uses token, but can get for logging
-	// userID := c.Locals("userID").(string)
 
 	fileHeader, err := c.FormFile("profile_picture")
 	if err != nil {
@@ -218,13 +203,11 @@ func (h *AccountHandlerAG) HandleProfilePictureUpload(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Profile picture file is required in 'profile_picture' field.", Code: "400_FILE_REQUIRED"})
 	}
 
-	// Validate file size at gateway as well
 	if fileHeader.Size > maxProfilePictureUploadSize {
 		utils.Log.Warn("API Gateway HandleProfilePictureUpload: File size exceeds limit", zap.Int64("size", fileHeader.Size))
 		return c.Status(fiber.StatusRequestEntityTooLarge).JSON(model.ErrorResponse{Message: "File too large.", Code: "413_FILE_TOO_LARGE"})
 	}
 
-	// Basic extension check at gateway
 	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid file type. Allowed: JPG, PNG.", Code: "400_INVALID_FILE_TYPE"})
