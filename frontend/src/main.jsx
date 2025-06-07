@@ -1,11 +1,13 @@
-// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import App from './App.jsx';
+import './index.css';
+import { AuthProvider } from './context/AuthContext'; // ۱. ایمپورت کردن پروایدر
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider> {/* ۲. پوشش دادن کل برنامه با پروایدر */}
+      <App />
+    </AuthProvider>
   </React.StrictMode>,
-);
+)
