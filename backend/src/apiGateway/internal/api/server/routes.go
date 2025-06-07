@@ -39,8 +39,11 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	// Add new password reset routes to the existing authGroup
 	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
 	authGroup.Post("/password/reset", authHandler.HandleResetPassword)
-	authGroup.Post("/login/2fa", authHandler.HandleLoginTwoFA) // New route for 2FA login step
-	utils.Log.Info("Configuring /api/v1/auth/password and /api/v1/auth/login/2fa routes")
+
+	// <<< تغییر در این خط >>>
+	// آدرس برای تطابق با فرانت‌اند اصلاح شد
+	authGroup.Post("/2fa/verify", authHandler.HandleLoginTwoFA)
+	utils.Log.Info("Configuring /api/v1/auth/password and /api/v1/auth/2fa/verify routes")
 
 	accountGroup := api.Group("/account", middleware.AuthUser) // Protected by existing AuthUser middleware
 	utils.Log.Info("Configuring /api/v1/account routes")
@@ -75,10 +78,6 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 				return c.Status(fiber.StatusInternalServerError).SendString("Proxy error: Could not create request.")
 			}
 
-			// It's generally not recommended to copy all headers directly from client to backend for a proxy,
-			// especially for GET requests for static files. Only forward necessary ones if any.
-			// For simplicity, we are not copying any specific headers beyond what http.NewRequest might set by default.
-
 			client := http.Client{Timeout: 10 * time.Second}
 			resp, err := client.Do(proxyReq)
 			if err != nil {
@@ -88,18 +87,14 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 			defer resp.Body.Close()
 
 			c.Status(resp.StatusCode)
-			// Copy relevant headers from backend response to client response
-			// Content-Type, Content-Length, ETag, Last-Modified are common for static files
 			for key, values := range resp.Header {
 				for _, value := range values {
-					// Filter or be selective about headers if needed
 					if key == "Content-Type" || key == "Content-Length" || key == "ETag" || key == "Last-Modified" || key == "Cache-Control" {
 						c.Set(key, value)
 					}
 				}
 			}
-			// Stream the body directly
-			return c.SendStream(resp.Body) // SendStream is more appropriate than c.Send(resp.Body)
+			return c.SendStream(resp.Body)
 		})
 		utils.Log.Info("Configured basic GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
 	} else {
@@ -113,5 +108,4 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	utils.Log.Info("API Gateway: 404 fallback route configured.")
 
 	return nil
-
 }
