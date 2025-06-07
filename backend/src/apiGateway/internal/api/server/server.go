@@ -27,7 +27,6 @@ func StartServer(port string) {
 		utils.Log.Fatal("PROFILE_MANAGER_BASE_URL environment variable is not set. Exiting application.")
 	}
 	utils.Log.Info("Initializing ProfileManagerClient", zap.String("url", profileManagerBaseURL))
-
 	profileManagerClient := service.NewProfileManagerClient(profileManagerBaseURL)
 	if profileManagerClient == nil {
 		utils.Log.Fatal("Failed to initialize ProfileManagerClient. Exiting application.")
