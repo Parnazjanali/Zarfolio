@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"profile-gold/internal/api/server"
-	"profile-gold/internal/repository" // For CounterpartyRepository
+	"profile-gold/internal/repository" 
 	"profile-gold/internal/repository/db/postgresDb"
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
@@ -32,7 +32,7 @@ func main() {
 	utils.Log.Info("Database connection established.")
 
 	utils.Log.Info("Initializing Redis connection for Profile Manager...")
-	if err := service.InitRedis(); err != nil { // Initialize Redis
+	if err := service.InitRedis(); err != nil { 
 		utils.Log.Fatal("Failed to initialize Redis", zap.Error(err))
 	}
 	utils.Log.Info("Redis connection established.")
