@@ -56,7 +56,10 @@ func (c *profileManagerHTTPClient) VerifyAndEnableTwoFA(req model.VerifyTwoFAReq
 		return nil, fmt.Errorf("failed to marshal verify 2FA request for profile manager: %w", err)
 	}
 
-	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/2fa/verify", bytes.NewBuffer(body))
+	// ##### START OF FIX #####
+	// The URL was changed from "/account/2fa/verify" to "/account/2fa/enable"
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/2fa/enable", bytes.NewBuffer(body))
+	// ##### END OF FIX #####
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request for profile manager verify 2FA: %w", err)
 	}
@@ -145,7 +148,10 @@ func (c *profileManagerHTTPClient) LoginTwoFA(req model.LoginTwoFARequestAG) (us
 
 // GenerateTwoFASetup requests 2FA setup details (QR code, secret) from the profile manager.
 func (c *profileManagerHTTPClient) GenerateTwoFASetup(userToken string) (*model.GenerateTwoFAResponseAG, error) {
-	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/2fa/setup", nil) // No body needed for setup generation
+	// ##### START OF FIX #####
+	// The URL was changed from "/account/2fa/setup" to "/account/2fa/generate-secret"
+	httpReq, err := http.NewRequest(http.MethodPost, c.baseURL+"/account/2fa/generate-secret", nil) // No body needed for setup generation
+	// ##### END OF FIX #####
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request for profile manager 2FA setup: %w", err)
 	}
@@ -215,10 +221,6 @@ func (c *profileManagerHTTPClient) DisableTwoFA(req model.DisableTwoFARequestAG,
 		utils.Log.Error("profileManagerHTTPClient.DisableTwoFA: Profile manager returned non-OK status", zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
 		return fmt.Errorf("profile manager disable 2FA failed with status %d: %s", resp.StatusCode, string(respBody))
 	}
-
-	// Optionally, unmarshal response if profile manager sends one, e.g., a success message
-	// var successResp struct { Message string `json:"message"` }
-	// if err := json.Unmarshal(respBody, &successResp); err != nil { ... }
 
 	return nil
 }
@@ -633,21 +635,13 @@ func (c *profileManagerHTTPClient) RequestPasswordReset(req model.RequestPasswor
 	}
 	defer resp.Body.Close()
 
-	// Profile manager is expected to return 200 OK even if email not found (to prevent enumeration)
-	// or a specific error if something else went wrong.
 	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body) // Replaced ioutil.ReadAll
+		respBody, _ := io.ReadAll(resp.Body)
 		utils.Log.Error("profileManagerHTTPClient.RequestPasswordReset: Profile manager returned non-OK status",
 			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
-		// We don't return specific errors like UserNotFound from here to the main handler,
-		// as the handler should return a generic success message.
-		// If profile manager has an internal error, that should be propagated.
 		if resp.StatusCode >= 500 {
 			return fmt.Errorf("profile manager internal error during password reset request (status %d): %s", resp.StatusCode, string(respBody))
 		}
-		// For 4xx errors from profile manager (e.g. bad request if it implements stricter validation), let them pass through
-		// but they will likely be caught as a generic internal error by the apiGateway's service layer if not specifically handled.
-		// For now, any non-200 from profile manager that isn't a 5xx is treated as an unexpected error.
 		return fmt.Errorf("unexpected response from profile manager during password reset request (status %d): %s", resp.StatusCode, string(respBody))
 	}
 	return nil
@@ -675,18 +669,17 @@ func (c *profileManagerHTTPClient) PerformPasswordReset(req model.ResetPasswordR
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body) // Replaced ioutil.ReadAll
+		respBody, _ := io.ReadAll(resp.Body)
 		utils.Log.Error("profileManagerHTTPClient.PerformPasswordReset: Profile manager returned non-OK status",
 			zap.Int("status", resp.StatusCode), zap.String("body", string(respBody)))
-		if resp.StatusCode == http.StatusBadRequest { // Assuming profileManager returns 400 for invalid/expired token
-			return fmt.Errorf("%w: invalid token or request: %s", ErrInvalidCredentials, string(respBody)) // Reuse ErrInvalidCredentials or define a new one like ErrPasswordResetFailed
+		if resp.StatusCode == http.StatusBadRequest {
+			return fmt.Errorf("%w: invalid token or request: %s", ErrInvalidCredentials, string(respBody))
 		}
 		return fmt.Errorf("profile manager password reset failed with status %d: %s", resp.StatusCode, string(respBody))
 	}
 	return nil
 }
 
-// min is a helper function to ensure we don't slice beyond string length
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -695,7 +688,6 @@ func min(a, b int) int {
 }
 
 func (s *AuthService) Logout(token string) error {
-	// Use a safe prefix for logging, ensuring not to panic if token is too short
 	var tokenPrefix string
 	if len(token) > 10 {
 		tokenPrefix = token[:10]
@@ -721,10 +713,8 @@ func (s *AuthService) Logout(token string) error {
 func (s *AuthService) RequestPasswordReset(req model.RequestPasswordResetRequest) error {
 	err := s.profileMgrClient.RequestPasswordReset(req)
 	if err != nil {
-		// The client method should already log details.
-		// This layer just propagates the error or a generic one.
 		utils.Log.Error("AuthService: RequestPasswordReset failed via ProfileManagerClient", zap.String("email", req.Email), zap.Error(err))
-		return ErrInternalService // Or return err directly if it's already well-formed for the handler
+		return ErrInternalService
 	}
 	return nil
 }
@@ -733,10 +723,10 @@ func (s *AuthService) PerformPasswordReset(req model.ResetPasswordRequest) error
 	err := s.profileMgrClient.PerformPasswordReset(req)
 	if err != nil {
 		utils.Log.Error("AuthService: PerformPasswordReset failed via ProfileManagerClient", zap.Error(err))
-		if errors.Is(err, ErrInvalidCredentials) { // Check if client returned this specific error
+		if errors.Is(err, ErrInvalidCredentials) {
 			return ErrInvalidCredentials
 		}
-		return ErrInternalService // Or return err
+		return ErrInternalService
 	}
 	return nil
 }
@@ -745,53 +735,49 @@ func (s *AuthService) UploadProfilePicture(fileHeader *multipart.FileHeader, use
 	newURL, err := s.profileMgrClient.UploadProfilePicture(fileHeader, userToken)
 	if err != nil {
 		utils.Log.Error("AuthService (apiGateway): UploadProfilePicture failed", zap.Error(err))
-		// Propagate specific errors if mapped by client, or return a generic one
 		if errors.Is(err, ErrFileRejectedByProfileManager) {
-			return "", err // Propagate the specific error
+			return "", err
 		}
-		// Other error types from the client can be checked here too if necessary
-		return "", ErrInternalService // Fallback to generic internal service error
+		return "", ErrInternalService
 	}
 	return newURL, nil
 }
 
-// GenerateTwoFASetup forwards the request to the profile manager client.
 func (s *AuthService) GenerateTwoFASetup(userToken string) (*model.GenerateTwoFAResponseAG, error) {
 	utils.Log.Info("AuthService: Forwarding GenerateTwoFASetup request to ProfileManagerClient")
 	res, err := s.profileMgrClient.GenerateTwoFASetup(userToken)
 	if err != nil {
 		utils.Log.Error("AuthService: GenerateTwoFASetup failed via ProfileManagerClient", zap.Error(err))
-		// Specific error mapping can be done here if needed, e.g.
-		// if errors.Is(err, SomeSpecificClientError) { return nil, MappedServiceError }
-		return nil, err // Propagate error from client
+		return nil, err
+	}
+	if res == nil {
+		utils.Log.Error("AuthService: GenerateTwoFASetup received nil response from client without an error")
+		return nil, errors.New("internal server error: received unexpected nil response")
 	}
 	return res, nil
 }
 
-// VerifyAndEnableTwoFA forwards the request to the profile manager client.
 func (s *AuthService) VerifyAndEnableTwoFA(req model.VerifyTwoFARequestAG, userToken string) (*model.EnableTwoFAResponseAG, error) {
 	utils.Log.Info("AuthService: Forwarding VerifyAndEnableTwoFA request to ProfileManagerClient")
 	res, err := s.profileMgrClient.VerifyAndEnableTwoFA(req, userToken)
 	if err != nil {
 		utils.Log.Error("AuthService: VerifyAndEnableTwoFA failed via ProfileManagerClient", zap.Error(err))
-		return nil, err // Propagate error
+		return nil, err
 	}
 	return res, nil
 }
 
-// DisableTwoFA forwards the request to the profile manager client.
 func (s *AuthService) DisableTwoFA(req model.DisableTwoFARequestAG, userToken string) error {
 	utils.Log.Info("AuthService: Forwarding DisableTwoFA request to ProfileManagerClient")
 	err := s.profileMgrClient.DisableTwoFA(req, userToken)
 	if err != nil {
 		utils.Log.Error("AuthService: DisableTwoFA failed via ProfileManagerClient", zap.Error(err))
-		return err // Propagate error from client directly
+		return err
 	}
 	return nil
 }
 
 func IsValidEmail(email string) bool {
-	// Simple email validation
 	if len(email) < 3 || len(email) > 254 {
 		return false
 	}

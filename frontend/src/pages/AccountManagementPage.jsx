@@ -46,22 +46,19 @@ function AccountManagementPage() {
         try {
             const userData = JSON.parse(storedUserData);
             if (userData) {
-                if (typeof userData.is_two_fa_enabled === 'boolean') {
-                    setIsTwoFAEnabled(userData.is_two_fa_enabled);
-                    if (userData.is_two_fa_enabled) {
-                        setTwoFASetupStage('enabled');
-                    }
-                } else {
-                    console.warn("is_two_fa_enabled not found in userData, defaulting to false.");
-                    setIsTwoFAEnabled(false);
+                // Use optional chaining for safer access
+                const twoFAStatus = userData?.is_two_fa_enabled || false;
+                setIsTwoFAEnabled(twoFAStatus);
+                if (twoFAStatus) {
+                    setTwoFASetupStage('enabled');
                 }
-            
             }
         } catch (e) {
             console.error("Failed to parse userData: ", e);
         }
     }
   }, []);
+
   const handleChangeUsername = async (e) => {
     e.preventDefault();
     setIsUsernameLoading(true);

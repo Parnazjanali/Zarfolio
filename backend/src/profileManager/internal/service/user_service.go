@@ -483,12 +483,23 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 	}
 	utils.Log.Debug("GenerateTwoFASetup: Retrieved encryption key", zap.String("userID", userID), zap.Int("key_length", len(encryptionKey)))
 
-	// Use user.Email for the account name in TOTP, common practice. Username could also be used.
-	rawSecret, err := utils.GenerateTOTPSecret(user.Email)
+	// ##### START OF FIX #####
+	// Use username as a fallback if email is not available for the account name.
+	accountName := user.Email
+	if accountName == "" {
+		accountName = user.Username
+	}
+	if accountName == "" {
+		// This is a last resort, should not happen with valid user data.
+		return "", "", errors.New("user has no email or username to generate 2FA key")
+	}
+
+	rawSecret, err := utils.GenerateTOTPSecret(accountName) // Use the determined accountName
 	if err != nil {
-		utils.Log.Error("GenerateTwoFASetup: utils.GenerateTOTPSecret failed", zap.String("userID", userID), zap.String("userEmail", user.Email), zap.Error(err))
+		utils.Log.Error("GenerateTwoFASetup: utils.GenerateTOTPSecret failed", zap.String("userID", userID), zap.String("accountName", accountName), zap.Error(err))
 		return "", "", ErrTwoFASecretGeneration
 	}
+	// ##### END OF FIX #####
 	utils.Log.Debug("GenerateTwoFASetup: Generated raw TOTP secret", zap.String("userID", userID), zap.String("rawSecretPrefix", rawSecret[:min(len(rawSecret), 5)]))
 
 	encryptedSecret, err := utils.Encrypt(rawSecret, encryptionKey)
@@ -496,14 +507,12 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 		utils.Log.Error("GenerateTwoFASetup: utils.Encrypt failed for TOTP secret", zap.String("userID", userID), zap.Error(err))
 		return "", "", fmt.Errorf("%w: failed to encrypt 2FA secret: %v", ErrInternalService, err)
 	}
-	// Logging hash of secret: HashRecoveryCode returns (string, error). For logging, we'll ignore error or log simple placeholder if hash fails.
-	hashedSecretForLog, _ := utils.HashRecoveryCode(encryptedSecret) // Best effort for logging
+	
+	hashedSecretForLog, _ := utils.HashRecoveryCode(encryptedSecret) 
 	utils.Log.Debug("GenerateTwoFASetup: Encrypted TOTP secret", zap.String("userID", userID), zap.String("encryptedSecretHashForLog", hashedSecretForLog))
 
-	// Store the encrypted secret. user.IsTwoFAEnabled remains false until verification.
 	user.TwoFASecret = encryptedSecret
 
-	// For logging the hash of the secret to be stored.
 	newTwoFASecretHashForLog, _ := utils.HashRecoveryCode(user.TwoFASecret)
 	utils.Log.Debug("GenerateTwoFASetup: Attempting to update user with new TwoFASecret",
 		zap.String("userID", user.ID),
@@ -511,7 +520,6 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 		zap.String("newTwoFASecretHashForLog", newTwoFASecretHashForLog))
 
 	if errUpdate := s.userRepo.UpdateUser(user); errUpdate != nil {
-		// For logging the hash of what was attempted, in case of failure.
 		attemptedTwoFASecretHashForLog, _ := utils.HashRecoveryCode(user.TwoFASecret)
 		utils.Log.Error("GenerateTwoFASetup: Failed to save TwoFASecret to user via userRepo.UpdateUser",
 			zap.String("userID", userID),
@@ -522,10 +530,7 @@ func (s *userService) GenerateTwoFASetup(userID string) (string, string, error) 
 	}
 	utils.Log.Info("GenerateTwoFASetup: Successfully updated user with TwoFASecret (still disabled)", zap.String("userID", user.ID))
 
-	// Use user.Email for account name in QR code URL as well.
-	// The issuer "ProfileGoldApp" should ideally come from config/env.
-	// For now, using the same default as used internally by GenerateTOTPSecret.
-	qrCodeURL := utils.GenerateTOTPQRCodeURL("ProfileGoldApp", user.Email, rawSecret)
+	qrCodeURL := utils.GenerateTOTPQRCodeURL("ProfileGoldApp", accountName, rawSecret) // Use the determined accountName
 
 	return rawSecret, qrCodeURL, nil
 }
