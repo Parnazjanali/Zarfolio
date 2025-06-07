@@ -4,16 +4,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import LoginPage from './pages/LoginPage.jsx';
 import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
+import TwoFAVerifyPage from './pages/TwoFAVerifyPage.jsx'; // ۱. کامپوننت تایید دو مرحله‌ای ایمپورت شد
 import DashboardPage from './pages/DashboardPage.jsx';
 import InvoicesPage from './pages/InvoicesPage.jsx';
-import NewInvoicePage from './pages/NewInvoicePage.jsx'; //  کامپوننت جدید را ایمپورت کنید
+import NewInvoicePage from './pages/NewInvoicePage.jsx';
 import InventoryPage from './pages/InventoryPage.jsx';
 import CustomersPage from './pages/CustomersPage.jsx';
-import NewCustomerPage from './pages/NewCustomerPage.jsx'; // Import the new page
+import NewCustomerPage from './pages/NewCustomerPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
-// import AccountSettingsPage from './pages/AccountSettingsPage.jsx'; // Remove this line
-import AccountManagementPage from './pages/AccountManagementPage.jsx'; // Add this line
+import AccountManagementPage from './pages/AccountManagementPage.jsx';
 import EtiketPage from './pages/EtiketPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -23,7 +23,8 @@ import './App.css';
 function BackgroundManager() {
   const location = useLocation();
   useEffect(() => {
-    const authPaths = ['/login', '/request-password-reset', '/reset-password'];
+    // مسیر جدید 2fa-verify به لیست مسیرهای احراز هویت اضافه شد
+    const authPaths = ['/login', '/request-password-reset', '/reset-password', '/2fa-verify'];
     if (authPaths.includes(location.pathname)) {
       document.body.classList.add('login-page-background');
     } else {
@@ -70,22 +71,18 @@ function App() {
       <BackgroundManager />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/2fa-verify" element={<TwoFAVerifyPage />} /> {/* ۲. روت جدید برای صفحه تایید دو مرحله‌ای اضافه شد */}
         <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
-
-        {/* تغییر مسیر InvoicesPage به یک مسیر پایه برای لیست فاکتورها */}
+        
         <Route path="/invoices" element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>} />
-        {/* مسیر جدید برای ایجاد فاکتور */}
         <Route path="/invoices/new" element={<ProtectedRoute><MainLayout><NewInvoicePage /></MainLayout></ProtectedRoute>} />
-        {/* اگر مسیرهای دیگری مانند /invoices/:id دارید، باید بعد از /invoices/new تعریف شوند */}
-        {/* مثال: <Route path="/invoices/:id" element={<ProtectedRoute><MainLayout><InvoiceDetailPage /></MainLayout></ProtectedRoute>} /> */}
-
-
+        
         <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
         <Route path="/customers" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} /> {/* Add this route */}
+        <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} />
         <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} />
         <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
 
