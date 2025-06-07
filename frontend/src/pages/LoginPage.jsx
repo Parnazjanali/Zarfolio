@@ -6,12 +6,15 @@ import loginPageImage from '../assets/login.jpg';
 import {
   FaInstagram, FaTelegramPlane, FaWhatsapp, FaHeart,
   FaUserPlus, FaSignInAlt, FaUserCircle, FaEnvelope, FaLock, FaEye, FaEyeSlash,
-  FaKey, FaShieldAlt, FaTimes, FaCheckCircle // <<<< FaTimes و FaCheckCircle اضافه شدند >>>>
+  FaKey, FaShieldAlt, FaTimes, FaCheckCircle
 } from 'react-icons/fa';
 import Portal from '../components/Portal';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
-const APP_VERSION = "0.0.4 beta"; 
+import { useAuth } from '../context/AuthContext'; // ایمپورت کردن useAuth
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const APP_VERSION = "0.0.4 beta";
+
+// کامپوننت‌های generateStrongPassword و PasswordStrengthModal بدون تغییر باقی می‌مانند
 const generateStrongPassword = (length = 16) => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:',.<>/?";
   let password = "";
@@ -58,15 +61,11 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // این state برای مودال باقی می‌ماند
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [hoveredSocial, setHoveredSocial] = useState(null);
 
-  // State for 2FA login
-  const [loginStep, setLoginStep] = useState('password'); // 'password' or '2fa'
-  const [userIDFor2FA, setUserIDFor2FA] = useState('');
-  const [totpCode, setTotpCode] = useState('');
-
   const navigate = useNavigate();
+  const { login } = useAuth(); // استفاده از تابع login از AuthContext
 
   useEffect(() => {
     const authToken = localStorage.getItem('authToken');
@@ -89,102 +88,84 @@ function LoginPage() {
     setSuccessMessage('');
   };
 
+  // ***** START: تابع اصلاح شده handleSubmit *****
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    clearMessages(); // Clears both error and success messages
+    clearMessages();
 
-    if (loginStep === 'password') {
-        if (isLogin) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
-                });
-                const data = await response.json();
+    if (!isLogin) {
+      // منطق ثبت نام
+      if (password !== confirmPassword) {
+        setError('رمز عبور و تکرار آن یکسان نیستند.');
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(`${API_BASE_URL}/register/user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password }),
+        });
+        const data = await response.json();
+        if (response.ok || response.status === 201) {
+          setSuccessMessage(data.message || 'ثبت نام با موفقیت انجام شد. اکنون می‌توانید وارد شوید.');
+          setIsLogin(true); // تغییر حالت به فرم لاگین
+          setUsername('');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+        } else {
+          setError(data.message || 'خطا در ثبت نام. لطفاً دوباره تلاش کنید.');
+        }
+      } catch (err) {
+        setError('خطا در برقراری ارتباط با سرور.');
+        console.error('Registration error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // منطق لاگین
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await response.json();
 
-                if (response.ok) {
-                    if (data.two_fa_required && data.user_id) {
-                        setLoginStep('2fa');
-                        setUserIDFor2FA(data.user_id);
-                        setSuccessMessage('رمز عبور صحیح است. کد تایید دو مرحله‌ای خود را وارد کنید.');
-                    } else if (data.token) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('userData', JSON.stringify(data.user));
-                        setSuccessMessage('ورود با موفقیت انجام شد. در حال انتقال به داشبورد...');
-                        setTimeout(() => navigate('/dashboard'), 1500);
-                    } else {
-                         setError(data.message || 'پاسخ سرور نامعتبر است.');
-                    }
-                } else {
-                    setError(data.message || 'نام کاربری یا رمز عبور نامعتبر است.');
-                }
-            } catch (err) {
-                setError('خطا در برقراری ارتباط با سرور. لطفاً اتصال اینترنت خود را بررسی کنید.');
-                console.error('Login error (password step):', err);
-            }
-        } else { // Registration logic
-            if (password !== confirmPassword) {
-                setError('رمز عبور و تکرار آن یکسان نیستند.');
-                setIsLoading(false);
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE_URL}/register/user`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password }),
-                });
-                const data = await response.json();
-                if (response.ok || response.status === 201) {
-                    setSuccessMessage(data.message || 'ثبت نام با موفقیت انجام شد. اکنون می‌توانید وارد شوید.');
-                    setIsLogin(true);
-                    setUsername('');
-                    setEmail('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setLoginStep('password'); // Ensure it's back to password step
-                } else {
-                    setError(data.message || 'خطا در ثبت نام. لطفاً دوباره تلاش کنید.');
-                }
-            } catch (err) {
-                setError('خطا در برقراری ارتباط با سرور.');
-                console.error('Registration error:', err);
-            }
+        if (!response.ok) {
+          throw new Error(data.message || 'Login failed. Please check your credentials.');
         }
-    } else if (loginStep === '2fa') {
-        if (!totpCode) {
-            setError('کد تایید دو مرحله‌ای را وارد کنید.');
-            setIsLoading(false);
-            return;
-        }
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/login/2fa`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userIDFor2FA, totp_code: totpCode }),
-            });
-            const data = await response.json();
 
-            if (response.ok && data.token) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('userData', JSON.stringify(data.user));
-                setSuccessMessage('ورود با موفقیت انجام شد. در حال انتقال به داشبورد...');
-                setTotpCode('');
-                setUserIDFor2FA('');
-                setLoginStep('password');
-                setTimeout(() => navigate('/dashboard'), 1500);
-            } else {
-                setError(data.message || 'کد تایید دو مرحله‌ای نامعتبر است یا خطایی رخ داده.');
-            }
-        } catch (err) {
-            setError('خطا در برقراری ارتباط با سرور برای تایید کد 2FA.');
-            console.error('Login error (2FA step):', err);
+        // بررسی پاسخ سرور برای نیاز به 2FA
+        if (data.two_fa_required) {
+          // سرور درخواست کد 2FA دارد
+          setSuccessMessage('رمز عبور صحیح است. کد تایید دو مرحله‌ای خود را وارد کنید.');
+          // شناسه کاربر را برای استفاده در مرحله بعد ذخیره می‌کنیم
+          localStorage.setItem('2fa_user_id', data.user_id);
+          // کاربر را به صفحه ورود کد 2FA هدایت می‌کنیم
+          navigate('/2fa-verify');
+        } else if (data.token && data.user) {
+          // لاگین موفق برای کاربری که 2FA ندارد یا آن را غیرفعال کرده
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          login(); // به‌روزرسانی AuthContext
+          setSuccessMessage('ورود با موفقیت انجام شد. در حال انتقال به داشبورد...');
+          setTimeout(() => navigate('/dashboard'), 1500);
+        } else {
+          // پاسخ سرور 200 OK بود اما فرمت مورد انتظار را نداشت
+          throw new Error('Received an unexpected response from the server.');
         }
+      } catch (err) {
+        setError(err.message);
+        console.error('Login error:', err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    setIsLoading(false);
   };
+  // ***** END: تابع اصلاح شده handleSubmit *****
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -197,9 +178,6 @@ function LoginPage() {
     setShowConfirmPassword(false);
     setRememberMe(false);
     setIsPasswordModalOpen(false);
-    setLoginStep('password'); // Reset to password step when toggling form type
-    setTotpCode('');
-    setUserIDFor2FA('');
   };
 
   const handleGeneratePassword = () => {
@@ -207,156 +185,129 @@ function LoginPage() {
     setPassword(newPassword);
     setConfirmPassword(newPassword);
     setShowPassword(true);
-    setIsPasswordModalOpen(true); // <<<< تغییر: مودال راهنما با کلیک روی دکمه پیشنهاد باز می‌شود >>>>
+    setIsPasswordModalOpen(true);
   };
 
-  // onFocus و onBlur از فیلد رمز حذف می‌شوند اگر فقط با دکمه "پیشنهاد" مودال باز شود.
-  // const handlePasswordFocus = () => setIsPasswordModalOpen(true); 
-  // const handlePasswordBlur = () => setIsPasswordModalOpen(false);
   const handleClosePasswordModal = () => setIsPasswordModalOpen(false);
 
 
   const renderAuthForm = () => (
     <form onSubmit={handleSubmit} className="auth-form">
-        {loginStep === 'password' && (
-            <>
-                <div className="form-group">
-                    <label htmlFor={isLogin ? "login-username" : "register-username"}>
-                        <FaUserCircle /> {isLogin ? "نام کاربری یا ایمیل" : "نام کاربری"}
-                    </label>
-                    <input
-                        type="text"
-                        id={isLogin ? "login-username" : "register-username"}
-                        className="form-control"
-                        placeholder={isLogin ? "نام کاربری یا ایمیل خود را وارد کنید" : "یک نام کاربری انتخاب کنید"}
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required={isLogin || !isLogin}
-                    />
-                </div>
+      {/* این بخش JSX دیگر نیازی به loginStep ندارد چون منطق به تابع handleSubmit منتقل شده */}
+      <div className="form-group">
+        <label htmlFor={isLogin ? "login-username" : "register-username"}>
+          <FaUserCircle /> {isLogin ? "نام کاربری یا ایمیل" : "نام کاربری"}
+        </label>
+        <input
+          type="text"
+          id={isLogin ? "login-username" : "register-username"}
+          className="form-control"
+          placeholder={isLogin ? "نام کاربری یا ایمیل خود را وارد کنید" : "یک نام کاربری انتخاب کنید"}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+      </div>
 
-                {!isLogin && (
-                    <div className="form-group">
-                        <label htmlFor="register-email"><FaEnvelope /> ایمیل</label>
-                        <input
-                            type="email"
-                            id="register-email"
-                            className="form-control"
-                            placeholder="ایمیل خود را وارد کنید"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                )}
+      {!isLogin && (
+        <div className="form-group">
+          <label htmlFor="register-email"><FaEnvelope /> ایمیل</label>
+          <input
+            type="email"
+            id="register-email"
+            className="form-control"
+            placeholder="ایمیل خود را وارد کنید"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+      )}
 
-                <div className="form-group">
-                    <label htmlFor={isLogin ? "login-password" : "register-password"}>
-                        <FaLock /> {isLogin ? "رمز عبور" : "ایجاد رمز عبور"}
-                    </label>
-                    <div className="password-field-container">
-                        <div className="password-input-wrapper">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                id={isLogin ? "login-password" : "register-password"}
-                                className="form-control"
-                                placeholder={isLogin ? "رمز عبور خود را وارد کنید" : "رمز عبور قدرتمندی انتخاب کنید"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="button"
-                                className="toggle-password-visibility"
-                                onClick={() => setShowPassword(!showPassword)}
-                                title={showPassword ? "مخفی کردن رمز" : "نمایش رمز"}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                        {!isLogin && (
-                            <button
-                                type="button"
-                                className="generate-password-button"
-                                onClick={handleGeneratePassword}
-                                title="پیشنهاد رمز عبور قوی و مشاهده راهنما"
-                            >
-                                <FaKey /> پیشنهاد
-                            </button>
-                        )}
-                    </div>
-                </div>
+      <div className="form-group">
+        <label htmlFor={isLogin ? "login-password" : "register-password"}>
+          <FaLock /> {isLogin ? "رمز عبور" : "ایجاد رمز عبور"}
+        </label>
+        <div className="password-field-container">
+          <div className="password-input-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              id={isLogin ? "login-password" : "register-password"}
+              className="form-control"
+              placeholder={isLogin ? "رمز عبور خود را وارد کنید" : "رمز عبور قدرتمندی انتخاب کنید"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password-visibility"
+              onClick={() => setShowPassword(!showPassword)}
+              title={showPassword ? "مخفی کردن رمز" : "نمایش رمز"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+          {!isLogin && (
+            <button
+              type="button"
+              className="generate-password-button"
+              onClick={handleGeneratePassword}
+              title="پیشنهاد رمز عبور قوی و مشاهده راهنما"
+            >
+              <FaKey /> پیشنهاد
+            </button>
+          )}
+        </div>
+      </div>
 
-                {!isLogin && (
-                    <div className="form-group">
-                        <label htmlFor="register-confirm-password"><FaLock /> تکرار رمز عبور</label>
-                        <div className="password-input-wrapper">
-                            <input
-                                type={showConfirmPassword ? "text" : "password"}
-                                id="register-confirm-password"
-                                className="form-control"
-                                placeholder="رمز عبور خود را مجدداً وارد کنید"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="button"
-                                className="toggle-password-visibility"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                title={showConfirmPassword ? "مخفی کردن رمز" : "نمایش رمز"}
-                            >
-                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                    </div>
-                )}
+      {!isLogin && (
+        <div className="form-group">
+          <label htmlFor="register-confirm-password"><FaLock /> تکرار رمز عبور</label>
+          <div className="password-input-wrapper">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="register-confirm-password"
+              className="form-control"
+              placeholder="رمز عبور خود را مجدداً وارد کنید"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password-visibility"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              title={showConfirmPassword ? "مخفی کردن رمز" : "نمایش رمز"}
+            >
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+        </div>
+      )}
 
-                {isLogin && (
-                    <div className="password-options">
-                        <label htmlFor="remember-me" className="remember-me-label">
-                            <input
-                                type="checkbox"
-                                id="remember-me"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                            />
-                            مرا به خاطر بسپار
-                        </label>
-                        <Link to="/request-password-reset" className="forgot-password-link">فراموشی رمز عبور؟</Link>
-                    </div>
-                )}
-            </>
-        )}
+      {isLogin && (
+        <div className="password-options">
+          <label htmlFor="remember-me" className="remember-me-label">
+            <input
+              type="checkbox"
+              id="remember-me"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            مرا به خاطر بسپار
+          </label>
+          <Link to="/request-password-reset" className="forgot-password-link">فراموشی رمز عبور؟</Link>
+        </div>
+      )}
 
-        {loginStep === '2fa' && isLogin && (
-            <div className="form-group">
-                <label htmlFor="totp-code"><FaShieldAlt /> کد تایید دو مرحله‌ای</label>
-                <input
-                    type="text"
-                    id="totp-code"
-                    className="form-control"
-                    placeholder="کد ۶ رقمی خود را وارد کنید"
-                    value={totpCode}
-                    onChange={(e) => setTotpCode(e.target.value)}
-                    required
-                    maxLength={6}
-                    style={{ textAlign: 'center', letterSpacing: '0.2em' }}
-                />
-            </div>
-        )}
+      {error && <div className="message-banner error visible"><FaTimes style={{ marginLeft: '7px' }} />{error}</div>}
+      {successMessage && <div className="message-banner success visible"><FaCheckCircle style={{ marginLeft: '7px' }} />{successMessage}</div>}
 
-        {error && <div className="message-banner error visible"><FaTimes style={{ marginLeft: '7px' }} />{error}</div>}
-        {successMessage && <div className="message-banner success visible"><FaCheckCircle style={{ marginLeft: '7px' }} />{successMessage}</div>}
-
-        <button type="submit" className="auth-button" disabled={isLoading}>
-            {isLoading ? <span className="spinner-sm"></span> :
-                (loginStep === '2fa' ? <FaShieldAlt /> : (isLogin ? <FaSignInAlt /> : <FaUserPlus />))
-            }
-            {isLoading ? (loginStep === '2fa' ? 'در حال تایید کد...' : (isLogin ? 'در حال ورود...' : 'در حال ثبت نام...')) :
-                (loginStep === '2fa' ? 'تایید کد و ورود' : (isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری'))
-            }
-        </button>
+      <button type="submit" className="auth-button" disabled={isLoading}>
+        {isLoading ? <span className="spinner-sm"></span> : (isLogin ? <FaSignInAlt /> : <FaUserPlus />)}
+        {isLoading ? (isLogin ? 'در حال ورود...' : 'در حال ثبت نام...') : (isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری')}
+      </button>
     </form>
   );
 
@@ -367,18 +318,16 @@ function LoginPage() {
           <div className="auth-container">
             <header className="auth-header">
               <span className="auth-header-icon">
-                {loginStep === '2fa' && isLogin ? <FaShieldAlt /> : (isLogin ? <FaSignInAlt /> : <FaUserPlus />)}
+                {isLogin ? <FaSignInAlt /> : <FaUserPlus />}
               </span>
               <h2>
-                {loginStep === '2fa' && isLogin ? 'تایید دو مرحله‌ای' : (isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری جدید')}
+                {isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری جدید'}
               </h2>
             </header>
             <p className="auth-subtitle">
-              {loginStep === '2fa' && isLogin
-                ? 'کد ۶ رقمی تولید شده توسط برنامه Authenticator خود را وارد کنید.'
-                : (isLogin
-                    ? 'خوش آمدید! لطفاً اطلاعات ورود خود را برای دسترسی به پنل کاربری وارد نمایید.'
-                    : 'با ایجاد حساب کاربری جدید، به تمامی امکانات پیشرفته زرفولیو دسترسی خواهید داشت.')
+              {isLogin
+                ? 'خوش آمدید! لطفاً اطلاعات ورود خود را برای دسترسی به پنل کاربری وارد نمایید.'
+                : 'با ایجاد حساب کاربری جدید، به تمامی امکانات پیشرفته زرفولیو دسترسی خواهید داشت.'
               }
             </p>
             {renderAuthForm()}

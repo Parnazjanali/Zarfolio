@@ -24,40 +24,44 @@ function AccountManagementPage() {
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
   // State for 2FA Management
-  const [isTwoFAEnabled, setIsTwoFAEnabled] = useState(false); // Initial assumption, fetch actual status
-  const [twoFASecret, setTwoFASecret] = useState(''); // Raw secret for manual entry display
-  const [qrCodeUrl, setQrCodeUrl] = useState('');   // For QR code image
-  const [totpCode, setTotpCode] = useState('');     // For user to enter during enable
+  const [isTwoFAEnabled, setIsTwoFAEnabled] = useState(false);
+  const [twoFASecret, setTwoFASecret] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [totpCode, setTotpCode] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState([]);
   const [passwordFor2FADisable, setPasswordFor2FADisable] = useState('');
-
+  // State برای کد یکبار مصرف هنگام غیرفعال‌سازی
+  const [totpCodeForDisable, setTotpCodeForDisable] = useState('');
   const [twoFAMessage, setTwoFAMessage] = useState('');
   const [twoFAError, setTwoFAError] = useState('');
-  const [isTwoFALoading, setIsTwoFALoading] = useState(false); // General loading for 2FA section
+  const [isTwoFALoading, setIsTwoFALoading] = useState(false);
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
-  const [twoFASetupStage, setTwoFASetupStage] = useState('initial'); // 'initial', 'generated', 'enabled'
+  const [twoFASetupStage, setTwoFASetupStage] = useState('initial');
 
 
   const getAuthToken = () => localStorage.getItem('authToken');
 
+  // --- START: CORRECTED useEffect HOOK ---
+  // این هوک وضعیت 2FA را هنگام بارگذاری صفحه از localStorage می‌خواند
   useEffect(() => {
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
         try {
             const userData = JSON.parse(storedUserData);
-            if (userData) {
-                // Use optional chaining for safer access
-                const twoFAStatus = userData?.is_two_fa_enabled || false;
+            if (userData && typeof userData.is_two_fa_enabled !== 'undefined') {
+                const twoFAStatus = userData.is_two_fa_enabled;
                 setIsTwoFAEnabled(twoFAStatus);
+                // اگر 2FA فعال بود، مرحله را روی 'enabled' تنظیم می‌کنیم
                 if (twoFAStatus) {
                     setTwoFASetupStage('enabled');
                 }
             }
         } catch (e) {
-            console.error("Failed to parse userData: ", e);
+            console.error("خطا در خواندن اطلاعات کاربر از localStorage: ", e);
         }
     }
-  }, []);
+  }, []); // فقط یک بار در زمان بارگذاری اجرا می‌شود
+  // --- END: CORRECTED useEffect HOOK ---
 
   const handleChangeUsername = async (e) => {
     e.preventDefault();
@@ -93,7 +97,6 @@ function AccountManagementPage() {
         setUsernameMessage(data.message || 'نام کاربری با موفقیت تغییر کرد.');
         setNewUsername('');
         setCurrentPasswordForUsername('');
-        // Potentially update username in localStorage if stored there, or force re-login/token refresh
       } else {
         setUsernameError(data.message || 'خطا در تغییر نام کاربری.');
       }
@@ -173,7 +176,7 @@ function AccountManagementPage() {
         const data = await response.json();
         if (response.ok) {
             setQrCodeUrl(data.qr_code_url);
-            setTwoFASecret(data.secret); // For manual entry display
+            setTwoFASecret(data.secret);
             setTwoFASetupStage('generated');
         } else {
             setTwoFAError(data.message || 'خطا در تولید اطلاعات 2FA.');
@@ -211,11 +214,11 @@ function AccountManagementPage() {
         if (response.ok) {
             setIsTwoFAEnabled(true);
             setRecoveryCodes(data.recovery_codes || []);
-            setShowRecoveryCodes(true); // Show recovery codes immediately
+            setShowRecoveryCodes(true);
             setTwoFAMessage('2FA با موفقیت فعال شد! کدهای بازیابی خود را ذخیره کنید.');
             setTwoFASetupStage('enabled');
-            setTotpCode(''); // Clear TOTP input
-            // Update localStorage userData
+            setTotpCode('');
+            // به‌روزرسانی localStorage
             const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
             storedUserData.is_two_fa_enabled = true;
             localStorage.setItem('userData', JSON.stringify(storedUserData));
@@ -236,8 +239,9 @@ function AccountManagementPage() {
     setTwoFAError('');
     setTwoFAMessage('');
 
-    if (!passwordFor2FADisable) {
-        setTwoFAError('برای غیرفعال‌سازی 2FA، رمز عبور فعلی خود را وارد کنید.');
+    // اعتبارسنجی برای هر دو فیلد
+    if (!passwordFor2FADisable || !totpCodeForDisable) {
+        setTwoFAError('برای غیرفعال‌سازی، رمز عبور و کد تایید ۶ رقمی الزامی است.');
         setIsTwoFALoading(false);
         return;
     }
@@ -249,7 +253,11 @@ function AccountManagementPage() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${getAuthToken()}`,
             },
-            body: JSON.stringify({ current_password: passwordFor2FADisable }),
+            // ارسال هر دو مقدار به بک‌اند
+            body: JSON.stringify({ 
+              current_password: passwordFor2FADisable,
+              totp_code: totpCodeForDisable,
+            }),
         });
         const data = await response.json();
         if (response.ok) {
@@ -260,13 +268,14 @@ function AccountManagementPage() {
             setRecoveryCodes([]);
             setShowRecoveryCodes(false);
             setPasswordFor2FADisable('');
+            setTotpCodeForDisable('');
             setTwoFASetupStage('initial');
-             // Update localStorage userData
+            // به‌روزرسانی localStorage
             const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
             storedUserData.is_two_fa_enabled = false;
             localStorage.setItem('userData', JSON.stringify(storedUserData));
         } else {
-            setTwoFAError(data.message || 'خطا در غیرفعال‌سازی 2FA. رمز عبور ممکن است نادرست باشد.');
+            setTwoFAError(data.message || 'خطا در غیرفعال‌سازی 2FA. رمز عبور یا کد تایید ممکن است نادرست باشد.');
         }
     } catch (err) {
         setTwoFAError('خطا در ارتباط با سرور برای غیرفعال‌سازی 2FA.');
@@ -279,8 +288,7 @@ function AccountManagementPage() {
     <div className="account-management-page">
       <h1 className="page-title">تنظیمات حساب کاربری</h1>
 
-      {/* Change Username Section */}
-      <section className="account-section">
+       <section className="account-section">
         <h2 className="section-title"><FaUserEdit className="section-icon" /> تغییر نام کاربری</h2>
         <form onSubmit={handleChangeUsername} className="auth-form no-shadow">
           <div className="form-group">
@@ -313,7 +321,6 @@ function AccountManagementPage() {
         </form>
       </section>
 
-      {/* Change Password Section */}
       <section className="account-section">
         <h2 className="section-title"><FaKey className="section-icon" /> تغییر رمز عبور</h2>
         <form onSubmit={handleChangePassword} className="auth-form no-shadow">
@@ -358,7 +365,6 @@ function AccountManagementPage() {
         </form>
       </section>
 
-      {/* 2FA Management Section - Re-adding from Subtask 17 plan */}
       <section className="account-section last-section">
         <h2 className="section-title"><FaUserShield className="section-icon" /> مدیریت تایید دو مرحله‌ای (2FA)</h2>
 
@@ -373,8 +379,8 @@ function AccountManagementPage() {
 
         {twoFASetupStage === 'generated' && !isTwoFAEnabled && qrCodeUrl && (
           <div className="two-fa-setup">
-            <p>1. برنامه Authenticator خود را باز کنید (مانند Google Authenticator, Authy).</p>
-            <p>2. کد QR زیر را اسکن کنید یا کلید مخفی را دستی وارد نمایید:</p>
+            <p>۱. برنامه Authenticator خود را باز کنید (مانند Google Authenticator, Authy).</p>
+            <p>۲. کد QR زیر را اسکن کنید یا کلید مخفی را دستی وارد نمایید:</p>
             <div style={{ margin: '20px 0', display: 'inline-block', border: '1px solid #ccc', padding: '10px' }}>
               <QRCodeSVG value={qrCodeUrl} size={200} level="H" />
             </div>
@@ -382,7 +388,7 @@ function AccountManagementPage() {
             <p style={{ fontFamily: 'monospace', fontSize: '1.1em', padding: '10px', backgroundColor: '#f5f5f5', display: 'inline-block', borderRadius: '4px', border: '1px solid #ddd', userSelect: 'all' }}>
               {twoFASecret}
             </p>
-            <p style={{marginTop: '15px'}}>3. کد ۶ رقمی نمایش داده شده در برنامه Authenticator را وارد کنید:</p>
+            <p style={{marginTop: '15px'}}>۳. کد ۶ رقمی نمایش داده شده در برنامه Authenticator را وارد کنید:</p>
             <form onSubmit={handleVerifyAndEnable2FA} className="auth-form no-shadow totp-form">
               <div className="form-group">
                 <label htmlFor="totpCode"><FaMobileAlt /> کد تایید 2FA</label>
@@ -423,7 +429,7 @@ function AccountManagementPage() {
             
             <form onSubmit={handleDisable2FA} className="auth-form" style={{padding:0, boxShadow:'none', marginTop: '20px'}}>
               <div className="form-group">
-                <label htmlFor="passwordFor2FADisable">رمز عبور فعلی (برای غیرفعال‌سازی 2FA)</label>
+                <label htmlFor="passwordFor2FADisable">رمز عبور فعلی (برای غیرفعال‌سازی)</label>
                 <input
                   type="password"
                   id="passwordFor2FADisable"
@@ -431,6 +437,20 @@ function AccountManagementPage() {
                   value={passwordFor2FADisable}
                   onChange={(e) => setPasswordFor2FADisable(e.target.value)}
                   required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="totpCodeForDisable">کد تایید ۶ رقمی (برای غیرفعال‌سازی)</label>
+                <input
+                  type="text"
+                  id="totpCodeForDisable"
+                  className="form-control"
+                  value={totpCodeForDisable}
+                  onChange={(e) => setTotpCodeForDisable(e.target.value)}
+                  placeholder="کد ۶ رقمی"
+                  maxLength={6}
+                  required
+                  style={{textAlign: 'center', letterSpacing: '0.2em'}}
                 />
               </div>
               <button type="submit" className="auth-button danger" disabled={isTwoFALoading}>
