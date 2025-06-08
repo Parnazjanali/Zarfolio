@@ -4,6 +4,7 @@ import (
 	"errors"                  // For custom error types if needed, or for errors.Is
 	"gold-api/internal/model" // For ErrorResponse
 	"gold-api/internal/utils" // For Log
+	"os"                      // For environment variable access
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -44,10 +45,7 @@ func AuthUser(c *fiber.Ctx) error {
 			Message: "Unauthorized: Token not provided.", Code: "AG401_TOKEN_EMPTY",
 		})
 	}
-
-	// TEMPORARY DIAGNOSTIC: Hardcode JWT Secret
-	jwtSecret := "fBpKVQqWOPgidiFmBJApQMA4RHgeSCz9djKfCNcIqww="
-	// Original line: jwtSecret := os.Getenv("JWT_SECRET_KEY")
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecret == "" { // This check should ideally not be met with a hardcoded non-empty value
 		utils.Log.Error("AuthUser (apiGateway): JWT_SECRET_KEY (hardcoded) is unexpectedly empty. This should not happen.")
 		// In a real scenario, you might want to prevent startup if this isn't set,
