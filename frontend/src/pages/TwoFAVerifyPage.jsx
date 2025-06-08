@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './TwoFAVerifyPage.css'; // ایمپورت کردن فایل CSS اختصاصی
-import loginPageImage from '../assets/login.jpg'; // ایمپورت تصویر برای نمایش در کنار فرم
+import loginPageImage from '../assets/lock.jpg'; // ایمپورت تصویر برای نمایش در کنار فرم
 import { FaShieldAlt } from 'react-icons/fa';
 
 // آدرس پایه API از متغیرهای محیطی خوانده می‌شود
@@ -79,7 +79,7 @@ const TwoFAVerifyPage = () => {
           <div className="login-form-container">
             <h2 className="form-title">تایید دو مرحله‌ای</h2>
             <p className="form-subtitle">
-              کد ۶ رقمی ایجاد شده توسط برنامه Authenticator خود را وارد کنید.
+              کد 6 رقمی ایجاد شده در برنامه احراز هویت خود را وارد کنید تا هویت شما تایید شود.
             </p>
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="input-group">
