@@ -1,31 +1,44 @@
 // frontend/src/pages/AccountSettingsPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AccountSettingsPage.css'; // برای استایل‌های این صفحه
-import { FaUserEdit, FaKey, FaCamera, FaSave, FaSpinner } from 'react-icons/fa';
+import { FaUserEdit, FaKey, FaCamera, FaSave, FaSpinner, FaUserCircle } from 'react-icons/fa';
 
 // کامپوننت‌های داخلی یا فرم‌ها را می‌توان جدا کرد
 const ProfileInfoForm = ({ userData, onUpdate, isLoading }) => {
-  const [name, setName] = useState(userData?.fullName || '');
+  // Initialize state directly from the userData prop
+  const [firstName, setFirstName] = useState(userData?.firstName || '');
+  const [lastName, setLastName] = useState(userData?.lastName || '');
   const [username, setUsername] = useState(userData?.username || '');
   const [email, setEmail] = useState(userData?.email || '');
+  const userAccountCode = 'ZF-12345678'; // Static value for now
 
+  // Effect to update local state if userData prop changes
   useEffect(() => {
-    setName(userData?.fullName || '');
+    setFirstName(userData?.firstName || '');
+    setLastName(userData?.lastName || '');
     setUsername(userData?.username || '');
     setEmail(userData?.email || '');
   }, [userData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUpdate({ fullName: name, username, email });
+    onUpdate({ firstName, lastName, username, email });
   };
 
   return (
     <form onSubmit={handleSubmit} className="settings-form">
       <h3><FaUserEdit /> اطلاعات پروفایل</h3>
       <div className="form-group">
-        <label htmlFor="fullName">نام کامل</label>
-        <input type="text" id="fullName" value={name} onChange={(e) => setName(e.target.value)} required />
+        <label htmlFor="userAccountCode">کد حساب کاربری</label>
+        <input type="text" id="userAccountCode" value={userAccountCode} readOnly />
+      </div>
+      <div className="form-group">
+        <label htmlFor="firstName">نام</label>
+        <input type="text" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+      </div>
+      <div className="form-group">
+        <label htmlFor="lastName">نام خانوادگی</label>
+        <input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
       </div>
       <div className="form-group">
         <label htmlFor="username">نام کاربری</label>
@@ -97,30 +110,30 @@ const ChangePasswordForm = ({ onChangePassword, isLoading }) => {
   );
 };
 
-const ProfilePictureUpload = ({ currentPictureUrl, onUpload, isLoading }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [preview, setPreview] = useState(currentPictureUrl);
+const ProfilePictureUpload = ({ currentPictureUrl, setProfileImageFile, profileImageFile }) => {
+  const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    setPreview(currentPictureUrl);
-  }, [currentPictureUrl]);
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
+    if (profileImageFile) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(profileImageFile);
+    } else {
+      setPreview(currentPictureUrl);
     }
-  };
+  }, [profileImageFile, currentPictureUrl]);
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      onUpload(selectedFile);
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      setProfileImageFile(file); // Pass the file object to the parent
+    } else {
+      // Optionally, handle non-image file selection error
+      console.log("فایل انتخاب شده تصویر نیست.");
+      setProfileImageFile(null); // Clear if a non-image was selected then cancelled
     }
   };
 
@@ -128,11 +141,15 @@ const ProfilePictureUpload = ({ currentPictureUrl, onUpload, isLoading }) => {
     <div className="settings-form profile-picture-section">
       <h3><FaCamera /> عکس پروفایل</h3>
       <div className="profile-picture-preview-container">
-        <img 
-            src={preview || '/default-avatar.png'} // یک آواتار پیش‌فرض قرار دهید
-            alt="عکس پروفایل" 
-            className="profile-picture-preview" 
-        />
+        {preview ? (
+          <img 
+              src={preview}
+              alt="پیش‌نمایش پروفایل" 
+              className="profile-picture-preview" 
+          />
+        ) : (
+          <FaUserCircle size={100} className="default-avatar-icon" /> // Default icon
+        )}
       </div>
       <input 
         type="file" 
@@ -140,16 +157,16 @@ const ProfilePictureUpload = ({ currentPictureUrl, onUpload, isLoading }) => {
         onChange={handleFileChange} 
         style={{ display: 'none' }} 
         ref={fileInputRef}
+        id="profilePictureInput" // Added id for label association
       />
       <div className="profile-picture-actions">
-        <button type="button" className="secondary-btn" onClick={() => fileInputRef.current && fileInputRef.current.click()}>
-          انتخاب عکس
+        <button 
+          type="button" 
+          className="secondary-btn" 
+          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+        >
+          ویرایش عکس
         </button>
-        {selectedFile && (
-          <button type="button" className="submit-btn" onClick={handleUpload} disabled={isLoading}>
-            {isLoading ? <FaSpinner className="spinner" /> : <FaSave />} آپلود عکس
-          </button>
-        )}
       </div>
     </div>
   );
@@ -159,78 +176,104 @@ const ProfilePictureUpload = ({ currentPictureUrl, onUpload, isLoading }) => {
 const AccountSettingsPage = () => {
   // این اطلاعات باید از API یا context خوانده شوند
   const [userData, setUserData] = useState(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [formData, setFormData] = useState({}); // Centralized state for form data
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false); // For ProfileInfoForm internal button
+  const [isSavingAll, setIsSavingAll] = useState(false); // For the main save button
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
-  const [isLoadingPicture, setIsLoadingPicture] = useState(false);
 
   useEffect(() => {
-    // شبیه‌سازی دریافت اطلاعات کاربر
     const fetchUserData = async () => {
-      // در اینجا باید اطلاعات کاربر از API یا localStorage خوانده شود
       try {
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
-          setUserData(JSON.parse(storedUserData));
+          const parsedData = JSON.parse(storedUserData);
+          setUserData(parsedData);
+          // Initialize formData with userData
+          const initialFirstName = parsedData.fullName ? parsedData.fullName.split(' ')[0] : '';
+          const initialLastName = parsedData.fullName ? parsedData.fullName.split(' ').slice(1).join(' ') : '';
+          setFormData({
+            firstName: initialFirstName,
+            lastName: initialLastName,
+            username: parsedData.username || '',
+            email: parsedData.email || '',
+            userAccountCode: 'ZF-12345678' // Assuming this is static or derived elsewhere if needed in formData
+          });
         } else {
-          // اگر اطلاعات کاربر در localStorage نیست، ممکن است از API خوانده شود
-          // یا کاربر به لاگین هدایت شود اگر این صفحه محافظت شده است
           console.log("اطلاعات کاربر یافت نشد، نیاز به لاگین مجدد یا واکشی از API");
+          // Set default formData if no userData
+          setFormData({
+            firstName: '',
+            lastName: '',
+            username: '',
+            email: '',
+            userAccountCode: 'ZF-12345678'
+          });
         }
       } catch (e) {
         console.error("خطا در خواندن اطلاعات کاربر:", e);
+        // Set default formData on error
+        setFormData({
+          firstName: '',
+          lastName: '',
+          username: '',
+          email: '',
+          userAccountCode: 'ZF-12345678'
+        });
       }
     };
     fetchUserData();
   }, []);
 
-  const handleUpdateProfileInfo = async (updatedInfo) => {
-    setIsLoadingProfile(true);
-    console.log("به‌روزرسانی اطلاعات پروفایل:", updatedInfo);
-    // TODO: اینجا باید با API برای به‌روزرسانی اطلاعات تماس بگیرید
-    // شبیه‌سازی آپدیت
+  // Called by ProfileInfoForm to update the central formData state
+  const handleProfileInfoChange = (profileUpdates) => {
+    setFormData(prevFormData => ({ ...prevFormData, ...profileUpdates }));
+    // No alert here, alert will be on main save
+  };
+  
+  const handleSaveChangesClick = async () => {
+    setIsSavingAll(true);
+    console.log("داده‌های ذخیره شده:", {
+      ...formData,
+      profileImageFile: profileImageFile // Log the File object itself, or null
+    });
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    // آپدیت localStorage (مثال)
-    const newUserData = { ...userData, ...updatedInfo };
-    localStorage.setItem('userData', JSON.stringify(newUserData));
-    setUserData(newUserData);
-    setIsLoadingProfile(false);
-    alert("اطلاعات پروفایل با موفقیت به‌روز شد!");
+    
+    // Example of updating userData in localStorage after a successful save
+    // This part would ideally come from an API response
+    const updatedUserDataForLocalStorage = {
+        ...userData, // keep other userData properties
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        username: formData.username,
+        email: formData.email,
+        // profilePictureUrl might be updated if profileImageFile was uploaded and a new URL was returned
+    };
+    // If there's a new profile image, you might want to generate a temporary URL for display
+    // or wait for the actual upload and new URL from server.
+    // For now, if profileImageFile exists, we can assume it's "uploaded" and update userData for local reflection.
+    if (profileImageFile) {
+        updatedUserDataForLocalStorage.profilePictureUrl = URL.createObjectURL(profileImageFile);
+    }
+    
+    localStorage.setItem('userData', JSON.stringify(updatedUserDataForLocalStorage));
+    setUserData(updatedUserDataForLocalStorage); // Update state to reflect changes
+
+    setIsSavingAll(false);
+    alert("تغییرات با موفقیت ذخیره شد!");
   };
 
   const handleChangePassword = async (passwordData) => {
     setIsLoadingPassword(true);
     console.log("تغییر رمز عبور:", passwordData);
-    // TODO: اینجا باید با API برای تغییر رمز تماس بگیرید
-    // شبیه‌سازی تغییر رمز
+    // TODO: API call for password change
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsLoadingPassword(false);
-    // بر اساس پاسخ API، success یا error را برگردانید
     // return { success: true };
     return { success: false, message: "رمز عبور فعلی صحیح نیست (مثال خطا)." };
   };
 
-  const handleUploadProfilePicture = async (file) => {
-    setIsLoadingPicture(true);
-    console.log("آپلود عکس پروفایل:", file.name);
-    // TODO: اینجا باید با API برای آپلود عکس تماس بگیرید
-    // شبیه‌سازی آپلود
-    const formData = new FormData();
-    formData.append('profilePicture', file);
-    // const response = await fetch('/api/upload-profile-picture', { method: 'POST', body: formData });
-    // const data = await response.json();
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    const newPictureUrl = URL.createObjectURL(file); // فقط برای پیش‌نمایش موقت
-    
-    const updatedUserData = { ...userData, profilePictureUrl: newPictureUrl };
-    localStorage.setItem('userData', JSON.stringify(updatedUserData));
-    setUserData(updatedUserData);
-
-    setIsLoadingPicture(false);
-    alert("عکس پروفایل با موفقیت آپلود شد (شبیه‌سازی شده)!");
-  };
-
-
-  if (!userData) {
+  if (!userData && !Object.keys(formData).length) { // Wait for initial data load
     // یا یک صفحه لودینگ بهتر نمایش دهید
     return <div className="page-container"><div className="loading-spinner-container"><FaSpinner className="spinner" /> در حال بارگذاری اطلاعات کاربر...</div></div>;
   }
@@ -241,23 +284,42 @@ const AccountSettingsPage = () => {
         <h1>تنظیمات حساب کاربری</h1>
         <p>اطلاعات شخصی، رمز عبور و عکس پروفایل خود را مدیریت کنید.</p>
       </header>
-      <div className="settings-sections-grid">
-        <ProfileInfoForm 
-            userData={userData} 
-            onUpdate={handleUpdateProfileInfo} 
-            isLoading={isLoadingProfile} 
-        />
-        <ProfilePictureUpload 
-            currentPictureUrl={userData.profilePictureUrl} 
-            onUpload={handleUploadProfilePicture}
-            isLoading={isLoadingPicture}
-        />
-        <ChangePasswordForm 
-            onChangePassword={handleChangePassword} 
-            isLoading={isLoadingPassword} 
-        />
-        {/* می‌توانید بخش‌های دیگری مانند تنظیمات نوتیفیکیشن و ... را اینجا اضافه کنید */}
+      
+      {/* New layout structure */}
+      <div className="settings-content-grid">
+        <div className="profile-picture-column">
+          <ProfilePictureUpload 
+              currentPictureUrl={userData?.profilePictureUrl} 
+              profileImageFile={profileImageFile}
+              setProfileImageFile={setProfileImageFile}
+          />
+        </div>
+        <div className="profile-info-column">
+          <ProfileInfoForm 
+              userData={formData} // Pass formData for controlled inputs
+              onUpdate={handleProfileInfoChange} // Renamed for clarity
+              isLoading={isLoadingProfile} // This can be removed if ProfileInfoForm's button is removed
+          />
+        </div>
+        <div className="change-password-column">
+          <ChangePasswordForm 
+              onChangePassword={handleChangePassword} 
+              isLoading={isLoadingPassword} 
+          />
+        </div>
       </div>
+
+      <div className="main-save-button-container">
+        <button 
+          type="button" 
+          className="submit-btn main-save-btn" 
+          onClick={handleSaveChangesClick}
+          disabled={isSavingAll}
+        >
+          {isSavingAll ? <FaSpinner className="spinner" /> : <FaSave />} ذخیره تغییرات
+        </button>
+      </div>
+      {/* می‌توانید بخش‌های دیگری مانند تنظیمات نوتیفیکیشن و ... را اینجا اضافه کنید */}
     </div>
   );
 };
