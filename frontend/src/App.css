@@ -22,3 +22,13 @@
   /* padding: 20px; /* Padding can be on login-page-container instead */
   box-sizing: border-box;
 }
+/* App.css */
+.page-loading-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  font-size: 1.5rem;
+  color: #888;
+}

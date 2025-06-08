@@ -1,23 +1,34 @@
 // src/App.jsx
-import React, { useEffect, useState } from 'react';
+
+// STEP 1: 'lazy' و 'Suspense' از کتابخانه react وارد می‌شوند
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+// --- START: کامپوننت‌هایی که برای بارگذاری اولیه نیاز هستند ---
+// این کامپوننت‌ها چون بلافاصله نیاز هستند، به صورت عادی وارد می‌شوند
 import LoginPage from './pages/LoginPage.jsx';
 import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
-import TwoFAVerifyPage from './pages/TwoFAVerifyPage.jsx'; // ۱. کامپوننت تایید دو مرحله‌ای ایمپورت شد
-import DashboardPage from './pages/DashboardPage.jsx';
-import InvoicesPage from './pages/InvoicesPage.jsx';
-import NewInvoicePage from './pages/NewInvoicePage.jsx';
-import InventoryPage from './pages/InventoryPage.jsx';
-import CustomersPage from './pages/CustomersPage.jsx';
-import NewCustomerPage from './pages/NewCustomerPage.jsx';
-import ReportsPage from './pages/ReportsPage.jsx';
-import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
-import AccountManagementPage from './pages/AccountManagementPage.jsx';
-import EtiketPage from './pages/EtiketPage.jsx';
+import TwoFAVerifyPage from './pages/TwoFAVerifyPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
+// --- END: کامپوننت‌های بارگذاری اولیه ---
+
+
+// --- START: کامپوننت‌های صفحات که به صورت Lazy (تنبل) بارگذاری می‌شوند ---
+// به جای وارد کردن مستقیم، از تابع lazy برای وارد کردن داینامیک استفاده می‌کنیم
+const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
+const InvoicesPage = lazy(() => import('./pages/InvoicesPage.jsx'));
+const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage.jsx'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage.jsx'));
+const CustomersPage = lazy(() => import('./pages/CustomersPage.jsx'));
+const NewCustomerPage = lazy(() => import('./pages/NewCustomerPage.jsx'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
+const SystemSettingsPage = lazy(() => import('./pages/SystemSettingsPage.jsx'));
+const AccountManagementPage = lazy(() => import('./pages/AccountManagementPage.jsx'));
+const EtiketPage = lazy(() => import('./pages/EtiketPage.jsx'));
+// --- END: کامپوننت‌های Lazy ---
 
 
 function BackgroundManager() {
@@ -69,38 +80,45 @@ function App() {
   return (
     <>
       <BackgroundManager />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/2fa-verify" element={<TwoFAVerifyPage />} /> {/* ۲. روت جدید برای صفحه تایید دو مرحله‌ای اضافه شد */}
-        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* STEP 2: تمام مسیرها داخل کامپوننت Suspense قرار می‌گیرند */}
+      {/* fallback یک کامپوننت یا JSX است که تا زمان بارگذاری کد صفحه جدید نمایش داده می‌شود */}
+      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>در حال بارگذاری...</div>}>
+        <Routes>
+          {/* مسیرهای احراز هویت */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
+          <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
-        
-        <Route path="/invoices" element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/invoices/new" element={<ProtectedRoute><MainLayout><NewInvoicePage /></MainLayout></ProtectedRoute>} />
-        
-        <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/customers" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} />
-        <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
+          {/* مسیرهای اصلی برنامه که به صورت lazy لود می‌شوند */}
+          <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
+          
+          <Route path="/invoices" element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/invoices/new" element={<ProtectedRoute><MainLayout><NewInvoicePage /></MainLayout></ProtectedRoute>} />
+          
+          <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/customers" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
 
-        <Route
-          path="/account/settings"
-          element={<ProtectedRoute><MainLayout><AccountManagementPage /></MainLayout></ProtectedRoute>}
-        />
-        <Route
-          path="/settings/system"
-          element={<ProtectedRoute><MainLayout><SystemSettingsPage /></MainLayout></ProtectedRoute>}
-        />
+          <Route
+            path="/account/settings"
+            element={<ProtectedRoute><MainLayout><AccountManagementPage /></MainLayout></ProtectedRoute>}
+          />
+          <Route
+            path="/settings/system"
+            element={<ProtectedRoute><MainLayout><SystemSettingsPage /></MainLayout></ProtectedRoute>}
+          />
 
-        <Route
-          path="/"
-          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />}
-        />
-        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-      </Routes>
+          {/* مسیرهای پیش‌فرض و ریدایرکت */}
+          <Route
+            path="/"
+            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />}
+          />
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }
