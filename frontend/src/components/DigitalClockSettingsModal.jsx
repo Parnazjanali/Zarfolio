@@ -66,11 +66,11 @@ function DigitalClockSettingsModal({ isOpen, onClose, initialStyleId, onSaveStyl
             ))}
           </div>
         </div>
-        <div className="modal-footer" style={{textAlign: 'left', marginTop: '25px', paddingTop: '15px', borderTop: '1px solid #e9ecef'}}>
-          <button type="button" className="save-button" style={{marginLeft: '10px'}} onClick={handleSave}>
+        <div className="modal-footer" style={{textAlign: 'left', marginTop: '25px', paddingTop: '15px' /* borderTop handled by CSS var */}}>
+          <button type="button" className="save-button action-button primary-action" style={{marginLeft: '10px'}} onClick={handleSave}>
             ذخیره و اعمال
           </button>
-          <button type="button" className="action-button" onClick={onClose} style={{backgroundColor: '#6c757d'}}>
+          <button type="button" className="action-button secondary-action" onClick={onClose} > {/* Removed inline style, relies on classes */}
             انصراف
           </button>
         </div>

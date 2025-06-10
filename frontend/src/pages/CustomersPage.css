@@ -1,33 +1,80 @@
-/* Example basic styling for CustomersPage.css */
+/* frontend/src/pages/CustomersPage.css */
+:root {
+  --cp-padding: 1.25rem; /* 20px */
+  --cp-table-border-color: var(--border-color, #ddd);
+  --cp-table-header-bg: var(--secondary-bg-color, #f2f2f2);
+  --cp-error-text-color: var(--danger-color, red); /* Default to red if --danger-color not defined */
+  --cp-loading-text-color: var(--secondary-text-color, #555);
+}
+
+body.dark-mode {
+  --cp-table-border-color: var(--border-color, #444);
+  --cp-table-header-bg: var(--secondary-bg-color, #2c2c2c); /* Darker header for table */
+  --cp-error-text-color: var(--danger-color, #ff6b6b); /* Lighter red for dark mode */
+  --cp-loading-text-color: var(--secondary-text-color, #aaa);
+}
+
 .customers-page-container {
-  padding: 20px;
+  padding: var(--cp-padding);
   direction: rtl; /* For Farsi */
+  /* Background and text color will be inherited from body global styles */
 }
 
 .customers-page-container h1 {
     text-align: right; /* Align title to the right */
+    color: var(--primary-text-color); /* Ensure heading uses global var */
+    margin-bottom: 1.25rem; /* 20px */
 }
 
 .customers-page-container table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 1.25rem; /* 20px */
 }
 
 .customers-page-container th,
 .customers-page-container td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  border: 1px solid var(--cp-table-border-color);
+  padding: 0.5rem; /* 8px */
   text-align: right; /* For Farsi */
+  /* Text color will be inherited from body or .customers-page-container */
 }
 
 .customers-page-container th {
-  background-color: #f2f2f2;
+  background-color: var(--cp-table-header-bg);
+  font-weight: 600; /* Ensure headers are bold */
+  color: var(--primary-text-color); /* Header text color */
+}
+body.dark-mode .customers-page-container th {
+  color: var(--primary-text-color); /* Ensure contrast for header text in dark mode */
 }
 
+
 /* Style for loading and error messages */
-.customers-page-container p {
-    text-align: right; /* Align paragraph text to the right */
-    margin-top: 10px;
-    margin-bottom: 10px;
+.customers-page-container .loading-message,
+.customers-page-container .error-message-text, /* Renamed from just p for specificity */
+.customers-page-container .no-data-message { /* For "هیچ مشتری یافت نشد." */
+    text-align: right;
+    margin-top: 0.625rem; /* 10px */
+    margin-bottom: 0.625rem; /* 10px */
+    padding: 0.75rem; /* 12px */
+    border-radius: 0.25rem; /* 4px */
+}
+
+.customers-page-container .loading-message {
+  color: var(--cp-loading-text-color);
+}
+.customers-page-container .error-message-text {
+  color: var(--cp-error-text-color);
+  background-color: rgba(var(--danger-color-rgb, 220,53,69), 0.1); /* Assuming --danger-color-rgb is defined */
+  border: 1px solid rgba(var(--danger-color-rgb, 220,53,69), 0.2);
+}
+body.dark-mode .customers-page-container .error-message-text {
+  background-color: rgba(var(--danger-color-rgb, 255,107,107), 0.15); /* Adjust RGB for lighter red if needed */
+  border: 1px solid rgba(var(--danger-color-rgb, 255,107,107), 0.25);
+}
+
+.customers-page-container .no-data-message {
+  color: var(--secondary-text-color);
+  font-style: italic;
 }

@@ -1,4 +1,58 @@
 /* src/components/DigitalClock.css */
+:root {
+  /* Base Clock Styles */
+  --dc-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  --dc-box-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.3);
+  --dc-text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+
+  /* Day Theme Specific - Default to these when not overridden by global dark mode */
+  --dc-day-bg: linear-gradient(135deg, #87CEFA 0%, #B0E0E6 100%);
+  --dc-day-text-color: #003366;
+  --dc-day-text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+  --dc-day-sun-icon-color: #FFD700;
+
+  /* Night Theme Specific - Default to these when not overridden by global dark mode */
+  --dc-night-bg-color: #0c0c27;
+  --dc-night-text-color: #e0e0e0;
+  --dc-night-text-shadow: 0 0 5px rgba(200, 200, 255, 0.5), 0 0 10px rgba(200, 200, 255, 0.3);
+  --dc-night-moon-icon-color: #f0f8ff;
+  --dc-night-moon-icon-shadow: 0 0 8px #add8e6;
+  /* Star Colors for Night Theme */
+  --dc-star-color-1: white;
+  --dc-star-color-2: #f0f8ff;
+  --dc-star-color-3: #d0d0d0;
+  --dc-star-color-4: white;
+  --dc-star-color-5: #b0c4de;
+  --dc-star-color-6: #f5f5f5;
+}
+
+body.dark-mode {
+  /* Adjustments when global dark mode is ON */
+  --dc-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Slightly more pronounced shadow in dark mode */
+  --dc-box-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.5);
+  --dc-text-shadow: 0 1px 2px rgba(0,0,0,0.4); /* General text shadow in dark components */
+
+  /* Day theme might be slightly less vibrant or use global light vars if preferred */
+  /* For now, keeping its unique day look, but text could use global light text for consistency */
+  /* --dc-day-text-color: var(--primary-text-color); /* Example if using global light text */
+
+  /* Night Theme when global dark mode is on - make it use global dark palette */
+  --dc-night-bg-color: var(--secondary-bg-color, #1e1e1e); /* Use a global dark bg */
+  --dc-night-text-color: var(--primary-text-color, #e0e0e0); /* Use global dark text */
+  --dc-night-text-shadow: 0 0 6px rgba(var(--focus-ring-color-rgb, 187,134,252), 0.3); /* Glow with accent */
+  --dc-night-moon-icon-color: var(--accent-color, #bb86fc); /* Moon uses accent */
+  --dc-night-moon-icon-shadow: 0 0 8px rgba(var(--focus-ring-color-rgb, 187,134,252), 0.4);
+
+  /* Star Colors for Night Theme in Global Dark Mode - can be brighter or use accent nuances */
+  --dc-star-color-1: var(--primary-text-color, #e0e0e0);
+  --dc-star-color-2: var(--secondary-text-color, #c0c0c0);
+  --dc-star-color-3: #a0a0a0;
+  --dc-star-color-4: var(--primary-text-color, #e0e0e0);
+  --dc-star-color-5: var(--secondary-text-color, #a0aec0);
+  --dc-star-color-6: #d5d5d5;
+}
+
+
 .digital-clock-widget {
   display: flex;
   flex-direction: column;
@@ -10,8 +64,8 @@
   box-sizing: border-box;
   text-align: center;
   border-radius: 10px;
-  font-family: 'Vazirmatn', sans-serif;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-family: 'Vazirmatn', sans-serif; /* This could be var(--font-family) */
+  box-shadow: var(--dc-box-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
   position: relative;
   overflow: hidden;
@@ -19,29 +73,29 @@
 
 .digital-clock-widget:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--dc-box-shadow-hover);
 }
 
 .time-display {
-  font-size: 2.4em; /* تنظیم برای ارتفاع بیشتر ویجت (125px) */
+  font-size: 2.4em;
   font-weight: 700;
   letter-spacing: 1px;
   margin-bottom: 5px;
   direction: ltr;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  text-shadow: var(--dc-text-shadow);
   z-index: 1;
 }
 
-.date-display { /* این برای استایل style1 کاربرد دارد */
-  font-size: 0.9em; /* تنظیم برای ارتفاع بیشتر */
+.date-display {
+  font-size: 0.9em;
   font-weight: 400;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  text-shadow: var(--dc-text-shadow);
   margin-bottom: 7px;
   z-index: 1;
 }
 
 .day-night-icon {
-  font-size: 1.5em; /* تنظیم برای ارتفاع بیشتر */
+  font-size: 1.5em;
   margin-top: 6px;
   line-height: 1;
   z-index: 1;
@@ -49,32 +103,31 @@
 
 /* --- Theme Day --- */
 .digital-clock-widget.day-theme {
-  background: linear-gradient(135deg, #87CEFA 0%, #B0E0E6 100%);
-  color: #003366;
+  background: var(--dc-day-bg);
+  color: var(--dc-day-text-color);
 }
 .digital-clock-widget.day-theme .time-display,
 .digital-clock-widget.day-theme .date-display {
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+  text-shadow: var(--dc-day-text-shadow);
 }
 .digital-clock-widget.day-theme .day-night-icon .sun-icon {
-  color: #FFD700;
+  color: var(--dc-day-sun-icon-color);
 }
 
 /* --- Theme Night --- */
 .digital-clock-widget.night-theme {
-  background-color: #0c0c27; /* رنگ پایه شب */
-  color: #e0e0e0;
-  /* ستاره‌های ثابت از اینجا حذف شده‌اند، همه ستاره‌ها توسط شبه‌المان‌ها مدیریت می‌شوند */
+  background-color: var(--dc-night-bg-color);
+  color: var(--dc-night-text-color);
 }
 
 .digital-clock-widget.night-theme .time-display,
 .digital-clock-widget.night-theme .date-display {
-  text-shadow: 0 0 5px rgba(200, 200, 255, 0.5), 0 0 10px rgba(200, 200, 255, 0.3);
+  text-shadow: var(--dc-night-text-shadow);
 }
 
 .digital-clock-widget.night-theme .day-night-icon .moon-icon {
-  color: #f0f8ff;
-  text-shadow: 0 0 8px #add8e6;
+  color: var(--dc-night-moon-icon-color);
+  text-shadow: var(--dc-night-moon-icon-shadow);
 }
 
 /* استایل‌های مشترک برای لایه‌های ستاره چشمک‌زن */
@@ -84,21 +137,17 @@
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   pointer-events: none;
-  z-index: 0; /* پشت محتوای اصلی، روی رنگ پس‌زمینه */
+  z-index: 0;
 }
 
 /* لایه اول ستاره‌ها */
 .digital-clock-widget.night-theme::before {
   background-image:
-    /* نوع اول: ستاره‌های کوچک و روشن سفید */
-    radial-gradient(circle, white 0.4px, transparent 1.2px),
-    /* نوع دوم: ستاره‌های متوسط، کمی آبی/سفید */
-    radial-gradient(circle, #f0f8ff 0.7px, transparent 1.8px),
-    /* نوع سوم: ستاره‌های بسیار ریز، خاکستری روشن برای عمق */
-    radial-gradient(circle, #d0d0d0 0.3px, transparent 1.0px);
-  /* موقعیت ستاره‌ها در داخل کاشی تکرارشونده */
+    radial-gradient(circle, var(--dc-star-color-1) 0.4px, transparent 1.2px),
+    radial-gradient(circle, var(--dc-star-color-2) 0.7px, transparent 1.8px),
+    radial-gradient(circle, var(--dc-star-color-3) 0.3px, transparent 1.0px);
   background-position: 0 0, 25px 35px, 10px 60px;
-  background-size: 90px 90px; /* اندازه کاشی تکرارشونده */
+  background-size: 90px 90px;
   background-repeat: repeat;
   animation: twinkleTypeA 7s infinite alternate;
 }
@@ -106,17 +155,14 @@
 /* لایه دوم ستاره‌ها */
 .digital-clock-widget.night-theme::after {
   background-image:
-    /* نوع چهارم: ستاره‌های متوسط، سفید درخشان */
-    radial-gradient(circle, white 0.5px, transparent 1.5px),
-    /* نوع پنجم: ستاره‌های بزرگتر اما بسیار کم‌نور و دور */
-    radial-gradient(circle, #b0c4de 0.9px, transparent 2.5px),
-    /* نوع ششم: ستاره‌های ریز و تیز، سفید */
-    radial-gradient(circle, #f5f5f5 0.3px, transparent 1.1px);
+    radial-gradient(circle, var(--dc-star-color-4) 0.5px, transparent 1.5px),
+    radial-gradient(circle, var(--dc-star-color-5) 0.9px, transparent 2.5px),
+    radial-gradient(circle, var(--dc-star-color-6) 0.3px, transparent 1.1px);
   background-position: 40px 40px, 5px 70px, 70px 15px;
-  background-size: 110px 110px; /* اندازه متفاوت کاشی برای تنوع بیشتر */
+  background-size: 110px 110px;
   background-repeat: repeat;
   animation: twinkleTypeB 5s infinite alternate;
-  animation-delay: -2s; /* شروع با تاخیر برای عدم هماهنگی با لایه اول */
+  animation-delay: -2s;
 }
 
 @keyframes twinkleTypeA {

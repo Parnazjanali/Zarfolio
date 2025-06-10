@@ -1,4 +1,33 @@
 /* frontend/src/components/Tabs.css */
+:root {
+  --tab-text-color: var(--secondary-text-color, #495057);
+  --tab-text-hover-color: var(--link-hover-color, #0056b3);
+  --tab-text-active-color: var(--accent-color, #007bff);
+  --tab-border-active-color: var(--accent-color, #007bff);
+  --tab-list-border-color: var(--border-color, #dee2e6);
+  --tab-panel-border-color: var(--border-color, #dee2e6);
+  --tab-panel-bg-color: var(--primary-bg-color, #ffffff); /* Default to primary, can be secondary for more distinction */
+
+  /* Vertical Tab Specific */
+  --tab-vertical-hover-bg: var(--secondary-bg-color, #f8f9fa);
+  /* Using rgba with --focus-ring-color-rgb for light active bg. Ensure --focus-ring-color-rgb is set in index.css */
+  --tab-vertical-active-bg: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
+}
+
+body.dark-mode {
+  --tab-text-color: var(--secondary-text-color, #c0c0c0);
+  --tab-text-hover-color: var(--link-hover-color, #9a67cf);
+  --tab-text-active-color: var(--accent-color, #bb86fc);
+  --tab-border-active-color: var(--accent-color, #bb86fc);
+  --tab-list-border-color: var(--border-color, #2c2c2c);
+  --tab-panel-border-color: var(--border-color, #2c2c2c);
+  --tab-panel-bg-color: var(--secondary-bg-color, #1e1e1e); /* Panels distinct on dark */
+
+  /* Vertical Tab Specific - Dark */
+  --tab-vertical-hover-bg: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.08);
+  --tab-vertical-active-bg: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
+}
+
 
 /* --- Common Styles for Both Layouts --- */
 .tabs-list {
@@ -12,19 +41,19 @@
   cursor: pointer;
   background-color: transparent;
   border: none;
-  color: #495057; /* Dark grey text for readability */
+  color: var(--tab-text-color);
   display: flex;
   align-items: center;
-  gap: 10px; /* Slightly more space between icon and text */
+  gap: 0.625rem; /* 10px */
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.15s ease-in-out;
 }
 
 .tab-item:hover {
-  color: #0056b3; /* Darker blue on hover */
+  color: var(--tab-text-hover-color);
 }
 
 .tab-item.active {
-  color: #007bff; /* Primary blue for active tab */
+  color: var(--tab-text-active-color);
   font-weight: 600; /* Bolder text for active tab */
 }
 
@@ -37,6 +66,9 @@
   line-height: 1.5;
 }
 
+.tab-panel { /* Apply background to panel itself */
+  background-color: var(--tab-panel-bg-color);
+}
 .tab-panel:not(.active) {
   display: none;
 }
@@ -48,26 +80,26 @@
 
 .tabs-container.horizontal .tabs-list {
   flex-direction: row;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--tab-list-border-color);
 }
 
 .tabs-container.horizontal .tab-item {
-  padding: 10px 18px;
+  padding: 0.625rem 1.125rem; /* 10px 18px */
   border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  margin-bottom: -2px; /* Align with bottom of tabs-list border */
   font-size: 1rem;
   font-weight: 500;
 }
 
 .tabs-container.horizontal .tab-item.active {
-  border-color: #007bff;
+  border-color: var(--tab-border-active-color);
 }
 
-.tabs-container.horizontal .tab-panel {
-  padding: 25px 20px;
-  border: 1px solid #dee2e6;
+.tabs-container.horizontal .tab-panel.active { /* Apply styles only when active */
+  padding: 1.5625rem 1.25rem; /* 25px 20px */
+  border: 1px solid var(--tab-panel-border-color);
   border-top: none;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 0.375rem 0.375rem; /* 0 0 6px 6px */
 }
 
 
@@ -80,40 +112,40 @@
 
 .tabs-container.vertical .tabs-list {
   flex-direction: column;
-  width: 220px; /* Reduced sidebar width */
-  border-right: 1px solid #dee2e6; /* Refined border for RTL */
+  width: 13.75rem; /* 220px */
+  border-right: 1px solid var(--tab-list-border-color); /* Refined border for RTL */
   flex-shrink: 0;
 }
 
 .tabs-container.vertical .tab-item {
   width: 100%;
-  padding: 12px 20px; /* Reduced vertical padding for smaller buttons */
+  padding: 0.75rem 1.25rem; /* 12px 20px */
   border-right: 3px solid transparent; /* The active indicator bar for RTL */
   margin-right: -1px; /* Overlap the container's border */
   justify-content: flex-start;
   text-align: right; /* Text is RTL */
   font-size: 0.95rem; /* Slightly smaller font size */
   font-weight: 500;
-  border-radius: 4px 0 0 4px; /* Rounded corners on the inside for RTL */
+  border-radius: 0.25rem 0 0 0.25rem; /* 4px 0 0 4px Rounded corners on the inside for RTL */
 }
 
 /* On hover, show a subtle background */
 .tabs-container.vertical .tab-item:hover {
-  background-color: #f8f9fa; /* Light grey background on hover */
+  background-color: var(--tab-vertical-hover-bg);
 }
 
 /* Active state for vertical tabs */
 .tabs-container.vertical .tab-item.active {
-  border-right-color: #007bff; /* Show the blue bar on the right */
-  background-color: #e7f1ff; /* Light blue background for active state */
+  border-right-color: var(--tab-border-active-color); /* Show the active bar on the right */
+  background-color: var(--tab-vertical-active-bg);
 }
 
 .tabs-container.vertical .tab-panels {
   flex-grow: 1;
-  padding: 5px 25px 5px 0; /* Padding for the content area */
+  padding: 0.3125rem 1.5625rem 0.3125rem 0; /* 5px 25px 5px 0 Padding for the content area (RTL) */
 }
 
-.tabs-container.vertical .tab-panel {
-  padding: 0;
-  border: none;
+.tabs-container.vertical .tab-panel.active { /* Apply styles only when active */
+  padding: 0; /* Reset padding if any was on .tab-panel general */
+  border: none; /* Vertical tabs usually don't have border around panel */
 }

@@ -1,187 +1,117 @@
 /* frontend/src/pages/TwoFAVerifyPage.css */
 
-/* متغیرهای رنگی اصلی برای هماهنگی با طرح کلی */
-:root {
-  --primary-color: #673ab7;
-  --primary-color-dark: #512da8;
-  --primary-color-light: #ede7f6;
-  --text-color: #212529;
-  --label-color: #495057;
-  --input-border-color: #ced4da;
-  --input-focus-border-color: var(--primary-color);
-  --input-focus-shadow-color: rgba(103, 58, 183, 0.2);
-  --placeholder-text-color: #6c757d;
-  --base-font-size: 13.5px;
-  --spacing-unit: 7px;
-  --error-bg: #fdecea;
-  --error-text: #c9302c;
-  --error-border: #f5c6cb;
-  --success-bg: #e9f5e9;
-  --success-text: #1e7e34;
-  --success-border: #c3e6cb;
+/* Using global variables from index.css and AuthForms.css variables for consistency */
+/* Local :root variables are removed. This file will primarily use variables defined in AuthForms.css or index.css */
+
+/* .auth-page and .login-container structure is assumed to be similar to AuthForms.css */
+/* If this page has a different overall background than login, it would be set on .auth-page */
+.auth-page { /* Styles inherited from AuthForms.css or global body */
+  /* display, align-items, justify-content, width, min-height, font-family, direction, padding, box-sizing */
+  /* background can be overridden if this page needs a different one than login */
 }
 
-/* این کلاس‌ها از AuthForms.css کپی شده‌اند تا ساختار کلی صفحه
-  (پس‌زمینه گرادیانی و قرارگیری در مرکز) را حفظ کنند.
-  این کلاس‌ها توسط کامپوننت App.jsx به body اضافه می‌شوند.
-*/
-.auth-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  direction: rtl; 
-  padding: calc(var(--spacing-unit) * 2);
-  box-sizing: border-box;
+.login-container { /* Styles inherited from AuthForms.css */
+  /* display, background-color, border-radius, box-shadow, width, max-width, overflow */
+  background-color: var(--auth-card-bg); /* Uses variable defined in AuthForms.css */
 }
 
-/* کادر اصلی سفید با لبه‌های گرد */
-.login-container {
-  display: flex;
-  background-color: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2.75) rgba(0, 0, 0, 0.065);
-  width: 100%;
-  max-width: 720px;
-  overflow: hidden;
+.login-form-section { /* Styles inherited from AuthForms.css */
+  /* flex, display, flex-direction, justify-content, align-items, padding, box-sizing, overflow-y */
+  /* scrollbar styles also from AuthForms.css */
 }
 
-/* بخش فرم در سمت راست */
-.login-form-section {
-  flex: 1 1 55%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center; 
-  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3.5); 
-  box-sizing: border-box;
-  overflow-y: auto;
+.login-form-container { /* Styles inherited from AuthForms.css */
+  /* width, max-width, display, flex-direction, align-items */
 }
 
-.login-form-container {
-  width: 100%;
-  max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.form-title {
+.form-title { /* This might be slightly different from AuthForms.css .auth-container h2 */
   font-size: 1.35em;
   font-weight: 600;
   margin: 0;
-  color: var(--text-color);
+  color: var(--primary-text-color); /* Global */
   text-align: center;
-  margin-bottom: calc(var(--spacing-unit) * 1.5); 
+  margin-bottom: calc(var(--auth-spacing-unit, 7px) * 1.5);
 }
 
-.form-subtitle {
+.form-subtitle { /* Similar to AuthForms.css .auth-subtitle */
   font-size: 0.8em;
-  color: #555;
-  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  color: var(--secondary-text-color); /* Global */
+  margin-bottom: calc(var(--auth-spacing-unit, 7px) * 1.8);
   text-align: center; 
   line-height: 1.5;
 }
 
-.auth-form {
-  width: 100%;
+.auth-form { /* Styles inherited from AuthForms.css */
+  /* width */
 }
 
-.input-group {
+.input-group { /* As in AuthForms.css */
   position: relative;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem; /* 10px */
 }
 
-.input-icon {
+.input-icon { /* As in AuthForms.css */
   position: absolute;
   top: 50%;
-  right: calc(var(--spacing-unit) * 1.4);
+  right: calc(var(--auth-spacing-unit, 7px) * 1.4);
   transform: translateY(-50%);
-  color: var(--primary-color);
+  color: var(--accent-color); /* Global */
   opacity: 0.7;
 }
 
-.auth-input {
-  padding: calc(var(--spacing-unit) * 1.1) calc(var(--spacing-unit) * 1.4); 
-  padding-right: calc(var(--spacing-unit) * 4.5); /* فضای کافی برای آیکون */
-  font-size: calc(var(--base-font-size) - 0.5px);
+.auth-input { /* This specific input for 2FA code */
+  padding: calc(var(--auth-spacing-unit, 7px) * 1.1) calc(var(--auth-spacing-unit, 7px) * 1.4);
+  padding-right: calc(var(--auth-spacing-unit, 7px) * 4.5); /* Space for icon */
+  font-size: calc(var(--auth-base-font-size, 13.5px) - 0.5px);
   width: 100%; 
-  border: 1px solid var(--input-border-color);
-  border-radius: calc(var(--spacing-unit) * 0.65); 
+  border: 1px solid var(--border-color); /* Global */
+  border-radius: calc(var(--auth-spacing-unit, 7px) * 0.65);
   box-sizing: border-box; 
-  color: var(--text-color);
+  color: var(--primary-text-color); /* Global */
+  background-color: var(--secondary-bg-color); /* Global input bg */
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  /* text-align and letter-spacing are applied via inline style in JSX */
 }
 
-.auth-input:focus {
-  border-color: var(--input-focus-border-color);
-  box-shadow: 0 0 0 2.5px var(--input-focus-shadow-color); 
-  outline: none;
+.auth-input:focus { /* Focus from global input styles in index.css should apply */
+  /* border-color: var(--accent-color); */
+  /* box-shadow: 0 0 0 2.5px rgba(var(--focus-ring-color-rgb), 0.2); */
+  /* outline: none; */
 }
 
-.error-message, .success-message {
-  padding: calc(var(--spacing-unit) * 1.125);
-  margin-bottom: calc(var(--spacing-unit) * 1.875); 
-  border-radius: calc(var(--spacing-unit) * 0.75); 
-  font-size: calc(var(--base-font-size) - 0.75px); 
-  text-align: center;
+.error-message, .success-message { /* Should use global .message-banner styles from AuthForms.css */
+  /* padding, margin-bottom, border-radius, font-size, text-align from .message-banner */
 }
 
-.error-message {
-  background-color: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
+.error-message { /* Specific error colors */
+  background-color: var(--danger-bg-color); /* Global */
+  color: var(--danger-text-color); /* Global */
+  border: 1px solid var(--danger-border-color); /* Global */
 }
 
-.success-message {
-  background-color: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
+.success-message { /* Specific success colors */
+  background-color: var(--success-bg-color); /* Global */
+  color: var(--success-text-color); /* Global */
+  border: 1px solid var(--success-border-color); /* Global */
 }
 
-.auth-button {
-  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 2);
-  font-size: calc(var(--base-font-size) - 0.5px);
-  width: 100%;
-  font-weight: 500;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: calc(var(--spacing-unit) * 0.75); 
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.auth-button { /* Inherits from AuthForms.css .auth-button */
+  /* padding, font-size, width, font-weight, background-color, color, border, border-radius, cursor, transition, display, align-items, justify-content, box-shadow */
 }
 
-.auth-button:disabled {
-  background-color: #e0e0e0 !important;
-  color: #9e9e9e !important;
-  cursor: not-allowed !important;
+.auth-button:disabled { /* Inherits from AuthForms.css .auth-button:disabled */
+  /* background-color, color, cursor, transform, box-shadow */
 }
 
-/* بخش تصویر در سمت چپ */
-.login-image-section {
-  flex: 1 1 calc(45% * 0.95);
-  background: var(--primary-color-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
+.login-image-section { /* Inherits from AuthForms.css */
+  /* flex, background, display, align-items, justify-content, position, overflow */
+  background: var(--auth-image-section-bg); /* Uses variable from AuthForms.css */
 }
 
-.login-image-section img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.login-image-section img { /* Inherits from AuthForms.css */
+  /* width, height, object-fit, display */
 }
 
-/* استایل‌های ریسپانسیو برای موبایل و تبلت */
-@media (max-width: 768px) {
-  .auth-page { padding: 0; }
-  .login-container { flex-direction: column; border-radius: 0; box-shadow: none; min-height: 100vh; }
-  .login-form-section { order: 2; padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 2); }
-  .login-image-section { order: 1; flex-basis: auto; min-height: 160px; max-height: 30vh; }
+/* Responsive adjustments are inherited from AuthForms.css */
+/* @media (max-width: 768px) { ... } */
 }

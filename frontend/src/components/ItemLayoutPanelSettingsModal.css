@@ -1,4 +1,135 @@
 /* frontend/src/components/ItemLayoutPanelSettingsModal.css */
+:root {
+  /* Modal Base */
+  --ilms-overlay-bg: rgba(0, 0, 0, 0.55);
+  --ilms-content-bg: var(--primary-bg-color, #fff);
+  --ilms-content-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  --ilms-header-border-color: var(--border-color, #e9ecef);
+  --ilms-header-text-color: var(--primary-text-color, #333);
+  --ilms-close-button-color: var(--secondary-text-color, #6c757d);
+  --ilms-close-button-hover-color: var(--primary-text-color, #343a40);
+
+  /* Scrollbar (Conceptual - actual styling is browser-specific) */
+  --ilms-scrollbar-track-bg: var(--secondary-bg-color, #f0f0f0);
+  --ilms-scrollbar-thumb-bg: #ccc; /* Keep it neutral or use a muted var */
+
+  /* Section */
+  --ilms-section-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --ilms-section-border-color: var(--border-color, #e9ecef);
+  --ilms-section-strong-text-color: var(--primary-text-color, #212529);
+
+  /* Size Options */
+  --ilms-size-option-border-color: var(--border-color, #ced4da);
+  --ilms-size-option-bg-color: var(--primary-bg-color, #fff);
+  --ilms-size-option-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  --ilms-size-option-hover-border-color: var(--secondary-text-color, #adb5bd);
+  --ilms-size-option-hover-bg-color: #f7f7f7; /* Slightly off-white, could be var(--secondary-bg-color) if it's light enough */
+  --ilms-size-option-selected-bg-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
+  --ilms-size-option-selected-border-color: var(--accent-color, #007bff);
+  --ilms-size-option-selected-text-color: var(--accent-color, #0056b3); /* Darker accent for text */
+  --ilms-size-option-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 0,123,255);
+  --ilms-radio-accent-color: var(--accent-color, #007bff);
+
+  /* Size Preview */
+  --ilms-size-preview-label-color: var(--secondary-text-color, #495057);
+  --ilms-size-preview-box-border-color: var(--accent-color, #007bff);
+  --ilms-size-preview-box-bg-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
+  --ilms-size-preview-box-text-color: var(--accent-color, #0056b3);
+
+  /* Grid */
+  --ilms-grid-container-bg-color: var(--primary-bg-color, #fff);
+  --ilms-grid-container-border-color: var(--border-color, #dee2e6);
+  --ilms-grid-cell-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --ilms-grid-cell-border-color: #d1d9e1; /* Slightly darker than secondary-bg for definition */
+  --ilms-grid-cell-text-color: var(--primary-text-color, #343a40);
+  --ilms-grid-cell-icon-color: var(--secondary-text-color, #6c757d);
+  --ilms-grid-cell-hover-bg-color: var(--border-color, #e9ecef);
+  --ilms-grid-cell-hover-border-color: var(--secondary-text-color, #adb5bd);
+  --ilms-grid-cell-disabled-bg-color: var(--secondary-bg-color, #e9ecef);
+  --ilms-grid-cell-available-hover-bg-color: rgba(var(--focus-ring-color-rgb,0,123,255), 0.2);
+  --ilms-grid-cell-available-hover-border-color: rgba(var(--focus-ring-color-rgb,0,123,255), 0.4);
+  --ilms-grid-cell-selected-bg-color: var(--accent-color, #0d6efd);
+  --ilms-grid-cell-selected-border-color: var(--link-hover-color, #0a58ca); /* Darker accent */
+  --ilms-grid-cell-selected-text-color: var(--accent-text-color, #fff);
+  --ilms-grid-cell-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 13,110,253);
+  --ilms-grid-cell-occupied-bg-color: #fff3cd; /* Bootstrap warning light */
+  --ilms-grid-cell-occupied-border-color: #ffe69c;
+  --ilms-grid-cell-occupied-text-color: #664d03;
+  --ilms-grid-cell-current-bg-color: #d1e7dd; /* Bootstrap success light */
+  --ilms-grid-cell-current-border-color: #badbcc;
+  --ilms-grid-cell-current-text-color: #0f5132;
+  --ilms-grid-cell-invalid-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --ilms-grid-cell-invalid-border-color: var(--border-color, #dee2e6);
+  --ilms-grid-cell-invalid-text-color: var(--secondary-text-color, #6c757d);
+
+  /* Footer */
+  --ilms-footer-border-color: var(--border-color, #e9ecef);
+  /* Primary/Secondary buttons in footer will use global button variables from index.css by class */
+}
+
+body.dark-mode {
+  --ilms-overlay-bg: rgba(0, 0, 0, 0.7);
+  --ilms-content-bg: var(--secondary-bg-color, #1e1e1e);
+  --ilms-content-shadow: 0 5px 25px rgba(0,0,0,0.3);
+  --ilms-header-border-color: var(--border-color, #2c2c2c);
+  --ilms-header-text-color: var(--primary-text-color, #e0e0e0);
+  --ilms-close-button-color: var(--secondary-text-color, #a0aec0);
+  --ilms-close-button-hover-color: var(--primary-text-color, #e0e0e0);
+
+  --ilms-scrollbar-track-bg: var(--primary-bg-color, #121212);
+  --ilms-scrollbar-thumb-bg: #555;
+
+  --ilms-section-bg-color: var(--primary-bg-color, #121212); /* Darker section bg */
+  --ilms-section-border-color: var(--border-color, #2c2c2c);
+  --ilms-section-strong-text-color: var(--primary-text-color, #e0e0e0);
+
+  --ilms-size-option-border-color: var(--border-color, #3a3a3a);
+  --ilms-size-option-bg-color: var(--secondary-bg-color, #2a2a2a);
+  --ilms-size-option-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  --ilms-size-option-hover-border-color: var(--secondary-text-color, #777);
+  --ilms-size-option-hover-bg-color: var(--border-color, #3a3a3a);
+  --ilms-size-option-selected-bg-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.2);
+  --ilms-size-option-selected-border-color: var(--accent-color, #bb86fc);
+  --ilms-size-option-selected-text-color: var(--accent-color, #bb86fc);
+  --ilms-size-option-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 187,134,252);
+  --ilms-radio-accent-color: var(--accent-color, #bb86fc);
+
+  --ilms-size-preview-label-color: var(--secondary-text-color, #a0aec0);
+  --ilms-size-preview-box-border-color: var(--accent-color, #bb86fc);
+  --ilms-size-preview-box-bg-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
+  --ilms-size-preview-box-text-color: var(--accent-color, #bb86fc);
+
+  --ilms-grid-container-bg-color: var(--secondary-bg-color, #2a2a2a);
+  --ilms-grid-container-border-color: var(--border-color, #3a3a3a);
+  --ilms-grid-cell-bg-color: var(--primary-bg-color, #121212);
+  --ilms-grid-cell-border-color: var(--border-color, #2c2c2c);
+  --ilms-grid-cell-text-color: var(--primary-text-color, #e0e0e0);
+  --ilms-grid-cell-icon-color: var(--secondary-text-color, #a0aec0);
+  --ilms-grid-cell-hover-bg-color: var(--border-color, #2c2c2c);
+  --ilms-grid-cell-hover-border-color: var(--secondary-text-color, #777);
+  --ilms-grid-cell-disabled-bg-color: var(--primary-bg-color, #121212);
+  --ilms-grid-cell-available-hover-bg-color: rgba(var(--focus-ring-color-rgb,187,134,252), 0.25);
+  --ilms-grid-cell-available-hover-border-color: rgba(var(--focus-ring-color-rgb,187,134,252), 0.5);
+  --ilms-grid-cell-selected-bg-color: var(--accent-color, #bb86fc);
+  --ilms-grid-cell-selected-border-color: var(--link-hover-color, #9a67cf);
+  --ilms-grid-cell-selected-text-color: var(--accent-text-color, #000); /* Ensure accent text is light on dark accent */
+  --ilms-grid-cell-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 187,134,252);
+
+  --ilms-grid-cell-occupied-bg-color: #533b00; /* Darker warning */
+  --ilms-grid-cell-occupied-border-color: #795600;
+  --ilms-grid-cell-occupied-text-color: #ffdead; /* Light text on dark warning */
+
+  --ilms-grid-cell-current-bg-color: #004d40; /* Darker success */
+  --ilms-grid-cell-current-border-color: #00695c;
+  --ilms-grid-cell-current-text-color: #80cbc4; /* Light text on dark success */
+
+  --ilms-grid-cell-invalid-bg-color: var(--primary-bg-color, #121212);
+  --ilms-grid-cell-invalid-border-color: var(--border-color, #2c2c2c);
+  --ilms-grid-cell-invalid-text-color: var(--secondary-text-color, #777);
+
+  --ilms-footer-border-color: var(--border-color, #2c2c2c);
+}
+
 
 .item-layout-modal-overlay {
   position: fixed;
@@ -6,7 +137,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: var(--ilms-overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,10 +148,10 @@
 }
 
 .item-layout-modal-overlay .item-layout-settings-modal-content {
-  background-color: #fff;
+  background-color: var(--ilms-content-bg);
   border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-  font-family: 'Vazirmatn FD', sans-serif;
+  box-shadow: var(--ilms-content-shadow);
+  font-family: 'Vazirmatn FD', sans-serif; /* This could be var(--font-family) */
   display: flex;
   flex-direction: column;
   width: 90%;
@@ -41,7 +172,7 @@
 
 .item-layout-settings-modal-content .modal-header {
   padding: 12px 18px; 
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--ilms-header-border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -50,17 +181,17 @@
 .item-layout-settings-modal-content .modal-header h3 {
   font-size: 1.1em; 
   margin: 0;
-  color: #333;
+  color: var(--ilms-header-text-color);
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .item-layout-settings-modal-content .modal-close-button{
-  background: none; border: none; font-size: 1.2em; color: #6c757d; cursor: pointer; padding: 3px; line-height: 1;
+  background: none; border: none; font-size: 1.2em; color: var(--ilms-close-button-color); cursor: pointer; padding: 3px; line-height: 1;
 }
 .item-layout-settings-modal-content .modal-close-button:hover{
-  color: #343a40;
+  color: var(--ilms-close-button-hover-color);
 }
 
 .item-layout-settings-modal-content .modal-body {
@@ -68,18 +199,18 @@
   overflow-y: auto; 
   flex-grow: 1; 
   scrollbar-width: thin;
-  scrollbar-color: #ccc #f0f0f0;
+  scrollbar-color: var(--ilms-scrollbar-thumb-bg) var(--ilms-scrollbar-track-bg);
 }
 .item-layout-settings-modal-content .modal-body::-webkit-scrollbar { width: 6px; }
-.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
-.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
+.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-track { background: var(--ilms-scrollbar-track-bg); border-radius: 3px; }
+.item-layout-settings-modal-content .modal-body::-webkit-scrollbar-thumb { background-color: var(--ilms-scrollbar-thumb-bg); border-radius: 3px; }
 
 .layout-modal-section {
   margin-bottom: 15px; 
   padding: 10px; 
-  background-color: #f8f9fa;
+  background-color: var(--ilms-section-bg-color);
   border-radius: 6px; 
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--ilms-section-border-color);
 }
 .layout-modal-section:last-child {
     margin-bottom: 0;
@@ -88,7 +219,7 @@
   display: block;
   font-size: 0.9em; 
   margin-bottom: 10px; 
-  color: #212529; 
+  color: var(--ilms-section-strong-text-color);
   font-weight: 600;
 }
 
@@ -100,37 +231,36 @@
 }
 .size-option-label {
   padding: 6px 10px; 
-  border: 1px solid #ced4da; 
+  border: 1px solid var(--ilms-size-option-border-color);
   border-radius: 5px; 
   cursor: pointer;
   font-size: 0.85em; 
-  /* ... (سایر استایل‌های size-option-label از فایل قبلی) ... */
   transition: all 0.2s ease;
-  background-color: #fff;
+  background-color: var(--ilms-size-option-bg-color);
   display: flex; 
   align-items: center;
   text-align: right; 
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: var(--ilms-size-option-shadow);
 }
 .size-option-label input[type="radio"] {
   margin-left: 8px; 
   vertical-align: middle;
-  accent-color: #007bff;
+  accent-color: var(--ilms-radio-accent-color);
   flex-shrink: 0; 
 }
 .size-option-label span { 
     flex-grow: 1; 
 }
 .size-option-label:hover {
-    border-color: #adb5bd;
-    background-color: #f7f7f7;
+    border-color: var(--ilms-size-option-hover-border-color);
+    background-color: var(--ilms-size-option-hover-bg-color);
 }
 .size-option-label.selected {
-  background-color: #e2efff; 
-  border-color: #007bff;
-  color: #0056b3;
+  background-color: var(--ilms-size-option-selected-bg-color);
+  border-color: var(--ilms-size-option-selected-border-color);
+  color: var(--ilms-size-option-selected-text-color);
   font-weight: 500;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(var(--ilms-size-option-selected-shadow-color-rgb), 0.2);
 }
 
 .size-preview-container {
@@ -139,13 +269,13 @@
 }
 .size-preview-container p {
     font-size: 0.8em; 
-    color: #495057; 
+    color: var(--ilms-size-preview-label-color);
     margin-bottom: 5px;
 }
 .size-preview-box {
-  border: 1px dashed #007bff; 
-  background-color: #e7f3ff;
-  color: #0056b3;
+  border: 1px dashed var(--ilms-size-preview-box-border-color);
+  background-color: var(--ilms-size-preview-box-bg-color);
+  color: var(--ilms-size-preview-box-text-color);
   font-weight: 500; 
   font-size: 0.75em; 
   display: inline-flex;
@@ -161,150 +291,121 @@
 .layout-modal-grid-container {
   display: grid;
   /* grid-template-columns از style prop در JSX اعمال می‌شود */
-  gap: 2px; /* کاهش بیشتر فاصله */
-  border: 1px solid #dee2e6; 
-  padding: 4px; /* کاهش padding */
+  gap: 2px;
+  border: 1px solid var(--ilms-grid-container-border-color);
+  padding: 4px;
   border-radius: 4px; 
-  background-color: #fff; 
-  /* max-height: auto; /* حذف برای جلوگیری از اسکرول گرید داخلی */
-  overflow: visible; /* اطمینان از عدم اسکرول */
+  background-color: var(--ilms-grid-container-bg-color);
+  overflow: visible;
   direction: ltr;
 }
 
 .grid-cell-button {
   aspect-ratio: 1 / 1;
-  background-color: #f8f9fa; 
-  border: 1px solid #d1d9e1; 
+  background-color: var(--ilms-grid-cell-bg-color);
+  border: 1px solid var(--ilms-grid-cell-border-color);
   border-radius: 3px; 
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  display: flex; /* برای مرکزیت بهتر عدد */
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0; /* حذف padding برای فضای بیشتر برای عدد */
+  padding: 0;
   position: relative;
-  /* min-height و min-width توسط aspect-ratio و عرض ستون تعیین می‌شوند. 
-     اگر نیاز به کنترل دقیق‌تر دارید، aspect-ratio را بردارید. */
-  /* برای مثال، اگر عرض ستون در گرید حدود 25px باشد: */
-   min-height: 22px; /* <<< تنظیم اندازه سلول‌ها >>> */
-   min-width: 22px;  /* <<< تنظیم اندازه سلول‌ها >>> */
+  min-height: 22px;
+  min-width: 22px;
 }
 .grid-cell-button .grid-cell-number {
     display: block;
-    font-weight: 600; /* ضخیم‌تر کردن عدد */
-    color: #343a40; /* رنگ تیره‌تر برای عدد */
-    font-size: 1em; /* <<< افزایش اندازه فونت عدد >>> */
-    line-height: 1; /* برای مرکزیت بهتر عمودی */
-    /* margin-bottom: 1px; */ /* اگر آیکون دارید، در غیر این صورت نیازی نیست */
+    font-weight: 600;
+    color: var(--ilms-grid-cell-text-color);
+    font-size: 1em;
+    line-height: 1;
 }
 .grid-cell-button .grid-cell-icon {
-    font-size: 0.7em; /* آیکون کوچک‌تر شود تا عدد بزرگتر به نظر برسد */
-    color: #6c757d; 
-    position: absolute; /* موقعیت‌دهی آیکون برای عدم تداخل با عدد */
+    font-size: 0.7em;
+    color: var(--ilms-grid-cell-icon-color);
+    position: absolute;
     bottom: 2px;
     right: 2px;
 }
 
-/* ... (سایر استایل‌های grid-cell-button و حالات آن مانند :hover, :disabled, .selected, .occupied و ...) ... */
 .grid-cell-button:hover:not(:disabled) {
-  background-color: #e9ecef; 
-  border-color: #adb5bd;
+  background-color: var(--ilms-grid-cell-hover-bg-color);
+  border-color: var(--ilms-grid-cell-hover-border-color);
 }
 .grid-cell-button:disabled {
-  background-color: #e9ecef; 
+  background-color: var(--ilms-grid-cell-disabled-bg-color);
   cursor: not-allowed;
   opacity: 0.6;
 }
 .grid-cell-button.cell-state-available:hover {
-    background-color: #cfe2ff; 
-    border-color: #b8daff;
+    background-color: var(--ilms-grid-cell-available-hover-bg-color);
+    border-color: var(--ilms-grid-cell-available-hover-border-color);
 }
 .grid-cell-button.cell-state-selected {
-  background-color: #0d6efd; 
-  border-color: #0a58ca;
-  color: white; 
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  background-color: var(--ilms-grid-cell-selected-bg-color);
+  border-color: var(--ilms-grid-cell-selected-border-color);
+  color: var(--ilms-grid-cell-selected-text-color);
+  box-shadow: 0 0 0 2px rgba(var(--ilms-grid-cell-selected-shadow-color-rgb), 0.25);
 }
 .grid-cell-button.cell-state-selected .grid-cell-number,
 .grid-cell-button.cell-state-selected .grid-cell-icon {
-    color: white;
+    color: var(--ilms-grid-cell-selected-text-color);
 }
-/* ... (ادامه استایل‌های حالات سلول) ... */
 .grid-cell-button.cell-state-occupied {
-  background-color: #fff3cd; 
-  border-color: #ffe69c;
+  background-color: var(--ilms-grid-cell-occupied-bg-color);
+  border-color: var(--ilms-grid-cell-occupied-border-color);
 }
 .grid-cell-button.cell-state-occupied .grid-cell-number,
 .grid-cell-button.cell-state-occupied .grid-cell-icon {
-    color: #664d03; 
+    color: var(--ilms-grid-cell-occupied-text-color);
 }
 .grid-cell-button.cell-state-current {
-  background-color: #d1e7dd; 
-  border-color: #badbcc;
+  background-color: var(--ilms-grid-cell-current-bg-color);
+  border-color: var(--ilms-grid-cell-current-border-color);
 }
 .grid-cell-button.cell-state-current .grid-cell-number,
 .grid-cell-button.cell-state-current .grid-cell-icon {
-    color: #0f5132; 
+    color: var(--ilms-grid-cell-current-text-color);
 }
 .grid-cell-button.cell-state-invalid {
-    background-color: #f8f9fa; 
-    border-color: #dee2e6;
+    background-color: var(--ilms-grid-cell-invalid-bg-color);
+    border-color: var(--ilms-grid-cell-invalid-border-color);
     opacity: 0.6;
 }
 .grid-cell-button.cell-state-invalid .grid-cell-number{
-    color: #6c757d;
+    color: var(--ilms-grid-cell-invalid-text-color);
 }
 
 
 .item-layout-settings-modal-content .modal-footer {
-    text-align: left;
+    text-align: left; /* This is for LTR, RTL is handled by flex-start on parent */
     padding: 12px 18px; 
     margin-top: 10px; 
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--ilms-footer-border-color);
     flex-shrink: 0; 
+    /* background-color already inherited or set by generic modal style if any */
 }
 
-/* ... (استایل دکمه‌های action-button و انیمیشن‌ها بدون تغییر) ... */
+/* Footer buttons will use global .action-button, .primary, .secondary styles from index.css */
+/* Ensure those global styles are sufficient or add specific overrides if needed */
 .item-layout-settings-modal-content .action-button { 
-    padding: 8px 16px; 
+    padding: 8px 16px; /* Maintain specific padding for modal buttons if different from global */
     font-size: 0.9em; 
     border-radius: 5px;
 }
-.item-layout-settings-modal-content .action-button.secondary {
-    margin-right: 8px;
-}
-.action-button {
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.07);
-}
-.action-button:hover:not(:disabled){
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.action-button.primary {
-  background-color: #007bff;
-  color: white;
-}
-.action-button.primary:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-.action-button.primary:disabled {
-  background-color: #a0c7e8;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-.action-button.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-.action-button.secondary:hover {
-  background-color: #5a6268;
+/* .item-layout-settings-modal-content .action-button.secondary {
+    margin-right: 8px; /* For LTR spacing if needed */
+/* } */
+
+/*
+  The .action-button, .action-button.primary, .action-button.secondary styles
+  that were previously here are removed to allow inheritance from global button styles in index.css.
+  If more specific styling is needed for THIS modal's buttons beyond the global ones,
+  they can be re-added or adjusted here.
+  For example, if this modal's primary button had a different color than global --accent-color:
+  .item-layout-settings-modal-content .action-button.primary { background-color: var(--some-other-color); }
+*/
 }

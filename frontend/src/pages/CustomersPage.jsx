@@ -38,8 +38,8 @@ function CustomersPage() {
     <div className="customers-page-container">
       <h1>لیست طرف حساب‌ها و مشتریان</h1>
       
-      {isLoading && <p>در حال بارگذاری لیست مشتریان...</p>}
-      {error && <p style={{ color: 'red' }}>خطا در دریافت اطلاعات: {error.message}</p>}
+      {isLoading && <p className="loading-message">در حال بارگذاری لیست مشتریان...</p>}
+      {error && <p className="error-message-text">خطا در دریافت اطلاعات: {error.message}</p>}
 
       {!isLoading && !error && (
         <table>
@@ -60,12 +60,12 @@ function CustomersPage() {
                   <td>{customer.first_name || 'N/A'}</td>
                   <td>{customer.last_name || 'N/A'}</td>
                   <td>{customer.national_id || 'N/A'}</td>
-                  <td>{'فعلا ندارد'}</td>
+                  <td>{'فعلا ندارد'}</td> {/* This could be themed if it's a status */}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5">هیچ مشتری یافت نشد.</td>
+                <td colSpan="5" className="no-data-message">هیچ مشتری یافت نشد.</td>
               </tr>
             )}
           </tbody>

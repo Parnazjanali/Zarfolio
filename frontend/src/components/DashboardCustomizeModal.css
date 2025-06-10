@@ -1,4 +1,104 @@
 /* frontend/src/components/DashboardCustomizeModal.css */
+:root {
+  /* Modal specific theming variables */
+  --dcm-header-icon-color: var(--accent-color, #007bff);
+  --dcm-section-header-text-color: var(--primary-text-color, #343a40);
+  --dcm-section-header-icon-color: var(--accent-color, #17a2b8); /* Can be a different accent */
+  --dcm-section-border-color: var(--border-color, #e9ecef);
+
+  --dcm-bg-selector-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --dcm-bg-selector-border-color: var(--border-color, #e9ecef);
+
+  --dcm-thumbnail-bg-color: var(--primary-bg-color, #fff);
+  --dcm-thumbnail-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  --dcm-thumbnail-hover-border-color: var(--accent-color, #007bff);
+  --dcm-thumbnail-hover-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  --dcm-thumbnail-selected-border-color: var(--accent-color, #28a745); /* Using accent for selected, was green */
+  --dcm-thumbnail-selected-halo-color: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.5); /* Use accent's RGB */
+
+  --dcm-no-image-placeholder-bg: var(--secondary-bg-color, #e9ecef);
+  --dcm-no-image-placeholder-icon-color: var(--secondary-text-color, #adb5bd);
+  --dcm-thumbnail-name-text-color: var(--primary-text-color, #333);
+
+  --dcm-selected-overlay-bg: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.85); /* Use accent's RGB */
+  --dcm-selected-overlay-icon-color: var(--accent-text-color, #fff);
+  --dcm-selected-overlay-shadow: 0 1px 3px rgba(0,0,0,0.2);
+
+  --dcm-element-item-border-color: var(--border-color, #f0f0f0);
+  --dcm-element-icon-color: var(--secondary-text-color, #4a5568);
+  --dcm-element-label-color: var(--primary-text-color, #2d3748);
+
+  --dcm-visibility-toggle-visible-bg: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.1); /* Light green based on accent */
+  --dcm-visibility-toggle-visible-border: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.4);
+  --dcm-visibility-toggle-visible-text: var(--accent-color, #1e7e3c); /* Darker green text */
+  --dcm-visibility-toggle-visible-hover-bg: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.15);
+  --dcm-visibility-toggle-visible-hover-border: rgba(var(--focus-ring-color-rgb, 40,167,69), 0.5);
+
+  --dcm-visibility-toggle-hidden-bg: rgba(220,53,69, 0.1); /* Light red */
+  --dcm-visibility-toggle-hidden-border: rgba(220,53,69, 0.4);
+  --dcm-visibility-toggle-hidden-text: #dc3545; /* Bootstrap danger red */
+  --dcm-visibility-toggle-hidden-hover-bg: rgba(220,53,69, 0.15);
+  --dcm-visibility-toggle-hidden-hover-border: rgba(220,53,69, 0.5);
+
+  --dcm-footer-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --dcm-footer-border-color: var(--border-color, #e9ecef);
+  /* Primary button in footer will use global --accent-color */
+  --dcm-button-secondary-bg: var(--secondary-bg-color, #f0f2f5);
+  --dcm-button-secondary-text: var(--primary-text-color, #343a40);
+  --dcm-button-secondary-border: var(--border-color, #ced4da);
+  --dcm-button-secondary-hover-bg: var(--border-color, #e2e6ea);
+  --dcm-button-secondary-hover-border: var(--secondary-text-color, #adb5bd);
+}
+
+body.dark-mode {
+  --dcm-header-icon-color: var(--accent-color, #bb86fc);
+  --dcm-section-header-text-color: var(--primary-text-color, #e0e0e0);
+  --dcm-section-header-icon-color: var(--accent-color, #81d4fa); /* Lighter cyan for dark */
+  --dcm-section-border-color: var(--border-color, #2c2c2c);
+
+  --dcm-bg-selector-bg-color: var(--primary-bg-color, #121212); /* Darker for section within modal */
+  --dcm-bg-selector-border-color: var(--border-color, #2c2c2c);
+
+  --dcm-thumbnail-bg-color: var(--secondary-bg-color, #1e1e1e);
+  --dcm-thumbnail-shadow: 0 2px 4px rgba(0,0,0,0.25); /* More subtle or different shadow for dark */
+  --dcm-thumbnail-hover-border-color: var(--accent-color, #bb86fc);
+  --dcm-thumbnail-hover-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  --dcm-thumbnail-selected-border-color: var(--accent-color, #66bb6a); /* Green accent might need dark mode version */
+  --dcm-thumbnail-selected-halo-color: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.5); /* Green accent RGB */
+
+  --dcm-no-image-placeholder-bg: var(--primary-bg-color, #121212);
+  --dcm-no-image-placeholder-icon-color: var(--secondary-text-color, #757575);
+  --dcm-thumbnail-name-text-color: var(--primary-text-color, #e0e0e0);
+
+  --dcm-selected-overlay-bg: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.7);
+  --dcm-selected-overlay-icon-color: var(--primary-bg-color, #121212); /* Dark icon on light green overlay */
+  --dcm-selected-overlay-shadow: 0 1px 3px rgba(0,0,0,0.4);
+
+  --dcm-element-item-border-color: var(--border-color, #2c2c2c);
+  --dcm-element-icon-color: var(--secondary-text-color, #a0aec0);
+  --dcm-element-label-color: var(--primary-text-color, #e0e0e0);
+
+  --dcm-visibility-toggle-visible-bg: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.25);
+  --dcm-visibility-toggle-visible-border: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.6);
+  --dcm-visibility-toggle-visible-text: #a5d6a7; /* Lighter green text */
+  --dcm-visibility-toggle-visible-hover-bg: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.35);
+  --dcm-visibility-toggle-visible-hover-border: rgba(var(--focus-ring-color-rgb, 102,187,106), 0.7);
+
+  --dcm-visibility-toggle-hidden-bg: rgba(239, 68, 68, 0.25); /* Lighter red based on --sidebar-logout-hover-text */
+  --dcm-visibility-toggle-hidden-border: rgba(239, 68, 68, 0.6);
+  --dcm-visibility-toggle-hidden-text: #fca5a5; /* Lighter red text */
+  --dcm-visibility-toggle-hidden-hover-bg: rgba(239, 68, 68, 0.35);
+  --dcm-visibility-toggle-hidden-hover-border: rgba(239, 68, 68, 0.7);
+
+  --dcm-footer-bg-color: var(--primary-bg-color, #121212);
+  --dcm-footer-border-color: var(--border-color, #2c2c2c);
+  --dcm-button-secondary-bg: var(--secondary-bg-color, #333333);
+  --dcm-button-secondary-text: var(--primary-text-color, #e0e0e0);
+  --dcm-button-secondary-border: var(--border-color, #444444);
+  --dcm-button-secondary-hover-bg: var(--border-color, #444444);
+  --dcm-button-secondary-hover-border: var(--secondary-text-color, #555555);
+}
+
 
 /* استایل‌های عمومی مودال از DashboardPage.css یا generic-modal.css شما اعمال می‌شوند */
 /* .generic-modal-overlay .generic-modal-content ... */
@@ -6,6 +106,7 @@
 .dashboard-customize-overlay .dashboard-customize-content {
   max-width: 650px; /* افزایش عرض برای جا دادن تامبنیل‌ها */
   /* سایر استایل‌های generic-modal-content اگر لازم است اینجا override شود */
+  /* Assuming generic-modal-content uses var(--modal-content-bg) from AddGroupModal or similar */
 }
 
 .dashboard-customize-content .modal-header h3 {
@@ -14,7 +115,7 @@
 }
 .dashboard-customize-content .modal-header h3 svg {
   margin-left: 10px; /* برای RTL */
-  color: #007bff;
+  color: var(--dcm-header-icon-color);
 }
 
 .dashboard-customize-content .modal-body {
@@ -36,17 +137,17 @@
 
 .dashboard-customize-content .setting-section-dc h4 {
   font-size: 1.1em;
-  color: #343a40;
+  color: var(--dcm-section-header-text-color);
   margin-bottom: 15px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--dcm-section-border-color);
   padding-bottom: 10px;
   font-weight: 600;
 }
 .dashboard-customize-content .setting-section-dc h4 svg {
     margin-left: 8px;
-    color: #17a2b8; /* یک رنگ دیگر برای آیکون عنوان بخش‌ها */
+    color: var(--dcm-section-header-icon-color);
 }
 
 /* استایل برای انتخابگر پس‌زمینه */
@@ -56,9 +157,9 @@
   gap: 15px;
   margin-top: 10px;
   padding: 10px;
-  background-color: #f8f9fa;
+  background-color: var(--dcm-bg-selector-bg-color);
   border-radius: 6px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--dcm-bg-selector-border-color);
 }
 
 .bg-thumbnail-item-dc {
@@ -71,18 +172,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #fff;
+  background-color: var(--dcm-thumbnail-bg-color);
   padding: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: var(--dcm-thumbnail-shadow);
 }
 .bg-thumbnail-item-dc:hover {
-  border-color: #007bff;
+  border-color: var(--dcm-thumbnail-hover-border-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  box-shadow: var(--dcm-thumbnail-hover-shadow);
 }
 .bg-thumbnail-item-dc.selected {
-  border-color: #28a745;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.5); /* یک هاله سبز */
+  border-color: var(--dcm-thumbnail-selected-border-color);
+  box-shadow: 0 0 0 3px var(--dcm-thumbnail-selected-halo-color);
 }
 
 /* استایل مشترک برای تصویر و placeholder */
@@ -95,15 +196,15 @@
   display: flex; /* برای placeholder */
   align-items: center; /* برای placeholder */
   justify-content: center; /* برای placeholder */
-  background-color: #e9ecef; /* رنگ پس‌زمینه برای placeholder */
-  color: #adb5bd; /* رنگ آیکون برای placeholder */
+  background-color: var(--dcm-no-image-placeholder-bg);
+  color: var(--dcm-no-image-placeholder-icon-color);
   font-size: 2em; /* اندازه آیکون placeholder */
   margin-bottom: 5px; 
 }
 
 .thumbnail-name-dc {
     font-size: 0.8em;
-    color: #333;
+    color: var(--dcm-thumbnail-name-text-color);
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -116,8 +217,8 @@
   position: absolute;
   top: 5px;
   right: 5px; /* برای RTL، اگر چپ‌چین بود left: 5px */
-  background-color: rgba(40, 167, 69, 0.85);
-  color: white;
+  background-color: var(--dcm-selected-overlay-bg);
+  color: var(--dcm-selected-overlay-icon-color);
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -125,15 +226,15 @@
   align-items: center;
   justify-content: center;
   font-size: 0.9em; /* اندازه آیکون تیک */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: var(--dcm-selected-overlay-shadow);
 }
 .reset-bg-button-dc { /* اگر دکمه‌ای برای ریست جداگانه داشتید */
-    background-color: #6c757d;
+    background-color: #6c757d; /* Consider theming this if used */
     font-size: 0.9em;
     color: white;
 }
 .reset-bg-button-dc:hover {
-    background-color: #5a6268;
+    background-color: #5a6268; /* Consider theming this if used */
 }
 
 /* استایل‌های قبلی شما برای elements-list از DashboardCustomizeModal.css */
@@ -166,7 +267,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--dcm-element-item-border-color);
 }
 .dashboard-customize-content .element-item:last-child {
   border-bottom: none;
@@ -180,14 +281,14 @@
 }
 .dashboard-customize-content .element-icon {
   font-size: 1.15em;
-  color: #4a5568;
+  color: var(--dcm-element-icon-color);
   width: 22px;
   text-align: center;
   flex-shrink: 0;
 }
 .dashboard-customize-content .element-label {
   font-size: 0.95em;
-  color: #2d3748;
+  color: var(--dcm-element-label-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -207,22 +308,22 @@
   flex-shrink: 0;
 }
 .dashboard-customize-content .visibility-toggle-button.visible {
-  background-color: #e7f7ec;
-  border-color: #a1d9b4;
-  color: #1e7e3c;
+  background-color: var(--dcm-visibility-toggle-visible-bg);
+  border-color: var(--dcm-visibility-toggle-visible-border);
+  color: var(--dcm-visibility-toggle-visible-text);
 }
 .dashboard-customize-content .visibility-toggle-button.visible:hover {
-  background-color: #d1f0db;
-  border-color: #89c9a2;
+  background-color: var(--dcm-visibility-toggle-visible-hover-bg);
+  border-color: var(--dcm-visibility-toggle-visible-hover-border);
 }
 .dashboard-customize-content .visibility-toggle-button.hidden {
-  background-color: #fbeae5;
-  border-color: #f5c6cb;
-  color: #c82333;
+  background-color: var(--dcm-visibility-toggle-hidden-bg);
+  border-color: var(--dcm-visibility-toggle-hidden-border);
+  color: var(--dcm-visibility-toggle-hidden-text);
 }
 .dashboard-customize-content .visibility-toggle-button.hidden:hover {
-  background-color: #f8d6cf;
-  border-color: #f1b0b7;
+  background-color: var(--dcm-visibility-toggle-hidden-hover-bg);
+  border-color: var(--dcm-visibility-toggle-hidden-hover-border);
 }
 .dashboard-customize-content .visibility-toggle-button .button-text {
   font-weight: 500;
@@ -231,35 +332,37 @@
 .dashboard-customize-content .modal-footer { 
   margin-top: 0;
   padding: 15px 20px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--dcm-footer-border-color);
   display: flex;
   justify-content: flex-start; /* برای RTL دکمه‌ها سمت چپ */
   gap: 10px;
   flex-shrink: 0;
-  background-color: #f8f9fa; /* هماهنگ با پس‌زمینه بخش‌ها */
+  background-color: var(--dcm-footer-bg-color);
 }
 .dashboard-customize-content .modal-footer .action-button {
   padding: 8px 16px;
   border-radius: 5px;
-  border: 1px solid transparent;
+  /* border: 1px solid transparent; /* Already in global button */
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9em;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .dashboard-customize-content .modal-footer .action-button.primary {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--accent-color); /* Uses global accent */
+  color: var(--accent-text-color);
+  border: 1px solid var(--accent-color);
 }
 .dashboard-customize-content .modal-footer .action-button.primary:hover {
-  background-color: #0056b3;
+  background-color: var(--link-hover-color); /* Uses global link hover */
+  border-color: var(--link-hover-color);
 }
 .dashboard-customize-content .modal-footer .action-button.secondary {
-  background-color: #f0f2f5; /* رنگ ملایم‌تر برای دکمه انصراف */
-  color: #343a40;
-  border: 1px solid #ced4da;
+  background-color: var(--dcm-button-secondary-bg);
+  color: var(--dcm-button-secondary-text);
+  border: 1px solid var(--dcm-button-secondary-border);
 }
 .dashboard-customize-content .modal-footer .action-button.secondary:hover {
-  background-color: #e2e6ea;
-  border-color: #adb5bd;
+  background-color: var(--dcm-button-secondary-hover-bg);
+  border-color: var(--dcm-button-secondary-hover-border);
 }

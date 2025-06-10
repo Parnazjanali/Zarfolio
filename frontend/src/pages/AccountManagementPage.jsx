@@ -538,7 +538,8 @@ function AccountManagementPage() {
                     <QRCodeSVG value={qrCodeUrl} size={200} level="H" />
                   </div>
                   <p><strong>کلید مخفی (برای ورود دستی):</strong></p>
-                  <p style={{ fontFamily: 'monospace', fontSize: '1.1em', padding: '10px', backgroundColor: '#f5f5f5', display: 'inline-block', borderRadius: '4px', border: '1px solid #ddd', userSelect: 'all' }}>
+                  {/* Added class two-fa-secret-key for styling */}
+                  <p className="two-fa-secret-key">
                     {twoFASecret}
                   </p>
                   <p style={{marginTop: '15px'}}>۳. کد ۶ رقمی نمایش داده شده در برنامه Authenticator را وارد کنید:</p>
@@ -571,16 +572,19 @@ function AccountManagementPage() {
                     <div className="recovery-codes-section">
                       <h3><FaListOl className="recovery-icon"/> کدهای بازیابی (یکبار مصرف):</h3>
                       <p>این کدها را در مکانی امن ذخیره کنید. اگر به برنامه Authenticator خود دسترسی نداشته باشید، می‌توانید از این کدها برای ورود استفاده کنید. <strong>این کدها دیگر نمایش داده نخواهند شد.</strong></p>
-                      <ul style={{listStyleType:'none', paddingLeft:0, columns: 2, columnGap: '20px'}}>
+                      {/* Added class recovery-codes-list and recovery-code-item */}
+                      <ul className="recovery-codes-list">
                         {recoveryCodes.map((code, index) => (
-                          <li key={index} style={{fontFamily:'monospace', fontSize:'1.1em', padding:'5px 0', borderBottom:'1px dashed #eee'}}>{code}</li>
+                          <li key={index} className="recovery-code-item">{code}</li>
                         ))}
                       </ul>
-                      <button onClick={() => setShowRecoveryCodes(false)} className="auth-button minimal" style={{marginTop:'10px', backgroundColor:'transparent', color:'var(--primary-color)'}}>پنهان کردن کدها</button>
+                      {/* Removed inline styles, relies on .auth-button.minimal from CSS */}
+                      <button onClick={() => setShowRecoveryCodes(false)} className="auth-button minimal">پنهان کردن کدها</button>
                     </div>
                   )}
                   
-                  <form onSubmit={handleDisable2FA} className="auth-form" style={{padding:0, boxShadow:'none', marginTop: '20px'}}>
+                  {/* Removed inline styles from form element */}
+                  <form onSubmit={handleDisable2FA} className="auth-form no-shadow" style={{ marginTop: '20px'}}>
                     <div className="form-group">
                       <label htmlFor="passwordFor2FADisable">رمز عبور فعلی (برای غیرفعال‌سازی)</label>
                       <input

@@ -1,15 +1,37 @@
 /* src/components/ContextMenu.css */
+:root {
+  --context-menu-bg: var(--primary-bg-color, #fcfcfc);
+  --context-menu-border-color: var(--border-color, #cccccc);
+  --context-menu-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --context-menu-item-text-color: var(--primary-text-color, #333);
+  --context-menu-item-hover-bg: var(--accent-color, #0078d4);
+  --context-menu-item-hover-text-color: var(--accent-text-color, #ffffff);
+  --context-menu-icon-color: var(--secondary-text-color, #555);
+  --context-menu-separator-color: var(--border-color, #e0e0e0);
+}
+
+body.dark-mode {
+  --context-menu-bg: var(--secondary-bg-color, #2a2a2a); /* Slightly lighter than main dark bg */
+  --context-menu-border-color: var(--border-color, #444444);
+  --context-menu-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); /* Darker shadow for dark mode */
+  --context-menu-item-text-color: var(--primary-text-color, #e0e0e0);
+  --context-menu-item-hover-bg: var(--accent-color, #bb86fc);
+  --context-menu-item-hover-text-color: var(--accent-text-color, #000000); /* Ensure this is readable on dark accent */
+  --context-menu-icon-color: var(--secondary-text-color, #a0aec0);
+  --context-menu-separator-color: var(--border-color, #444444);
+}
+
 .context-menu {
   position: fixed;
   z-index: 1000;
   min-width: 220px;
-  background-color: #fcfcfc;
-  border: 1px solid #cccccc;
+  background-color: var(--context-menu-bg);
+  border: 1px solid var(--context-menu-border-color);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--context-menu-shadow);
   padding: 5px 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
+  font-family: var(--font-family); /* Use global font family */
+  font-size: 0.875rem; /* 14px */
   animation: fadeIn 0.1s ease-out;
 }
 
@@ -33,37 +55,37 @@
 .context-menu li {
   display: flex;
   align-items: center;
-  padding: 8px 15px;
+  padding: 0.5rem 0.9375rem; /* 8px 15px */
   cursor: pointer;
-  color: #333;
+  color: var(--context-menu-item-text-color);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .context-menu li:hover {
-  background-color: #0078d4;
-  color: #ffffff;
+  background-color: var(--context-menu-item-hover-bg);
+  color: var(--context-menu-item-hover-text-color);
 }
 
 .context-menu li:hover .menu-icon {
-  color: #ffffff;
+  color: var(--context-menu-item-hover-text-color); /* Icon should also change color on hover */
 }
 
 .context-menu li.separator {
   height: 1px;
-  background-color: #e0e0e0;
-  margin: 5px 0;
+  background-color: var(--context-menu-separator-color);
+  margin: 0.3125rem 0; /* 5px */
   padding: 0;
   cursor: default;
 }
 
 .context-menu li.separator:hover {
-  background-color: #e0e0e0;
+  background-color: var(--context-menu-separator-color); /* No hover effect for separator */
 }
 
 .context-menu .menu-icon {
-  margin-left: 12px;
+  margin-left: 0.75rem; /* 12px */
   font-size: 1em;
-  width: 16px;
+  width: 1rem; /* 16px */
   text-align: center;
-  color: #555;
+  color: var(--context-menu-icon-color);
 }

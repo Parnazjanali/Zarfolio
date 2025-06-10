@@ -1,18 +1,113 @@
 /* frontend/src/components/JalaliCalendar.css */
+:root {
+  /* Default Theme Variables for JalaliCalendar (Light Mode) */
+  --jc-bg-color: var(--primary-bg-color, #ffffff);
+  --jc-border-color: var(--border-color, #e9edf0);
+  --jc-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  --jc-text-color: var(--primary-text-color, #374151); /* Default text color for days */
+
+  --jc-header-text-color: var(--primary-text-color); /* Inherits from widget or specify */
+  --jc-days-of-week-text-color: var(--secondary-text-color, #4a5568);
+  --jc-days-of-week-border-color: var(--border-color, #e0e6ed);
+
+  --jc-day-cell-bg-color: var(--secondary-bg-color, #f8f9fa);
+  --jc-day-cell-border-color: var(--border-color, #e9edf0);
+  --jc-day-cell-hover-bg-color: var(--border-color, #e2e8f0); /* Using border as hover bg */
+  --jc-day-cell-hover-text-color: var(--primary-text-color, #1a202c);
+  --jc-day-cell-hover-border-color: var(--secondary-text-color, #cbd5e0);
+
+  --jc-today-bg-color: var(--accent-color, #007bff);
+  --jc-today-text-color: var(--accent-text-color, white);
+  --jc-today-border-color: var(--link-hover-color, #0056b3); /* Darker accent */
+  --jc-today-shadow-color-rgb: var(--focus-ring-color-rgb, 0,123,255);
+  --jc-today-hover-bg-color: var(--link-hover-color, #0069d9);
+  --jc-today-hover-border-color: var(--link-hover-color, #004085); /* Even darker */
+
+  --jc-holiday-text-color: var(--danger-color, #e74c3c); /* Assuming a global danger color */
+  --jc-today-holiday-text-color: var(--accent-text-color, #fff); /* Holiday text on today bg */
+
+  --jc-event-dot-color: var(--danger-color, #e74c3c);
+  --jc-event-dot-shadow: 0 0 2px rgba(0,0,0,0.3);
+  --jc-today-event-dot-color: var(--accent-text-color, #ffffff);
+
+  --jc-events-list-border-color: var(--border-color, #e0e6ed);
+  --jc-events-list-text-color: var(--secondary-text-color, #495057);
+  --jc-events-list-scrollbar-thumb-bg: #bdc3c7;
+  --jc-events-list-scrollbar-track-bg: #e9ecef;
+  --jc-events-list-header-text-color: var(--primary-text-color, #2c3e50);
+  --jc-events-list-item-border-color: #f1f3f5; /* Very light border */
+  --jc-events-list-event-day-text-color: var(--primary-text-color, #34495e);
+  --jc-events-list-holiday-text-color: var(--danger-hover-color, #c0392b); /* Darker red for list */
+
+  --jc-tooltip-bg-color: #343a40; /* Dark tooltip, often kept dark in light themes */
+  --jc-tooltip-text-color: #fff;
+  --jc-tooltip-shadow: 0 2px 6px rgba(0,0,0,0.25);
+
+  --jc-today-button-text-color: var(--accent-color, #007bff);
+  --jc-today-button-hover-bg-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
+  --jc-today-button-hover-text-color: var(--link-hover-color, #0056b3);
+}
+
+body.dark-mode {
+  --jc-bg-color: var(--secondary-bg-color, #1e1e1e);
+  --jc-border-color: var(--border-color, #2c2c2c);
+  --jc-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  --jc-text-color: var(--primary-text-color, #e0e0e0);
+
+  --jc-days-of-week-text-color: var(--secondary-text-color, #a0aec0);
+  --jc-days-of-week-border-color: var(--border-color, #3a3a3a);
+
+  --jc-day-cell-bg-color: var(--primary-bg-color, #121212); /* Darker cells */
+  --jc-day-cell-border-color: var(--border-color, #2c2c2c);
+  --jc-day-cell-hover-bg-color: var(--border-color, #2c2c2c);
+  --jc-day-cell-hover-text-color: var(--primary-text-color, #f0f0f0);
+  --jc-day-cell-hover-border-color: var(--secondary-text-color, #777);
+
+  --jc-today-bg-color: var(--accent-color, #bb86fc);
+  --jc-today-text-color: var(--accent-text-color, #000); /* Ensure contrast with dark accent */
+  --jc-today-border-color: var(--link-hover-color, #9a67cf);
+  --jc-today-shadow-color-rgb: var(--focus-ring-color-rgb, 187,134,252);
+  --jc-today-hover-bg-color: var(--link-hover-color, #9a67cf);
+  --jc-today-hover-border-color: var(--link-hover-color, #8053b5);
+
+  --jc-holiday-text-color: var(--danger-color, #fca5a5); /* Lighter red for dark */
+  --jc-today-holiday-text-color: var(--accent-text-color, #000);
+
+  --jc-event-dot-color: var(--danger-color, #fca5a5);
+  --jc-event-dot-shadow: 0 0 2px rgba(0,0,0,0.5);
+  --jc-today-event-dot-color: var(--accent-text-color, #000);
+
+  --jc-events-list-border-color: var(--border-color, #3a3a3a);
+  --jc-events-list-text-color: var(--secondary-text-color, #a0aec0);
+  --jc-events-list-scrollbar-thumb-bg: #555;
+  --jc-events-list-scrollbar-track-bg: var(--primary-bg-color, #121212);
+  --jc-events-list-header-text-color: var(--primary-text-color, #e0e0e0);
+  --jc-events-list-item-border-color: var(--border-color, #2c2c2c);
+  --jc-events-list-event-day-text-color: var(--primary-text-color, #c0c0c0);
+  --jc-events-list-holiday-text-color: var(--danger-hover-color, #ef4444); /* Brighter red for dark */
+
+  --jc-tooltip-bg-color: var(--primary-bg-color, #22273b); /* Darker tooltip bg */
+  --jc-tooltip-text-color: var(--primary-text-color, #e0e0e0);
+  --jc-tooltip-shadow: 0 2px 6px rgba(0,0,0,0.5);
+
+  --jc-today-button-text-color: var(--accent-color, #bb86fc);
+  --jc-today-button-hover-bg-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
+  --jc-today-button-hover-text-color: var(--link-hover-color, #9a67cf);
+}
+
+
 .jalali-calendar-widget {
   width: 100%;
-  height: 100%; /* اطمینان از اینکه ارتفاع کامل را می‌گیرد */
-  padding: clamp(8px, 1.5vw, 10px); /* کاهش padding برای فضای بیشتر محتوا */
+  height: 100%;
+  padding: clamp(8px, 1.5vw, 10px);
   box-sizing: border-box;
-  background-color: #ffffff;
+  background-color: var(--jc-bg-color);
   border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07); /* سایه کمی واضح‌تر */
+  box-shadow: var(--jc-shadow);
   display: flex;
   flex-direction: column;
-  font-family: 'Vazirmatn FD', 'Vazirmatn', sans-serif;
-  /* overflow: hidden; */ /* <<<< این را موقتا کامنت یا حذف کنید برای تست >>>> */
-  /* اگر بعد از تست، محتوا بیرون زدگی نداشت، می‌توانید برگردانید */
-  border: 1px solid #e9edf0;
+  font-family: 'Vazirmatn FD', 'Vazirmatn', sans-serif; /* Could be var(--font-family) */
+  border: 1px solid var(--jc-border-color);
 }
 
 /* ... (سایر استایل‌های هدر و روزهای هفته بدون تغییر زیاد از نسخه قبلی شما) ... */
@@ -20,9 +115,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(5px, 1vw, 8px); /* کاهش فاصله */
+  margin-bottom: clamp(5px, 1vw, 8px);
   padding: 0 clamp(2px, 0.5vw, 4px);
-  flex-shrink: 0; /* هدر نباید کوچک شود */
+  flex-shrink: 0;
 }
 .days-of-week {
   display: grid;
@@ -31,11 +126,11 @@
   width: 100%;
   margin-bottom: clamp(4px, 1vw, 6px);
   font-weight: 600; 
-  color: #4a5568;   
-  font-size: clamp(0.65rem, 1.8vw, 0.7rem); /* کمی کوچکتر کردن برای جا شدن بهتر */
+  color: var(--jc-days-of-week-text-color);
+  font-size: clamp(0.65rem, 1.8vw, 0.7rem);
   padding-bottom: clamp(4px, 0.8vw, 5px);
-  border-bottom: 1px solid #e0e6ed;
-  flex-shrink: 0; /* بخش روزهای هفته نباید کوچک شود */
+  border-bottom: 1px solid var(--jc-days-of-week-border-color);
+  flex-shrink: 0;
 }
 .day-name {
   padding: clamp(2px, 0.5vw, 4px) 0;
@@ -46,14 +141,11 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  /* grid-auto-rows: 1fr; */ /* این باعث می‌شود ارتفاع ردیف‌ها برابر باشد و ممکن است مشکل‌ساز شود */
-  grid-auto-rows: minmax(clamp(26px, 6.5vw, 36px), auto); /* ارتفاع خودکار و حداقل برای سلول‌ها */
+  grid-auto-rows: minmax(clamp(26px, 6.5vw, 36px), auto);
   text-align: center;
   width: 100%;
-  flex-grow: 1; /* گرید فضای موجود را پر کند */
+  flex-grow: 1;
   gap: clamp(2px, 0.5vw, 4px);
-  /* اطمینان از اینکه گرید ارتفاع کافی برای نمایش ۶ ردیف (حداکثر نیاز) دارد */
-  /* این بخش را می‌توان با JavaScript پویا کرد یا یک min-height مناسب داد */
 }
 
 .day-cell {
@@ -64,22 +156,21 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
-  font-size: clamp(0.8rem, 2.8vw, 1rem); /* حفظ اندازه فونت اعداد */
-  color: #374151;
+  font-size: clamp(0.8rem, 2.8vw, 1rem);
+  color: var(--jc-text-color);
   border: 1px solid transparent;
   line-height: 1;
   font-weight: 600; 
-  /* aspect-ratio: 1 / 1; */ /* <<<< این را موقتا کامنت کنید برای تست، ممکن است ارتفاع را محدود کند >>>> */
 }
 /* ... (سایر استایل‌های day-cell و حالات آن بدون تغییر زیاد) ... */
 .day-cell:not(.empty) {
-  background-color: #f8f9fa;
-  border: 1px solid #e9edf0;
+  background-color: var(--jc-day-cell-bg-color);
+  border: 1px solid var(--jc-day-cell-border-color);
 }
 .day-cell:not(.empty):not(.today):hover {
-  background-color: #e2e8f0;
-  color: #1a202c;
-  border-color: #cbd5e0;
+  background-color: var(--jc-day-cell-hover-bg-color);
+  color: var(--jc-day-cell-hover-text-color);
+  border-color: var(--jc-day-cell-hover-border-color);
   transform: scale(1.05);
 }
 .day-cell.empty {
@@ -94,22 +185,22 @@
   padding: 2px;
 }
 .day-cell.today {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--jc-today-bg-color);
+  color: var(--jc-today-text-color);
   font-weight: 700;
-  border: 1px solid #0056b3;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  border: 1px solid var(--jc-today-border-color);
+  box-shadow: 0 0 8px rgba(var(--jc-today-shadow-color-rgb), 0.3);
 }
 .day-cell.today:hover {
-  background-color: #0069d9;
-  border-color: #004085;
+  background-color: var(--jc-today-hover-bg-color);
+  border-color: var(--jc-today-hover-border-color);
 }
 .day-cell.official-holiday .day-number {
-  color: #e74c3c;
+  color: var(--jc-holiday-text-color);
   font-weight: 700;
 }
 .day-cell.today.official-holiday .day-number {
-  color: #fff; 
+  color: var(--jc-today-holiday-text-color);
 }
 .day-cell.has-event .day-number::after {
   content: '';
@@ -119,47 +210,45 @@
   transform: translateX(-50%);
   width: clamp(3.5px, 0.9vw, 4.5px);
   height: clamp(3.5px, 0.9vw, 4.5px);
-  background-color: #e74c3c;
+  background-color: var(--jc-event-dot-color);
   border-radius: 50%;
-  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+  box-shadow: var(--jc-event-dot-shadow);
 }
 .day-cell.today.has-event .day-number::after {
-  background-color: #ffffff;
+  background-color: var(--jc-today-event-dot-color);
 }
 
 
 .month-events-list {
-  margin-top: clamp(5px, 1vw, 8px); /* فاصله مناسب */
+  margin-top: clamp(5px, 1vw, 8px);
   padding-top: clamp(5px, 1vw, 8px);
-  border-top: 1px solid #e0e6ed;
-  font-size: clamp(0.6rem, 1.6vw, 0.7rem); /* کمی بزرگتر کردن فونت رویدادها */
-  max-height: clamp(30px, 8vw, 45px); /* <<<< کاهش ارتفاع لیست رویدادها برای دادن فضای بیشتر به گرید >>>> */
-  /* یا اگر نمیخواهید لیست رویدادها اصلا نمایش داده شود در برخی استایل‌ها: */
-  /* display: none; */ /* برای استایل‌هایی که لیست رویداد ندارند */
+  border-top: 1px solid var(--jc-events-list-border-color);
+  font-size: clamp(0.6rem, 1.6vw, 0.7rem);
+  max-height: clamp(30px, 8vw, 45px);
   overflow-y: auto;
-  color: #495057;
+  color: var(--jc-events-list-text-color);
   scrollbar-width: thin;
-  scrollbar-color: #bdc3c7 #e9ecef;
+  scrollbar-color: var(--jc-events-list-scrollbar-thumb-bg) var(--jc-events-list-scrollbar-track-bg);
   padding-right: 5px;
-  flex-shrink: 0; /* لیست رویدادها نباید بیش از حد کوچک شود */
+  flex-shrink: 0;
 }
 /* ... (استایل اسکرول بار وب‌کیت بدون تغییر) ... */
 .month-events-list::-webkit-scrollbar { width: 4px; } 
-.month-events-list::-webkit-scrollbar-track { background: #e9ecef; border-radius: 2px; }
-.month-events-list::-webkit-scrollbar-thumb { background-color: #bdc3c7; border-radius: 2px; }
+.month-events-list::-webkit-scrollbar-track { background: var(--jc-events-list-scrollbar-track-bg); border-radius: 2px; }
+.month-events-list::-webkit-scrollbar-thumb { background-color: var(--jc-events-list-scrollbar-thumb-bg); border-radius: 2px; }
 
 
 .month-events-list h4 {
   margin-top: 0;
-  margin-bottom: 5px; /* کاهش فاصله */
+  margin-bottom: 5px;
   font-size: clamp(0.65rem, 1.8vw, 0.75rem);
-  color: #2c3e50;
+  color: var(--jc-events-list-header-text-color);
   font-weight: 600;
 }
 .month-events-list ul { list-style: none; padding: 0; margin: 0; }
 .month-events-list li {
-  padding: 2px 0; /* کاهش padding */
-  border-bottom: 1px solid #f1f3f5;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--jc-events-list-item-border-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -169,14 +258,14 @@
 .month-events-list li:last-child { border-bottom: none; }
 .month-events-list .event-day {
   font-weight: 600;
-  color: #34495e;
+  color: var(--jc-events-list-event-day-text-color);
   margin-left: 4px;
   display: inline-block;
   min-width: 15px;
 }
 .month-events-list .official-holiday-text,
 .month-events-list .official-holiday-text .event-day {
-  color: #c0392b;
+  color: var(--jc-events-list-holiday-text-color);
 }
 
 
@@ -185,14 +274,14 @@
   top: -40px;
   left: 50%;
   transform: translateX(-50%) translateY(-5px);
-  background-color: #343a40;
-  color: #fff;
+  background-color: var(--jc-tooltip-bg-color);
+  color: var(--jc-tooltip-text-color);
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 0.8rem;
   z-index: 100;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  box-shadow: var(--jc-tooltip-shadow);
   opacity: 0;
   animation: tooltipFadeIn 0.2s 0.05s forwards;
 }
@@ -208,10 +297,11 @@
   margin-left: -6px;
   border-width: 6px;
   border-style: solid;
-  border-color: #343a40 transparent transparent transparent;
+  border-color: var(--jc-tooltip-bg-color) transparent transparent transparent;
 }
 
 /* Style Variations */
+/* These explicit themes are NOT using the --jc variables by design, they are fixed themes */
 .jalali-calendar-widget.calendar-style-compact .days-of-week {
   font-size: clamp(0.5rem, 1.6vw, 0.55rem); /* کوچکتر برای کامپکت */
 }

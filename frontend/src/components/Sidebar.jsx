@@ -3,13 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import Portal from './Portal'; // اطمینان از وجود Portal.jsx
+import ThemeToggleSwitch from './ThemeToggleSwitch'; // Import the new component
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar, FaCog,
   FaBell, FaUserCircle, FaSignOutAlt, FaSearch,
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaBookOpen,
   FaAngleLeft, FaAngleDown,
   FaBars, FaTimes,
-  FaCube, FaUserCog, FaTags
+  FaCube, FaUserCog, FaTags,
+  FaSun, FaMoon // Added theme icons
 } from 'react-icons/fa';
 
 const DROPDOWN_MENU_HEIGHT_APPROX = 110;
@@ -20,6 +22,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const [profileImgError, setProfileImgError] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
   const newEntryButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
@@ -233,6 +236,15 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     setProfileImgError(false);
   }, [profilePictureUrl]);
 
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.body.classList.toggle('dark-mode', theme === 'dark');
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="sidebar-header">
@@ -407,7 +419,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
                 <div
                   className="dropdown-menu sidebar-dropdown-menu new-entry-actual-menu open-dropdown"
                   role="menu"
-                  style={{ bottom: '100%', right: '0', marginBottom: '5px' }}
+                  // style={{ bottom: '100%', right: '0', marginBottom: '5px' }} // Removed inline style
                 >
                   {renderDropdownContent('newEntry')}
                 </div>
@@ -427,19 +439,26 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
             <span className="sidebar-icon"><FaCog /></span>
             {!isCollapsed && <span className="sidebar-text">تنظیمات سیستم</span>}
           </NavLink>
+          {/* Old theme toggle button removed from here */}
         </div>
       </div>
 
       <div className="sidebar-footer-logout">
         <button
-            type="button"
-            className="sidebar-link logout-button-standalone"
-            onClick={handleLogout}
-            title="خروج از حساب"
+          type="button"
+          className="sidebar-link logout-button-standalone"
+          onClick={handleLogout}
+          title="خروج از حساب"
         >
           <span className="sidebar-icon"><FaSignOutAlt /></span>
           {!isCollapsed && <span className="sidebar-text">خروج از حساب</span>}
         </button>
+        {!isCollapsed && (
+          <ThemeToggleSwitch
+            isDark={theme === 'dark'}
+            onToggle={toggleTheme}
+          />
+        )}
       </div>
     </aside>
   );

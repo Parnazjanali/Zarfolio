@@ -1,24 +1,10 @@
 /* frontend/src/components/Sidebar.css */
+/* Color variables are now centralized in index.css */
 :root {
-  --sidebar-bg-color: #2c3e50;
-  --sidebar-text-color: #ecf0f1;
-  --sidebar-icon-color: #bdc3c7;
-  --sidebar-hover-bg: #34495e;
-  --sidebar-active-bg: #273746;
-  --sidebar-active-text: #f3d250;
-  --sidebar-active-border: #f3d250;
-  --sidebar-border-color: #3e5266;
-  --sidebar-dropdown-bg: #34495e;
-  --sidebar-dropdown-border: #4a6078;
-  --sidebar-dropdown-text-color: #ecf0f1;
-  --sidebar-dropdown-hover-bg: #4a6078;
-  --sidebar-logout-text-color: #e74c3c;
-  --sidebar-logout-hover-bg: rgba(231, 76, 60, 0.2);
-  --sidebar-logout-hover-text: #ff6b6b;
-
-  --sidebar-width-expanded: 260px;
-  --sidebar-width-collapsed: 60px;
-  --sidebar-transition-duration: 0.08s; /* سرعت انیمیشن افزایش یافته */
+  /* Structural and timing variables specific to Sidebar */
+  --sidebar-width-expanded: 16.25rem; /* 260px */
+  --sidebar-width-collapsed: 3.75rem; /* 60px */
+  --sidebar-transition-duration: 0.08s;
   --sidebar-cubic-bezier: cubic-bezier(0.4, 0, 0.2, 1); 
 }
 
@@ -31,441 +17,550 @@
   height: 100vh;
   position: sticky; 
   top: 0;
-  right: 0;
+  right: 0; /* Assuming RTL, for LTR this would be left: 0 */
   flex-shrink: 0;
-  direction: rtl;
+  /* direction: rtl; */ /* This should be set on a parent element or html tag for global RTL/LTR control via [dir="rtl"] or similar */
   transition: width var(--sidebar-transition-duration) var(--sidebar-cubic-bezier);
-  overflow: hidden; 
-  z-index: 1010;
+  /* overflow: hidden; Specific overflow handling is in .sidebar.collapsed and .sidebar-scrollable-content */
+  z-index: 1010; /* High z-index to keep sidebar on top */
 }
 
 .sidebar.collapsed {
   width: var(--sidebar-width-collapsed);
-  overflow: hidden; 
+  /* overflow: hidden; Handled by child elements like .sidebar-scrollable-content and text truncation */
 }
 
-@media (max-width: 768px) {
+/* Responsive adjustments for smaller screens */
+@media (max-width: 48rem) { /* Approx 768px / common tablet breakpoint */
   .sidebar:not(.collapsed) { 
-    width: 220px; 
+    width: 13.75rem; /* 220px / smaller width on mobile/tablet */
   }
 }
 
+/* Header section of the sidebar */
 .sidebar-header {
-  padding: 0 15px;
+  padding: 0 0.9375rem; /* 15px */
   border-bottom: 1px solid var(--sidebar-border-color);
   display: flex;
   align-items: center;
   justify-content: space-between; 
-  height: 56px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  position: relative;
+  height: 3.5rem; /* 56px */
+  box-sizing: border-box; /* Include padding and border in height */
+  flex-shrink: 0; /* Prevent shrinking when content grows */
+  /* position: relative; Not needed unless children are absolutely positioned against it */
 }
 
 .sidebar.collapsed .sidebar-header {
-  flex-direction: column; 
-  justify-content: center;
-  align-items: center; 
-  padding: 10px 5px; 
-  height: auto; 
+  /* flex-direction: column; Implicitly handled by flex item ordering and alignment */
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  padding: 0.625rem 0.3125rem; /* 10px 5px */
+  height: auto; /* Allow height to adjust to content (toggle button and brand icon) */
 }
 
+/* Container for brand logo/text */
 .brand-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  flex-grow: 1;
-  overflow: hidden;
+  justify-content: flex-start; /* Align brand to the start (right in RTL, left in LTR) */
+  flex-grow: 1; /* Allow brand to take available space */
+  overflow: hidden; /* Hide overflowing text */
 }
 .sidebar.collapsed .brand-container {
-  justify-content: center;
+  justify-content: center; /* Center brand icon */
   width: 100%; 
-  flex-grow: 0;
-  order: 2; 
+  flex-grow: 0; /* Do not grow when collapsed */
+  order: 2; /* Show brand icon below toggle button */
 }
 
-
+/* Brand text styling */
 .sidebar-brand {
-  margin: 0;
-  font-size: 1.6em;
-  font-weight: 600;
-  color: var(--sidebar-active-text);
-  white-space: nowrap;
-  opacity: 1;
-  max-width: 180px;
+  margin: 0; /* Remove default margin */
+  font-size: 1.6rem; /* Scalable font size */
+  font-weight: 600; /* Semi-bold */
+  color: var(--brand-text-color); /* Use specific brand text color */
+  white-space: nowrap; /* Prevent text wrapping */
+  opacity: 1; /* Visible by default */
+  max-width: 11.25rem; /* 180px, prevent text from being too long */
   transition: opacity var(--sidebar-transition-duration) ease,
               max-width var(--sidebar-transition-duration) ease; 
 }
 .sidebar.collapsed .sidebar-brand {
-  opacity: 0;
-  max-width: 0;
-  pointer-events: none; 
+  opacity: 0; /* Hide text when collapsed */
+  max-width: 0; /* Collapse width */
+  pointer-events: none; /* Make it non-interactive */
 }
 
+/* Brand icon styling (shown when collapsed) */
 .sidebar-brand-icon {
-  color: var(--sidebar-active-text);
-  font-size: 1.9em;
+  color: var(--brand-icon-color); /* Use specific brand icon color */
+  font-size: 1.9rem; /* Scalable font size */
   display: flex; 
   align-items: center;
   justify-content: center;
-  opacity: 0; 
-  pointer-events: none;
+  opacity: 0; /* Hidden by default */
+  pointer-events: none; /* Non-interactive by default */
   transition: opacity var(--sidebar-transition-duration) ease; 
 }
 .sidebar.collapsed .sidebar-brand-icon {
-  opacity: 1; 
-  pointer-events: auto;
+  opacity: 1; /* Show icon when collapsed */
+  pointer-events: auto; /* Make it interactive */
 }
 
+/* Sidebar toggle button */
 .sidebar-toggle-button {
-  background: none;
-  border: none;
-  color: var(--sidebar-icon-color);
-  font-size: 1.3em;
+  background: none; /* Transparent background */
+  border: none; /* No border */
+  color: var(--sidebar-icon-color); /* Theme icon color */
+  font-size: 1.3rem; /* Scalable icon size */
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 0.5rem; /* 8px padding */
+  border-radius: 0.25rem; /* 4px, slight rounding */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s var(--sidebar-cubic-bezier);
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 .sidebar-toggle-button:hover {
-  color: #ffffff;
-  background-color: var(--sidebar-hover-bg);
+  color: #ffffff; /* White icon on hover */
+  background-color: var(--sidebar-hover-bg); /* Theme hover background */
 }
 .sidebar.collapsed .sidebar-toggle-button {
-  width: auto; 
-  margin-bottom: 5px; 
-  order: 1; 
+  /* width: auto; Width is determined by padding and icon size */
+  margin-bottom: 0.3125rem; /* 5px margin below button when collapsed */
+  order: 1; /* Show toggle button above brand icon */
 }
 
+/* Main scrollable content area of the sidebar */
 .sidebar-scrollable-content {
-  flex-grow: 1;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-dropdown-border) transparent;
+  flex-grow: 1; /* Allow this section to take available vertical space */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  display: flex; /* Enable flexbox for children (profile, nav, actions) */
+  flex-direction: column; /* Stack children vertically */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: var(--sidebar-dropdown-border) transparent; /* For Firefox */
 }
+/* Custom scrollbar for Webkit browsers (Chrome, Safari, Edge) */
 .sidebar-scrollable-content::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem; /* 6px width */
 }
 .sidebar-scrollable-content::-webkit-scrollbar-thumb {
-  background-color: var(--sidebar-dropdown-border);
-  border-radius: 3px;
+  background-color: var(--sidebar-dropdown-border); /* Scrollbar thumb color */
+  border-radius: 0.1875rem; /* 3px, rounded thumb */
 }
 .sidebar-scrollable-content::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: transparent; /* Transparent track */
 }
 
+/* Enable vertical scrolling when sidebar is expanded and content overflows */
 .sidebar:not(.collapsed) .sidebar-scrollable-content {
   overflow-y: auto;
 }
 
+/* Hide vertical scrollbar and center items (icons) when sidebar is collapsed */
 .sidebar.collapsed .sidebar-scrollable-content {
-  overflow-y: hidden;
-  align-items: center;
+  overflow-y: hidden; /* No scrolling */
+  align-items: center; /* Center icons horizontally within the collapsed sidebar */
 }
 
+/* Profile section styling */
 .sidebar-profile-section {
-  padding: 10px 15px;
-  border-bottom: 1px solid var(--sidebar-border-color);
+  padding: 0.625rem 0.9375rem; /* 10px 15px */
+  border-bottom: 1px solid var(--sidebar-border-color); /* Separator line */
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Space out profile button and other icons */
   align-items: center;
   transition: padding 0.3s ease, opacity 0.2s ease; 
-  flex-shrink: 0;
-  opacity: 1;
+  flex-shrink: 0; /* Prevent shrinking */
+  opacity: 1; /* Visible by default */
 }
 .sidebar.collapsed .sidebar-profile-section {
-  padding: 10px 5px;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
+  padding: 0.625rem 0.3125rem; /* 10px 5px, reduced padding */
+  flex-direction: column; /* Stack items vertically */
+  gap: 0.5rem; /* 8px gap between items */
+  align-items: center; /* Center items horizontally */
+  width: 100%; /* Full width */
 }
 
+/* Profile button (contains icon, name, dropdown arrow) */
 .profile-button {
   background: none;
   border: none;
   color: var(--sidebar-icon-color);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 5px;
-  border-radius: 6px;
+  gap: 0.5rem; /* 8px gap between icon, name, arrow */
+  padding: 0.5rem 0.3125rem; /* 8px 5px */
+  border-radius: 0.375rem; /* 6px */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
-  font-family: inherit;
-  font-size: 0.9em;
+  font-family: inherit; /* Use sidebar font */
+  font-size: 0.9rem; /* Relative font size */
   font-weight: 500;
-  text-align: right;
-  flex-grow: 1;
-  overflow: hidden;
-  position: relative;
+  text-align: right; /* Align text to right (for RTL) */
+  flex-grow: 1; /* Allow button to take available space */
+  overflow: hidden; /* Hide overflowing name text */
+  /* position: relative; Not needed */
 }
 .profile-button:hover {
   background-color: var(--sidebar-hover-bg);
   color: #ffffff;
 }
 .sidebar.collapsed .profile-button {
-  justify-content: center;
-  padding: 10px;
-  width: auto;
-  flex-grow: 0;
+  justify-content: center; /* Center profile icon */
+  padding: 0.625rem; /* 10px padding */
+  width: auto; /* Adjust width to content (icon only) */
+  flex-grow: 0; /* Do not grow */
 }
 
+/* Profile icon within the profile button */
 .profile-icon {
-  font-size: 1.5em;
-  flex-shrink: 0;
+  font-size: 1.5rem; /* Relative icon size */
+  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 .sidebar.collapsed .profile-icon {
-  margin-left: 0;
-  font-size: 1.7em;
+  /* margin-left: 0; Centered by parent's justify-content */
+  font-size: 1.7rem; /* Slightly larger icon when collapsed */
 }
 
+/* Profile name text */
 .profile-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Show ellipsis for overflow */
   transition: opacity var(--sidebar-transition-duration) ease, 
               max-width var(--sidebar-transition-duration) ease;
-  max-width: 120px;
-  color: var(--sidebar-text-color);
+  max-width: 7.5rem; /* 120px, max width for name */
+  color: var(--sidebar-text-color); /* Use theme text color */
 }
 .sidebar.collapsed .profile-name {
-  opacity: 0;
+  opacity: 0; /* Hide name when collapsed */
   max-width: 0;
-  pointer-events: none;
+  pointer-events: none; /* Non-interactive */
 }
 
+/* Dropdown arrow for profile button */
 .profile-dropdown-arrow {
-  font-size: 0.8em;
-  margin-right: auto;
+  font-size: 0.8rem; /* Relative arrow size */
+  margin-right: auto; /* Push arrow to the end (right in RTL) */
   transition: transform 0.2s ease;
   color: var(--sidebar-icon-color);
 }
 .profile-button:hover .profile-dropdown-arrow {
-    color: #ffffff;
+    color: #ffffff; /* Match text color on hover */
 }
 .sidebar.collapsed .profile-dropdown-arrow {
-  display: none;
+  display: none; /* Hide arrow when collapsed */
 }
 
+/* Generic styling for icon-only buttons (e.g., notification button) */
 .sidebar-icon-button {
-  background: none; border: none; color: var(--sidebar-icon-color); font-size: 1.2em;
-  padding: 8px; border-radius: 50%; cursor: pointer; position: relative;
-  display: flex; align-items: center; justify-content: center;
+  background: none;
+  border: none;
+  color: var(--sidebar-icon-color);
+  font-size: 1.2rem; /* Relative icon size */
+  padding: 0.5rem; /* 8px padding */
+  border-radius: 50%; /* Make it circular */
+  cursor: pointer;
+  position: relative; /* Needed if badge or other elements are positioned absolutely to it */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s ease, background-color 0.2s ease;
-  width: 38px; height: 38px;
-  flex-shrink: 0;
+  width: 2.375rem; /* 38px */
+  height: 2.375rem; /* 38px */
+  flex-shrink: 0; /* Prevent shrinking */
 }
-.sidebar-icon-button:hover { color: #ffffff; background-color: var(--sidebar-hover-bg); }
-.sidebar-icon-button .sidebar-icon-direct { font-size: 1.1em; }
+.sidebar-icon-button:hover {
+  color: #ffffff;
+  background-color: var(--sidebar-hover-bg);
+}
+/* Optional: if an icon is directly inside .sidebar-icon-button (e.g. using <i> or <span>) */
+.sidebar-icon-button .sidebar-icon-direct {
+  font-size: 1.1em; /* Adjust if needed, relative to parent's font-size */
+}
 
+/* Notification badge styling (typically on an icon button) */
 .notification-badge {
-  position: absolute; top: 2px; right: 2px; background-color: #e53e3e;
-  color: white; border-radius: 50%; padding: 1px 5px; font-size: 0.65em;
-  font-weight: bold; line-height: 1; pointer-events: none;
-  transform: translate(30%, -30%); 
-  opacity: 1; 
+  position: absolute;
+  top: 0.125rem; /* 2px */
+  right: 0.125rem; /* 2px */
+  background-color: #e53e3e; /* Bright red for visibility */
+  color: white;
+  border-radius: 50%; /* Circular badge */
+  padding: 0.0625rem 0.3125rem; /* 1px 5px, small padding */
+  font-size: 0.65rem; /* Small font size */
+  font-weight: bold;
+  line-height: 1; /* Ensure text fits vertically */
+  pointer-events: none; /* Badge itself is not interactive */
+  transform: translate(30%, -30%); /* Slight offset for better positioning on icon */
+  opacity: 1; /* Visible by default */
   transition: opacity var(--sidebar-transition-duration) ease;
 }
 .sidebar.collapsed .notification-badge { 
-  opacity: 0;
+  opacity: 0; /* Hide badge when sidebar is collapsed */
   pointer-events: none;
 }
 
+/* Navigation section (links and submenus) */
 .sidebar-nav {
-  padding: 10px 0;
+  padding: 0.625rem 0; /* 10px top/bottom padding */
+  /* flex-grow: 1; Let sidebar-scrollable-content handle overall growth */
 }
-.sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
-.sidebar-nav li { position: relative; }
-.sidebar-nav li.has-submenu .submenu-toggle { cursor: pointer; }
+.sidebar-nav ul {
+  list-style: none; /* Remove default list styling */
+  padding: 0;
+  margin: 0;
+}
+.sidebar-nav li {
+  position: relative; /* Needed for active link indicators or submenu positioning */
+}
+/* Removed: .sidebar-nav li.has-submenu .submenu-toggle { cursor: pointer; } */
+/* cursor: pointer is already on .submenu-toggle */
 
-.sidebar-link, .submenu-toggle {
-  display: flex; align-items: center; padding: 10px 20px;
+/* Styling for individual navigation links and submenu toggles */
+.sidebar-link,
+.submenu-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1.25rem; /* 10px vertical, 20px horizontal padding */
   color: var(--sidebar-text-color);
-  text-decoration: none !important;
+  text-decoration: none !important; /* Force no underline */
   transition: background-color 0.2s ease, color 0.2s ease, border-right-color 0.2s ease, padding 0.3s var(--sidebar-cubic-bezier);
-  font-size: 0.95em;
-  font-weight: 500;
-  border-right: 4px solid transparent;
-  white-space: nowrap; overflow: hidden; position: relative;
-  height: 42px;
-  box-sizing: border-box;
+  font-size: 0.95rem; /* Relative font size */
+  font-weight: 500; /* Medium weight */
+  border-right: 0.25rem solid transparent; /* 4px, active indicator (RTL: right, LTR: left) */
+  /* For LTR, this would be border-left. Consider a CSS variable or conditional class for direction: [dir="ltr"] .sidebar-link */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflowing text */
+  /* position: relative; Not needed unless children are absolutely positioned */
+  height: 2.625rem; /* 42px fixed height */
+  box-sizing: border-box; /* Include padding/border in height */
 }
-.sidebar.collapsed .sidebar-link, .sidebar.collapsed .submenu-toggle {
-  justify-content: center; padding: 0 10px;
-  border-right-width: 0;
-  border-left: 4px solid transparent;
-  height: 44px;
-  width: 100%;
+.sidebar.collapsed .sidebar-link,
+.sidebar.collapsed .submenu-toggle {
+  justify-content: center; /* Center icon */
+  padding: 0 0.625rem; /* 10px horizontal padding, no vertical as height is fixed */
+  border-right-width: 0; /* No right border when collapsed */
+  border-left: 0.25rem solid transparent; /* Active indicator on left (RTL: right) */
+  /* For LTR, this would be border-right. : [dir="ltr"] .sidebar.collapsed .sidebar-link */
+  height: 2.75rem; /* 44px, slightly taller for icon touch target */
+  width: 100%; /* Full width for better touch interaction */
 }
 
-.sidebar-link:hover, .submenu-toggle:hover {
+.sidebar-link:hover,
+.submenu-toggle:hover {
   background-color: var(--sidebar-hover-bg);
   color: #ffffff;
-  text-decoration: none !important;
+  /* text-decoration: none !important; Already inherited/set */
 }
 
-.sidebar-link.active, .submenu-toggle.active {
+.sidebar-link.active,
+.submenu-toggle.active {
   background-color: var(--sidebar-active-bg);
   color: var(--sidebar-active-text);
-  font-weight: 600;
-  border-right-color: var(--sidebar-active-border);
-  text-decoration: none !important;
+  font-weight: 600; /* Bolder for active state */
+  border-right-color: var(--sidebar-active-border); /* Active indicator color (RTL: right) */
+  /* For LTR, this would be border-left-color. : [dir="ltr"] .sidebar-link.active */
+  /* text-decoration: none !important; Already inherited/set */
 }
-.sidebar.collapsed .sidebar-link.active, .sidebar.collapsed .submenu-toggle.active {
-  border-left-color: var(--sidebar-active-border);
-  border-right-width: 0;
+.sidebar.collapsed .sidebar-link.active,
+.sidebar.collapsed .submenu-toggle.active {
+  border-left-color: var(--sidebar-active-border); /* Active indicator color (RTL: right) */
+  /* For LTR, this would be border-right-color. : [dir="ltr"] .sidebar.collapsed .sidebar-link.active */
+  border-right-width: 0; /* No right border when collapsed */
 }
+/* Ensure icon color matches active text color when collapsed and active */
 .sidebar.collapsed .sidebar-link.active .sidebar-icon,
 .sidebar.collapsed .submenu-toggle.active .sidebar-icon {
   color: var(--sidebar-active-text);
 }
 
+/* Icon styling within links/toggles */
 .sidebar-icon {
-  margin-left: 14px;
-  font-size: 1.25em;
-  width: 22px;
-  text-align: center;
-  flex-shrink: 0;
+  margin-left: 0.875rem; /* 14px margin to the left of text (RTL: right) */
+  /* For LTR, this would be margin-right. : [dir="ltr"] .sidebar-icon */
+  font-size: 1.25rem; /* Relative icon size */
+  width: 1.375rem; /* 22px fixed width for alignment */
+  text-align: center; /* Center icon if it's a font icon */
+  flex-shrink: 0; /* Prevent icon from shrinking */
   transition: transform 0.25s var(--sidebar-cubic-bezier), margin 0.3s ease, font-size 0.3s ease;
-  color: var(--sidebar-icon-color);
+  color: var(--sidebar-icon-color); /* Default icon color */
 }
-.sidebar-link:hover .sidebar-icon, .submenu-toggle:hover .sidebar-icon,
-.sidebar-link.active .sidebar-icon, .submenu-toggle.active .sidebar-icon {
-  color: inherit;
+.sidebar-link:hover .sidebar-icon,
+.submenu-toggle:hover .sidebar-icon,
+.sidebar-link.active .sidebar-icon,
+.submenu-toggle.active .sidebar-icon {
+  color: inherit; /* Icon color inherits from parent state (hover, active) */
 }
 .sidebar.collapsed .sidebar-icon {
-  margin-left: 0;
-  font-size: 1.6em;
+  margin-left: 0; /* No margin when collapsed (icon is centered) */
+  font-size: 1.7rem; /* Adjusted: Larger icon when collapsed for better visibility */
 }
-.sidebar-link:hover .sidebar-icon, .submenu-toggle:hover .sidebar-icon {
-  transform: scale(1.1);
+.sidebar-link:hover .sidebar-icon,
+.submenu-toggle:hover .sidebar-icon {
+  transform: scale(1.1); /* Slight zoom effect on icon hover */
 }
 
+/* Text styling within links/toggles */
 .sidebar-text {
   transition: opacity var(--sidebar-transition-duration) ease, 
               max-width var(--sidebar-transition-duration) ease;
-  opacity: 1; max-width: 150px; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
+  opacity: 1; /* Visible by default */
+  max-width: 9.375rem; /* 150px, max width for text */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Show ellipsis for overflow */
+  white-space: nowrap; /* Prevent text wrapping */
+  display: inline-flex; /* Helps with vertical alignment with icon */
+  align-items: center; /* Vertically align text with icon */
 }
 .sidebar.collapsed .sidebar-text {
-  opacity: 0; max-width: 0; pointer-events: none;
+  opacity: 0; /* Hide text when collapsed */
+  max-width: 0;
+  pointer-events: none; /* Non-interactive */
 }
 
+/* Beta tag styling (if used next to sidebar text) */
 .beta-tag {
-  background-color: #ffffff;
-  color: var(--sidebar-bg-color);
-  font-size: 0.6em;
+  background-color: #ffffff; /* White background */
+  color: var(--sidebar-bg-color); /* Use sidebar background color for text */
+  font-size: 0.6em; /* Relative to parent's font-size (e.g., .sidebar-text) */
   font-weight: bold;
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-right: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 1;
-  vertical-align: middle;
+  padding: 0.0625rem 0.3125rem; /* 1px 5px */
+  border-radius: 0.25rem; /* 4px */
+  margin-right: 0.375rem; /* 6px margin to the right of tag (RTL: left) */
+  /* For LTR, this would be margin-left. : [dir="ltr"] .beta-tag */
+  text-transform: uppercase; /* Uppercase text */
+  letter-spacing: 0.03125rem; /* 0.5px */
+  line-height: 1; /* Ensure text fits */
+  vertical-align: middle; /* Align with adjacent text */
 }
 
+/* Arrow icon for submenu toggle */
 .submenu-arrow {
-  margin-right: auto;
-  margin-left: 5px;
+  margin-right: auto; /* Push arrow to the end (right in RTL) */
+  /* For LTR, this would be margin-left: auto; */
+  margin-left: 0.3125rem; /* 5px space from text (RTL: right) */
+  /* For LTR, this would be margin-right. : [dir="ltr"] .submenu-arrow */
   transition: transform 0.3s var(--sidebar-cubic-bezier);
-  font-size: 0.8em;
+  font-size: 0.8rem; /* Relative arrow size */
 }
-.has-submenu.submenu-open > .submenu-toggle .submenu-arrow {
+/* Rotate arrow when submenu is open */
+.submenu-open > .submenu-toggle .submenu-arrow { /* Direct child combinator for specificity */
   transform: rotate(90deg);
 }
-.sidebar.collapsed .submenu-arrow { display: none; }
+.sidebar.collapsed .submenu-arrow {
+  display: none; /* Hide arrow when collapsed */
+}
 
+/* Submenu container styling */
 .submenu {
-  list-style: none; padding: 0; margin: 0;
-  max-height: 0; overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0; /* Hidden by default */
+  overflow: hidden; /* Clip content when closed */
   transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  background-color: rgba(0,0,0,0.2);
-  padding-left: 10px;
-  opacity: 0;
+  background-color: rgba(0,0,0,0.2); /* Slightly darker background for submenu items */
+  padding-left: 0.625rem; /* 10px indent for submenu (RTL: left) */
+  /* For LTR, this would be padding-right. : [dir="ltr"] .submenu */
+  opacity: 0; /* Hidden by default */
 }
 .submenu.open {
-  max-height: 500px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  opacity: 1;
+  max-height: 31.25rem; /* 500px, max height when open, adjust as needed */
+  padding-top: 0.3125rem; /* 5px */
+  padding-bottom: 0.3125rem; /* 5px */
+  opacity: 1; /* Visible when open */
 }
+/* Submenu link styling */
 .submenu .sidebar-link {
-  padding: 8px 20px 8px 30px;
-  font-size: 0.9em;
-  height: auto;
-  border-right-width: 0;
-  text-decoration: none !important;
+  /* Adjust padding for indentation and maintain alignment */
+  /* Assuming RTL: more padding on the right for text, less on left for icon */
+  padding: 0.5rem 1.875rem 0.5rem 1.25rem; /* 8px 30px 8px 20px (top R B L for RTL) */
+  /* For LTR: padding: 0.5rem 1.25rem 0.5rem 1.875rem; (top R B L for LTR) : [dir="ltr"] .submenu .sidebar-link */
+  font-size: 0.9rem; /* Slightly smaller than main links */
+  height: auto; /* Allow height to adjust to content */
+  border-right-width: 0; /* No active indicator border needed for submenu items by default */
+  /* text-decoration: none !important; Inherited */
 }
 .submenu .sidebar-link.active {
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0,0,0,0.1); /* Subtler active background for submenu items */
   color: var(--sidebar-active-text);
-  font-weight: 500;
-  text-decoration: none !important;
+  font-weight: 500; /* Regular weight for active submenu items */
+  /* text-decoration: none !important; Inherited */
 }
+/* Submenu icon styling */
 .submenu .sidebar-icon {
-  font-size: 1em;
-  margin-left: 10px;
-  width: 18px;
+  font-size: 1rem; /* Smaller icon in submenu */
+  margin-left: 0.625rem; /* 10px margin (RTL: right of icon, LTR: left of icon) */
+  /* For LTR, this would be margin-right. : [dir="ltr"] .submenu .sidebar-icon */
+  width: 1.125rem; /* 18px */
 }
 
+/* Container for dropdown menus (profile, new entry) */
 .dropdown-container {
-  position: relative;
+  position: relative; /* Establishes positioning context for the absolute .dropdown-menu */
 }
+
+/* General dropdown menu styling */
 .dropdown-menu {
-  position: absolute;
+  position: absolute; /* Positioned relative to .dropdown-container or portal target */
   background-color: var(--sidebar-dropdown-bg);
   border: 1px solid var(--sidebar-dropdown-border);
-  border-radius: 6px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-  min-width: var(--DROPDOWN_MENU_WIDTH_APPROX, 220px);
-  z-index: 1011;
-  padding: 8px 0;
+  border-radius: 0.375rem; /* 6px */
+  box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.25); /* 0 3px 10px */
+  min-width: var(--DROPDOWN_MENU_WIDTH_APPROX, 13.75rem); /* 220px */
+  z-index: 1011; /* Above sidebar, below modals */
+  padding: 0.5rem 0; /* 8px top/bottom padding */
   display: flex;
-  flex-direction: column;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(5px);
+  flex-direction: column; /* Stack items vertically */
+  opacity: 0; /* Hidden by default */
+  visibility: hidden; /* Hidden and non-interactive */
+  transform: translateY(0.3125rem); /* 5px, slight offset for entry animation */
   transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+  /* Visibility transition ensures it's not interactive until animation ends */
 }
 .dropdown-menu.open-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+  opacity: 1; /* Visible */
+  visibility: visible; /* Visible and interactive */
+  transform: translateY(0); /* Slide into place */
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0s;
-}
-.profile-dropdown-actual-menu {
-  top: calc(100% + 5px);
-  left: 0;
-  transform-origin: top right;
-}
-.new-entry-actual-menu {
-  bottom: calc(100% + 5px);
-  right: 0;
-  transform-origin: bottom right;
+  /* Visibility transition immediate when opening */
 }
 
+/* Specific positioning for profile dropdown */
+.profile-dropdown-actual-menu {
+  top: calc(100% + 0.3125rem); /* 5px below the profile button */
+  left: 0; /* Align with left edge of profile button (RTL: right edge) */
+  /* For LTR: consider right: 0; if the profile button is on the right : [dir="ltr"] .profile-dropdown-actual-menu */
+  transform-origin: top right; /* Animation origin (RTL: top right, LTR: top left) */
+  /* Adjust transform-origin based on actual placement and desired animation flow : [dir="ltr"] .profile-dropdown-actual-menu { transform-origin: top left; } */
+}
+
+/* Specific positioning for "new entry" dropdown (if it opens upwards) */
+.new-entry-actual-menu {
+  bottom: calc(100% + 0.3125rem); /* 5px above the trigger button */
+  right: 0; /* Align with right edge of trigger (RTL: left edge) */
+  /* For LTR: consider left: 0; : [dir="ltr"] .new-entry-actual-menu */
+  transform-origin: bottom right; /* Animation origin (RTL: bottom right, LTR: bottom left) */
+  /* : [dir="ltr"] .new-entry-actual-menu { transform-origin: bottom left; } */
+}
+
+/* Individual items within a dropdown menu */
 .dropdown-menu .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
+  padding: 0.625rem 0.9375rem; /* 10px 15px */
   color: var(--sidebar-dropdown-text-color);
   text-decoration: none;
-  font-size: 0.9em;
+  font-size: 0.9rem; /* Relative font size */
   font-weight: 500;
-  background-color: transparent;
-  border: none;
-  width: 100%;
-  text-align: right;
+  background-color: transparent; /* No background by default */
+  border: none; /* No border */
+  width: 100%; /* Full width of dropdown */
+  text-align: right; /* Align text to right (RTL) */
+  /* For LTR: text-align: left; : [dir="ltr"] .dropdown-menu .dropdown-item */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -473,166 +568,241 @@
   background-color: var(--sidebar-dropdown-hover-bg);
   color: #ffffff;
 }
+
+/* Icon styling within dropdown items */
 .dropdown-menu .dropdown-item-icon {
-  margin-left: 12px;
-  font-size: 1.1em;
-  width: 20px;
+  margin-left: 0.75rem; /* 12px margin to left of text (RTL: right) */
+  /* For LTR: margin-right: 0.75rem; : [dir="ltr"] .dropdown-menu .dropdown-item-icon */
+  font-size: 1.1rem; /* Relative icon size */
+  width: 1.25rem; /* 20px fixed width */
   text-align: center;
-  flex-shrink: 0;
-  color: var(--sidebar-icon-color);
+  flex-shrink: 0; /* Prevent icon shrinking */
+  color: var(--sidebar-icon-color); /* Default icon color */
 }
 .dropdown-menu .dropdown-item:hover .dropdown-item-icon {
-  color: #ffffff;
-}
-.dropdown-menu .dropdown-divider {
-  height: 1px;
-  background-color: var(--sidebar-dropdown-border);
-  margin: 6px 10px;
+  color: #ffffff; /* Match text color on hover */
 }
 
+/* Divider line within dropdown menus */
+.dropdown-menu .dropdown-divider {
+  height: 1px; /* Thin line */
+  background-color: var(--sidebar-dropdown-border); /* Use theme border color */
+  margin: 0.375rem 0.625rem; /* 6px top/bottom, 10px left/right margin */
+}
+
+/* Animation for dropdowns rendered via React Portal (ensures smooth entry) */
 .dropdown-menu.via-portal {
   animation: portalDropdownFadeIn 0.2s ease-out;
 }
 @keyframes portalDropdownFadeIn {
-  from { opacity: 0; transform: scale(0.95) translateY(5px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: scale(0.95) translateY(0.3125rem); } /* 5px, start slightly scaled down and offset */
+  to { opacity: 1; transform: scale(1) translateY(0); } /* End at full size and correct position */
 }
 
-
+/* Section for actions at the bottom of the sidebar (e.g., New Entry, Settings) */
 .sidebar-actions {
-  padding: 10px 0px;
-  margin-top: auto;
-  flex-shrink: 0;
+  padding: 0.625rem 0; /* 10px top/bottom padding for the section */
+  margin-top: auto; /* Push this section to the bottom of .sidebar-scrollable-content */
+  flex-shrink: 0; /* Prevent this section from shrinking */
 }
+
+/* Common styling for buttons and links within .sidebar-actions */
 .sidebar-action-button,
-.settings-link {
+.settings-link { /* Assuming .settings-link is similar to an action button */
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 12px 20px;
+  width: 100%; /* Full width */
+  padding: 0.75rem 1.25rem; /* 12px vertical, 20px horizontal padding */
   background-color: transparent;
   border: none;
   color: var(--sidebar-text-color);
-  font-size: 0.95em;
+  font-size: 0.95rem; /* Relative font size */
   font-weight: 500;
-  text-align: right;
+  text-align: right; /* Align text to right (RTL) */
+  /* For LTR: text-align: left; : [dir="ltr"] .sidebar-action-button, [dir="ltr"] .settings-link */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
-  text-decoration: none !important;
-  box-sizing: border-box;
+  text-decoration: none !important; /* Force no underline */
+  box-sizing: border-box; /* Include padding/border in width/height */
 }
 .sidebar-action-button:hover,
 .settings-link:hover {
   background-color: var(--sidebar-hover-bg);
   color: #ffffff;
-  text-decoration: none !important;
+  /* text-decoration: none !important; Inherited */
 }
+
+/* Icon styling within action buttons/links */
 .sidebar-action-icon,
-.settings-link .sidebar-icon {
-  margin-left: 14px;
-  font-size: 1.25em;
-  width: 22px;
+.settings-link .sidebar-icon { /* Apply to .sidebar-icon if used within .settings-link */
+  margin-left: 0.875rem; /* 14px margin to left of text (RTL: right) */
+  /* For LTR: margin-right: 0.875rem; : [dir="ltr"] .sidebar-action-icon, [dir="ltr"] .settings-link .sidebar-icon */
+  font-size: 1.25rem; /* Relative icon size */
+  width: 1.375rem; /* 22px fixed width */
   text-align: center;
-  flex-shrink: 0;
-  color: var(--sidebar-icon-color);
+  flex-shrink: 0; /* Prevent icon shrinking */
+  color: var(--sidebar-icon-color); /* Default icon color */
 }
 .sidebar-action-button:hover .sidebar-action-icon,
 .settings-link:hover .sidebar-icon {
-  color: inherit;
+  color: inherit; /* Icon color matches parent state */
 }
+
+/* Text styling within action buttons/links */
 .sidebar-action-text,
-.settings-link .sidebar-text {
+.settings-link .sidebar-text { /* Apply to .sidebar-text if used within .settings-link */
   transition: opacity var(--sidebar-transition-duration) ease, 
               max-width var(--sidebar-transition-duration) ease;
-  opacity: 1; max-width: 150px; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
+  opacity: 1; /* Visible by default */
+  max-width: 9.375rem; /* 150px, max width for text */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Show ellipsis for overflow */
+  white-space: nowrap; /* Prevent text wrapping */
 }
+
+/* Collapsed state for action buttons/links */
 .sidebar.collapsed .sidebar-action-button,
 .sidebar.collapsed .settings-link {
-  justify-content: center;
-  padding: 12px 10px;
+  justify-content: center; /* Center icon */
+  padding: 0.75rem 0.625rem; /* 12px vertical, 10px horizontal padding */
 }
 .sidebar.collapsed .sidebar-action-text,
 .sidebar.collapsed .settings-link .sidebar-text {
-  opacity: 0; max-width: 0; pointer-events: none;
+  opacity: 0; /* Hide text */
+  max-width: 0;
+  pointer-events: none; /* Non-interactive */
 }
 .sidebar.collapsed .sidebar-action-icon,
 .sidebar.collapsed .settings-link .sidebar-icon {
-  margin-left: 0;
-  font-size: 1.6em;
+  margin-left: 0; /* No margin when icon is centered */
+  font-size: 1.7rem; /* Adjusted: Larger icon */
 }
+
+/* Old .theme-toggle-button styles (if any were specific beyond .sidebar-action-button) are no longer needed */
+/* .theme-toggle-button ... */
+
+/* Dark Mode Styles for Sidebar are now primarily handled by global variables in index.css */
+/* body.dark-mode specific overrides for sidebar elements, if any, would go here if global vars are not enough */
+
+/* Ensure beta tag adapts if its colors are not from theme variables (this rule is fine here or in index.css) */
+/* If this was already moved to index.css, it can be removed from here. Assuming it's specific enough to stay or was duplicated. */
+body.dark-mode .beta-tag {
+  background-color: var(--sidebar-text-color); /* Uses sidebar-specific text color for its background */
+  color: var(--sidebar-bg-color); /* Uses sidebar-specific bg color for its text */
+}
+
+
+/* Dropdown arrow for action buttons (if any action has a dropdown) */
 .action-dropdown-arrow {
-  margin-right: auto;
-  margin-left: 5px;
-  font-size: 0.8em;
+  margin-right: auto; /* Push arrow to the end (RTL: right) */
+  /* For LTR: margin-left: auto; */
+  margin-left: 0.3125rem; /* 5px space from text (RTL: right) */
+  /* For LTR: margin-right: 0.3125rem; : [dir="ltr"] .action-dropdown-arrow */
+  font-size: 0.8rem; /* Relative arrow size */
   transition: transform 0.2s ease;
 }
 .action-dropdown-arrow.open {
-  transform: rotate(180deg);
+  transform: rotate(180deg); /* Rotate arrow for open state (e.g., New Entry options) */
 }
 .sidebar.collapsed .action-dropdown-arrow {
-  display: none;
+  display: none; /* Hide arrow when collapsed */
 }
 
+/* Footer section containing the logout button */
 .sidebar-footer-logout {
-  padding: 0px;
-  border-top: 1px solid var(--sidebar-border-color);
-  flex-shrink: 0;
-  background-color: rgba(0,0,0,0.15);
+  border-top: 1px solid var(--sidebar-border-color); /* Separator line */
+  flex-shrink: 0; /* Prevent shrinking */
+  background-color: rgba(0,0,0,0.15); /* Slightly darker background for emphasis */
+  display: flex; /* Added for layout of button and toggle */
+  align-items: center; /* Vertically align items */
+  justify-content: space-between; /* Space between logout button and toggle */
+  padding: 0 0.625rem; /* 10px padding on sides, button/toggle will have their own vertical padding */
 }
 
+/* Adjustments for expanded sidebar footer content */
+.sidebar:not(.collapsed) .sidebar-footer-logout .logout-button-standalone {
+  flex-grow: 1; /* Allows logout text to take available space */
+  /* The button already has padding, ensure it doesn't cause overflow with the toggle */
+  /* We might want to reduce its side padding if space is tight, or rely on flex-grow */
+  padding-left: 0.625rem; /* Adjust if needed, original was 1.25rem (20px) */
+  padding-right: 0.625rem;
+}
+
+.sidebar:not(.collapsed) .sidebar-footer-logout .theme-toggle-switch {
+  flex-shrink: 0; /* Prevent toggle from shrinking */
+  margin-right: 0.3125rem; /* 5px space to its right (assuming LTR for icon placement in toggle) */
+  /* For RTL, this would be margin-left if the whole footer section is not flex-direction: row-reverse */
+}
+
+
+/* Standalone logout button styling */
 .logout-button-standalone {
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 12px 20px;
+  width: 100%; /* Full width */
+  padding: 0.75rem 1.25rem; /* 12px vertical, 20px horizontal padding */
   background-color: transparent;
   border: none;
-  color: var(--sidebar-logout-text-color);
-  font-size: 0.95em;
-  font-weight: 600;
-  text-align: right;
+  color: var(--sidebar-logout-text-color); /* Specific logout text color */
+  font-size: 0.95rem; /* Relative font size */
+  font-weight: 600; /* Bolder for emphasis */
+  text-align: right; /* Align text to right (RTL) */
+  /* For LTR: text-align: left; : [dir="ltr"] .logout-button-standalone */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
-  height: 48px;
-  box-sizing: border-box;
-  justify-content: flex-start;
-  text-decoration: none !important;
+  height: 3rem; /* 48px fixed height */
+  box-sizing: border-box; /* Include padding/border in height */
+  /* justify-content: flex-start; Will be handled by flex container on parent now */
+  text-decoration: none !important; /* Force no underline */
 }
+
+/* When sidebar is collapsed, the logout button (icon only) should be centered */
+.sidebar.collapsed .sidebar-footer-logout {
+  justify-content: center; /* Center the icon-only logout button */
+  padding: 0; /* Reset padding, button itself has padding for collapsed state */
+}
+
 
 .logout-button-standalone:hover {
-  background-color: var(--sidebar-logout-hover-bg);
-  color: var(--sidebar-logout-hover-text);
-  text-decoration: none !important;
+  background-color: var(--sidebar-logout-hover-bg); /* Specific logout hover background */
+  color: var(--sidebar-logout-hover-text); /* Specific logout hover text color */
+  /* text-decoration: none !important; Inherited */
 }
 
+/* Icon within the logout button */
 .logout-button-standalone .sidebar-icon {
-  margin-left: 14px;
-  font-size: 1.25em;
-  width: 22px;
+  margin-left: 0.875rem; /* 14px margin to left of text (RTL: right) */
+  /* For LTR: margin-right: 0.875rem; : [dir="ltr"] .logout-button-standalone .sidebar-icon */
+  font-size: 1.25rem; /* Relative icon size */
+  width: 1.375rem; /* 22px fixed width */
   text-align: center;
-  color: inherit;
+  color: inherit; /* Icon color matches button text color (including hover state) */
 }
 
+/* Text within the logout button */
 .logout-button-standalone .sidebar-text {
   transition: opacity var(--sidebar-transition-duration) ease, 
               max-width var(--sidebar-transition-duration) ease;
-  opacity: 1; max-width: 150px; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
+  opacity: 1; /* Visible by default */
+  max-width: 9.375rem; /* 150px, max width for text */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Show ellipsis for overflow */
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
+/* Collapsed state for logout button */
 .sidebar.collapsed .logout-button-standalone {
-  justify-content: center;
-  padding: 0 10px;
-  height: 46px;
+  justify-content: center; /* Center icon */
+  padding: 0 0.625rem; /* 10px horizontal padding */
+  height: 2.875rem; /* 46px, slightly shorter */
 }
 
 .sidebar.collapsed .logout-button-standalone .sidebar-text {
-  opacity: 0;
+  opacity: 0; /* Hide text */
   max-width: 0;
-  pointer-events: none;
+  pointer-events: none; /* Non-interactive */
 }
 .sidebar.collapsed .logout-button-standalone .sidebar-icon {
-  margin-left: 0;
-  font-size: 1.6em;
+  margin-left: 0; /* No margin when icon is centered */
+  font-size: 1.7rem; /* Adjusted: Larger icon */
 }
