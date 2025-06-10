@@ -152,10 +152,10 @@ const LabelPreview = ({
     transition: isFullScreen ? 'none' : 'transform 0.2s ease-out',
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    // backgroundColor: 'white', /* Moved to CSS (.label-render-area) */
+    // boxShadow: '0 2px 8px rgba(0,0,0,0.15)', /* Moved to CSS (.label-render-area) */
     boxSizing: 'border-box',
-    padding: '1.5mm',
+    padding: '1.5mm', // This padding is more structural for content within label
   };
 
   const labelElements = {
@@ -251,24 +251,24 @@ const LabelPreview = ({
 
           const fieldStyle = {
             position: 'absolute',
-            fontSize: fieldConfig.fontSize ? `${fieldConfig.fontSize}pt` : (fontSize ? `${fontSize}pt` : 'inherit'), // استفاده از فونت پایه اگر فونت فیلد نیست
-            fontFamily: fieldConfig.fontFamily || font || 'inherit', // استفاده از فونت پایه
-            color: fieldConfig.color || '#000000', // رنگ پیش‌فرض اگر مشخص نشده
+            fontSize: fieldConfig.fontSize ? `${fieldConfig.fontSize}pt` : (fontSize ? `${fontSize}pt` : 'inherit'),
+            fontFamily: fieldConfig.fontFamily || font || 'inherit',
+            color: fieldConfig.color || 'inherit', // Inherits from .draggable-field in CSS
             fontWeight: fieldConfig.fontWeight || 'normal',
             cursor: isFullScreen ? 'grab' : 'default',
-            padding: isFullScreen ? '2px 4px' : '0',
-            border: isFullScreen ? `1px dashed rgba(0,0,0,0.3)` : 'none',
-            backgroundColor: isFullScreen ? 'rgba(0,0,0,0.02)' : 'transparent',
+            padding: isFullScreen ? '2px 4px' : '0', // Keep for editable state feedback
+            // border and backgroundColor for editable state are now handled by CSS classes
             whiteSpace: 'nowrap',
           };
           
+          // Width/height for barcode/QR are layout-specific, not color.
+          // MinHeight for placeholder also layout.
+          // The placeholder-specific border/bg are handled by CSS classes.
           if (key === 'barcode' || key === 'qrCode') {
             fieldStyle.width = fieldConfig.width ? `${fieldConfig.width}mm` : 'auto';
             if(key === 'qrCode') fieldStyle.height = fieldConfig.size ? `${fieldConfig.size}mm` : 'auto';
             if(!content && isFullScreen) {
                 fieldStyle.minHeight = '10mm'; 
-                fieldStyle.border = '1px dashed rgba(0,100,200,0.5)';
-                fieldStyle.backgroundColor = 'rgba(0,100,200,0.05)';
             }
           }
 
@@ -290,7 +290,7 @@ const LabelPreview = ({
             >
               <div
                 ref={nodeRef}
-                className={`draggable-field field-${key} ${isFullScreen ? 'editable' : ''}`}
+                className={`draggable-field field-${key} ${isFullScreen ? 'editable' : ''} ${(!content && isFullScreen && (key === 'barcode' || key === 'qrCode')) ? `${key}-placeholder` : ''}`}
                 style={fieldStyle}
                 onMouseEnter={() => isFullScreen && setShowEditToolbar(key)}
                 onMouseLeave={() => isFullScreen && setShowEditToolbar(null)}

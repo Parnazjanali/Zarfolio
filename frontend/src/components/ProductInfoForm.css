@@ -1,37 +1,94 @@
 /* frontend/src/components/ProductInfoForm.css */
+:root {
+  /* Form fieldset and legend styling (can be overridden by more specific component styles) */
+  --pif-fieldset-border-color: var(--border-color, #ced4da); /* Default border for fieldsets */
+  --pif-legend-text-color: var(--primary-text-color, #495057); /* Default legend text color */
 
-/* اگر می‌خواهید استایل fieldset در این فرم کمی متفاوت باشد */
+  /* Nested/accented fieldset (e.g., stone info) */
+  --pif-nested-fieldset-bg: #fdfdff; /* Slightly off-white for light theme */
+  --pif-info-accent-color: var(--accent-color, #007bff); /* Accent for border/legend */
+
+  --pif-radio-accent-color: var(--accent-color); /* For radio buttons */
+}
+
+body.dark-mode {
+  --pif-fieldset-border-color: var(--border-color, #495057);
+  --pif-legend-text-color: var(--primary-text-color, #e0e0e0);
+
+  --pif-nested-fieldset-bg: rgba(var(--rgb-secondary-bg, 30,30,30), 0.5); /* Darker, slightly transparent */
+  --pif-info-accent-color: var(--accent-color, #bb86fc);
+
+  --pif-radio-accent-color: var(--accent-color);
+}
+
+
+/* General fieldset styling for this form, if needed beyond global form styles */
 .product-info-form .form-fieldset {
-  /* border-color: navy; */ /* مثال: تغییر رنگ حاشیه */
-  /* margin-bottom: 25px; */
+  border: 1px solid var(--pif-fieldset-border-color);
+  padding: 1rem 1.25rem; /* Consistent padding */
+  margin-bottom: 1.5rem; /* Consistent margin */
+  border-radius: 0.375rem; /* 6px */
 }
 
 .product-info-form .form-fieldset legend {
-  /* color: navy; */ /* مثال: تغییر رنگ لجند */
+  color: var(--pif-legend-text-color);
+  font-weight: 600; /* Make legends a bit bolder */
+  padding: 0 0.5rem; /* Horizontal padding for legend */
+  font-size: 1em; /* Consistent legend size */
+  display: inline-flex; /* To allow gap with icon if any */
+  align-items: center;
+  gap: 0.5rem;
+}
+.product-info-form .form-fieldset legend svg {
+  color: var(--pif-legend-text-color); /* Default icon color same as legend text */
+  /* Specific legend icons can override this, e.g. for stone info */
 }
 
-/* استایل خاص برای گروه نام و کد محصول اگر بخواهیم انعطاف بیشتری داشته باشیم */
-/* .product-info-form .name-code-group {
+
+/* Styling for radio button groups */
+.product-info-form .form-radio-group {
   display: flex;
-  gap: 15px;
+  gap: 1.5rem; /* Space between radio options */
+  padding-top: 0.5rem;
+}
+.product-info-form .form-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--primary-text-color); /* Text next to radio */
+}
+.product-info-form .form-radio-group input[type="radio"] {
+  accent-color: var(--pif-radio-accent-color);
+  cursor: pointer;
 }
 
-.product-info-form .name-code-group .form-row {
-  flex: 1;
-} */
 
-/* استایل برای فیلد رنگ طلا اگر بخواهیم متفاوت باشد */
-/* .product-info-form #goldColor {
-  background-color: lightgoldenrodyellow;
-} */
+/* Input and select elements will primarily use global styles from index.css */
+/* Add any specific overrides for ProductInfoForm inputs here if necessary */
+/* For example:
+.product-info-form input[type="text"],
+.product-info-form input[type="number"],
+.product-info-form select {
+  margin-bottom: 0.5rem; /* Add some space below each input if form-row doesn't handle it
+}
+*/
 
-/* استایل برای فیلدست مشخصات سنگ در این فرم */
+
+/* Styling for the nested fieldset (e.g., stone specifications) */
 .product-info-form .nested-fieldset {
-  background-color: #fdfdff; /* یک پس‌زمینه کمی متفاوت‌تر از حالت عادی */
-  border-left: 3px solid var(--info-color); /* یک خط رنگی در کنار برای تمایز */
-  margin-top: 20px;
+  background-color: var(--pif-nested-fieldset-bg);
+  border-left: 3px solid var(--pif-info-accent-color);
+  margin-top: 1.25rem; /* 20px */
+  /* Inherits border, padding, margin-bottom from .form-fieldset but with overrides */
+  border-top: 1px solid var(--pif-fieldset-border-color);
+  border-right: 1px solid var(--pif-fieldset-border-color);
+  border-bottom: 1px solid var(--pif-fieldset-border-color);
 }
 
 .product-info-form .nested-fieldset legend {
-  color: var(--info-color);
+  color: var(--pif-info-accent-color); /* Legend uses the accent color */
+}
+.product-info-form .nested-fieldset legend svg {
+  color: var(--pif-info-accent-color); /* Icon in legend also uses accent */
 }

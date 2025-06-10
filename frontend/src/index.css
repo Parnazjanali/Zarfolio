@@ -1,13 +1,80 @@
 /* src/index.css */
 :root {
+  /* Global Font & Base */
   font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.7;
   font-weight: 400;
-  color: #2c3e50;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Light Theme (Default) */
+  --primary-bg-color: #FAF8F3; /* Creamy white from existing body */
+  --primary-text-color: #1f2c38; /* Dark text from existing h1-h6 */
+  --secondary-bg-color: #e9ecef; /* Light grey for cards, inputs */
+  --secondary-text-color: #495057; /* Medium grey text */
+  --accent-color: #007bff; /* Standard blue accent */
+  --accent-text-color: #ffffff; /* White text on accent */
+  --border-color: #dee2e6; /* Standard border color */
+  --link-color: #2980b9; /* Existing link color */
+  --link-hover-color: #1f618d; /* Existing link hover color */
+  --focus-ring-color-rgb: 0,123,255; /* For box-shadow, corresponds to accent-color */
+
+  /* Sidebar Specific Light Theme Variables */
+  --sidebar-bg-color: #2c3e50;
+  --sidebar-text-color: #ecf0f1;
+  --sidebar-icon-color: #bdc3c7;
+  --sidebar-hover-bg: #34495e;
+  --sidebar-active-bg: #273746;
+  --sidebar-active-text: #f3d250;
+  --sidebar-active-border: #f3d250;
+  --sidebar-border-color: #3e5266;
+  --sidebar-dropdown-bg: #34495e;
+  --sidebar-dropdown-border: #4a6078;
+  --sidebar-dropdown-text-color: #ecf0f1;
+  --sidebar-dropdown-hover-bg: #4a6078;
+  --sidebar-logout-text-color: #e74c3c;
+  --sidebar-logout-hover-bg: rgba(231, 76, 60, 0.2);
+  --sidebar-logout-hover-text: #ff6b6b;
+
+  /* Brand Colors */
+  --brand-text-color: #f3d250; /* Zarfolio gold for brand text */
+  --brand-icon-color: #f3d250; /* Zarfolio gold for brand icon */
+}
+
+body.dark-mode {
+  /* Dark Theme */
+  --primary-bg-color: #121212;
+  --primary-text-color: #e0e0e0;
+  --secondary-bg-color: #1e1e1e;
+  --secondary-text-color: #c0c0c0;
+  --accent-color: #bb86fc; /* Purple accent for dark mode */
+  --accent-text-color: #ffffff; /* White text for high contrast on dark accent */
+  --border-color: #2c2c2c;
+  --link-color: #bb86fc;
+  --link-hover-color: #9a67cf;
+  --focus-ring-color-rgb: 187,134,252; /* Corresponds to dark accent-color */
+
+  /* Sidebar Specific Dark Theme Variables */
+  --sidebar-bg-color: #22273b;
+  --sidebar-text-color: #c7d2fe;
+  --sidebar-icon-color: #a5b4fc;
+  --sidebar-hover-bg: #313852;
+  --sidebar-active-bg: #4338ca;
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-border: #6d28d9;
+  --sidebar-border-color: #313852;
+  --sidebar-dropdown-bg: #2a3045;
+  --sidebar-dropdown-border: #3e4666;
+  --sidebar-dropdown-text-color: #c7d2fe;
+  --sidebar-dropdown-hover-bg: #3b4363;
+  --sidebar-logout-text-color: #fca5a5;
+  --sidebar-logout-hover-bg: rgba(239, 68, 68, 0.2);
+  --sidebar-logout-hover-text: #ef4444;
+
+  /* Theme Toggle Switch Specific */
+  --toggle-dark-track-bg-color: #4A5568; /* Subdued track color for dark mode toggle */
 }
 
 html,
@@ -19,19 +86,26 @@ body,
 }
 
 body {
-  background-color: #FAF8F3; /* Creamy white background for general pages */
+  background-color: var(--primary-bg-color);
+  color: var(--primary-text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Specific background for login page if it shouldn't be themed by --primary-bg-color */
 .login-page-background {
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  /* This gradient will override body background-color due to specificity if applied to a container */
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); /* This remains as is, not themed by variables */
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
-  /* Ensure body takes full height for login page background */
-  min-height: 100vh; /* Or height: 100% if html, #root also have height 100% */
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+body:not(.login-page-background) { /* Apply themed background only if not login page */
+    background-color: var(--primary-bg-color);
+}
+
 
 @keyframes gradientBG {
   0% {
@@ -47,40 +121,47 @@ body {
 
 a {
   font-weight: 500;
-  color: #2980b9;
+  color: var(--link-color);
   text-decoration: none;
 }
 a:hover {
-  color: #1f618d;
+  color: var(--link-hover-color);
   text-decoration: underline;
 }
 
-button {
-  border-radius: 6px;
-  border: 1px solid transparent;
+button, .button { /* Apply to buttons and elements with .button class */
+  border-radius: 0.25rem; /* 4px */
+  border: 1px solid var(--accent-color);
   padding: 0.6em 1.2em;
   font-size: 0.95em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #e0e0e0;
-  color: #2c3e50;
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
   cursor: pointer;
-  transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-button:hover {
-  border-color: #bdc3c7;
-  background-color: #d5d9dc;
+button:hover, .button:hover {
+  background-color: var(--link-hover-color); /* Using link-hover for a darker shade of accent */
+  border-color: var(--link-hover-color);
+  color: var(--accent-text-color); /* Ensure text remains readable */
 }
 
 button:focus,
-button:focus-visible {
-  outline: 3px auto -webkit-focus-ring-color;
+button:focus-visible,
+.button:focus,
+.button:focus-visible {
+  outline: 3px auto -webkit-focus-ring-color; /* Default browser focus, consider custom */
+  /* For custom focus ring: */
+  /* outline: none; */
+  /* box-shadow: 0 0 0 0.2rem rgba(var(--focus-ring-color-rgb), 0.4); */
   outline-offset: 1px;
 }
 
+
 h1, h2, h3, h4, h5, h6 {
-  color: #1f2c38;
+  color: var(--primary-text-color); /* Use primary text color for headings */
   font-weight: 600;
 }
 
@@ -94,6 +175,21 @@ h2 {
 h3 {
   font-size: 1.4em;
 }
+
+input, select, textarea {
+  background-color: var(--secondary-bg-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--focus-ring-color-rgb), 0.25);
+}
+
 
 /* Portal root styling (optional, usually for absolute positioning context if needed) */
 #portal-root {

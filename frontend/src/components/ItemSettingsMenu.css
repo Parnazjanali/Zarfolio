@@ -1,13 +1,28 @@
 /* src/components/ItemSettingsMenu.css */
+:root {
+  --ism-menu-bg: var(--primary-bg-color, #fff);
+  --ism-menu-border-color: var(--border-color, #e0e0e0);
+  --ism-menu-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  --ism-item-text-color: var(--primary-text-color, #333);
+  --ism-item-hover-bg-color: var(--secondary-bg-color, #f5f5f5); /* Using secondary for hover */
+}
+
+body.dark-mode {
+  --ism-menu-bg: var(--secondary-bg-color, #2b2b2b); /* Darker background for menu */
+  --ism-menu-border-color: var(--border-color, #444);
+  --ism-menu-shadow: 0 4px 15px rgba(0,0,0,0.3); /* More pronounced shadow for dark */
+  --ism-item-text-color: var(--primary-text-color, #e0e0e0);
+  --ism-item-hover-bg-color: var(--border-color, #3a3a3a); /* Using border color for hover in dark */
+}
+
 .item-settings-menu {
-  position: fixed; /* موقعیت توسط JS با getBoundingClientRect تنظیم می‌شود */
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 1030; /* باید بالاتر از آیتم‌های گرید باشد */
-  min-width: 220px;
-  padding: 8px 0;
+  /* Position, z-index, min-width are set by JS or can remain if static */
+  background-color: var(--ism-menu-bg);
+  border: 1px solid var(--ism-menu-border-color);
+  border-radius: 0.375rem; /* 6px */
+  box-shadow: var(--ism-menu-shadow);
+  padding: 0.5rem 0; /* 8px 0 */
+  /* font-family will be inherited from global styles */
 }
 
 .item-settings-menu ul {
@@ -17,15 +32,15 @@
 }
 
 .item-settings-menu li {
-  padding: 10px 20px;
+  padding: 0.625rem 1.25rem; /* 10px 20px */
   cursor: pointer;
   font-size: 0.9em;
-  color: #333;
+  color: var(--ism-item-text-color);
   display: flex;
   align-items: center;
   transition: background-color 0.15s ease;
 }
 
 .item-settings-menu li:hover {
-  background-color: #f5f5f5;
+  background-color: var(--ism-item-hover-bg-color);
 }

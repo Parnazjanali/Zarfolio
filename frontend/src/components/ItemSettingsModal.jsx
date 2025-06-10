@@ -1,9 +1,11 @@
 // src/components/ItemSettingsModal.jsx
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave } from 'react-icons/fa';
-// استفاده از استایل‌های عمومی مودال که ممکن است در DashboardPage.css یا یک فایل CSS مودال مشترک تعریف شده باشند
-// مسیر صحیح برای دسترسی به DashboardPage.css از پوشه components به pages
-import '../pages/DashboardPage.css'; // مسیر اصلاح شد
+import './ItemSettingsModal.css'; // Import the new CSS file
+// The import for DashboardPage.css might still be needed if it contains generic modal structure styles
+// not covered by index.css or if this modal specifically relies on it.
+// For now, we assume generic modal styles are handled by broader CSS files (index.css or a generic modal css).
+// import '../pages/DashboardPage.css'; // مسیر اصلاح شد - Commented out if covered by global/generic styles
 
 // کامپوننت ItemSettingsModal
 const ItemSettingsModal = ({

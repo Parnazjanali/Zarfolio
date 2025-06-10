@@ -1,4 +1,44 @@
 /* src/components/DigitalClockSettingsModal.css */
+:root {
+  --dc-modal-option-border-color: var(--border-color, #e0e0e0);
+  --dc-modal-option-bg-color: var(--secondary-bg-color, #f9f9f9);
+  --dc-modal-option-hover-border-color: var(--accent-color, #007bff);
+  --dc-modal-option-hover-shadow-color-rgb: var(--focus-ring-color-rgb, 0,123,255); /* from index.css */
+
+  --dc-modal-option-selected-border-color: var(--accent-color, #007bff);
+  --dc-modal-option-selected-bg-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1); /* Light accent bg */
+  --dc-modal-option-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 0,123,255);
+
+  --dc-modal-option-header-text-color: var(--primary-text-color, #333);
+  --dc-modal-option-desc-text-color: var(--secondary-text-color, #555);
+
+  --dc-modal-preview-bg-color: var(--primary-bg-color, #fff);
+  --dc-modal-preview-border-color: var(--border-color, #ccc);
+  --dc-modal-preview-text-color: var(--primary-text-color, #444);
+
+  --dc-modal-footer-border-color: var(--border-color, #e9ecef);
+}
+
+body.dark-mode {
+  --dc-modal-option-border-color: var(--border-color, #3a3a3a);
+  --dc-modal-option-bg-color: var(--secondary-bg-color, #2a2a2a);
+  --dc-modal-option-hover-border-color: var(--accent-color, #bb86fc);
+  --dc-modal-option-hover-shadow-color-rgb: var(--focus-ring-color-rgb, 187,134,252);
+
+  --dc-modal-option-selected-border-color: var(--accent-color, #bb86fc);
+  --dc-modal-option-selected-bg-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
+  --dc-modal-option-selected-shadow-color-rgb: var(--focus-ring-color-rgb, 187,134,252);
+
+  --dc-modal-option-header-text-color: var(--primary-text-color, #e0e0e0);
+  --dc-modal-option-desc-text-color: var(--secondary-text-color, #b0b0b0);
+
+  --dc-modal-preview-bg-color: var(--primary-bg-color, #121212);
+  --dc-modal-preview-border-color: var(--border-color, #3a3a3a);
+  --dc-modal-preview-text-color: var(--primary-text-color, #c0c0c0);
+
+  --dc-modal-footer-border-color: var(--border-color, #3a3a3a);
+}
+
 .clock-style-options-container {
   display: flex;
   flex-direction: column;
@@ -10,58 +50,58 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 1rem; /* 15px */
+  border: 1px solid var(--dc-modal-option-border-color);
+  border-radius: 0.5rem; /* 8px */
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background-color: #f9f9f9;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  background-color: var(--dc-modal-option-bg-color);
 }
 
 .clock-style-option:hover {
-  border-color: #007bff;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+  border-color: var(--dc-modal-option-hover-border-color);
+  box-shadow: 0 2px 8px rgba(var(--dc-modal-option-hover-shadow-color-rgb), 0.1);
 }
 
 .clock-style-option.selected {
-  border-color: #007bff;
-  background-color: #e7f3ff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+  border-color: var(--dc-modal-option-selected-border-color);
+  background-color: var(--dc-modal-option-selected-bg-color);
+  box-shadow: 0 0 0 2px rgba(var(--dc-modal-option-selected-shadow-color-rgb), 0.3);
 }
 
 .clock-style-option .style-info {
   flex-grow: 1;
-  padding-right: 15px; /* For RTL */
+  padding-right: 1rem; /* 15px For RTL */
 }
 
 .clock-style-option h4 {
   margin-top: 0;
-  margin-bottom: 5px;
-  color: #333;
+  margin-bottom: 0.3125rem; /* 5px */
+  color: var(--dc-modal-option-header-text-color);
   font-size: 1.1em;
 }
 
 .clock-style-option .style-description {
   font-size: 0.85em;
-  color: #555;
+  color: var(--dc-modal-option-desc-text-color);
   margin-bottom: 0;
   line-height: 1.5;
 }
 
 .clock-preview-placeholder {
-  min-width: 120px;
-  height: 60px;
-  background-color: #fff;
-  border: 1px dashed #ccc;
-  border-radius: 6px;
+  min-width: 7.5rem; /* 120px */
+  height: 3.75rem; /* 60px */
+  background-color: var(--dc-modal-preview-bg-color);
+  border: 1px dashed var(--dc-modal-preview-border-color);
+  border-radius: 0.375rem; /* 6px */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-family: 'Vazirmatn', sans-serif; /* Or your clock font */
-  color: #444;
+  color: var(--dc-modal-preview-text-color);
   font-size: 0.9em;
-  padding: 5px;
+  padding: 0.3125rem; /* 5px */
 }
 
 .clock-preview-placeholder .preview-text {
@@ -76,8 +116,42 @@
     font-weight: bold;
 }
 
-/* Ensure modal styles from DashboardPage.css don't conflict or enhance them here */
+/* Generic modal parts styling (header, body, footer) should use global vars */
+/* Assuming .generic-modal-overlay and .generic-modal-content are styled globally or in another shared file */
+.modal-overlay.generic-modal-overlay .modal-content.generic-modal-content {
+  /* background-color: var(--primary-bg-color); /* Or --secondary-bg-color for modals */
+  /* color: var(--primary-text-color); */
+}
+
+.modal-overlay.generic-modal-overlay .modal-header {
+  /* border-bottom: 1px solid var(--border-color); */
+  /* color: var(--primary-text-color); */
+}
+
 .modal-overlay.generic-modal-overlay .modal-close-button {
-    font-size: 1.5rem; /* Make close button a bit larger */
-    padding: 0.25rem 0.75rem;
+  /* color: var(--secondary-text-color); */
+}
+.modal-overlay.generic-modal-overlay .modal-close-button:hover {
+  /* color: var(--primary-text-color); */
+}
+
+.modal-overlay.generic-modal-overlay .modal-footer {
+  border-top: 1px solid var(--dc-modal-footer-border-color);
+  /* Specific alignment from JSX: text-align: left; */
+  /* Buttons in footer should use global button styling or specific classes */
+}
+
+/* Specific button styling if not covered by global .action-button from index.css */
+.modal-footer .save-button { /* This is likely an accent button */
+  /* Uses global .button styling which applies var(--accent-color) */
+}
+.modal-footer .action-button { /* This is for the "Cancel" button */
+  /* This class is too generic, prefer .button.secondary or similar */
+  /* Assuming it should look like a secondary button */
+  background-color: var(--button-secondary-bg-color, #6c757d);
+  color: var(--button-secondary-text-color, #fff);
+  border: 1px solid transparent;
+}
+.modal-footer .action-button:hover {
+  background-color: var(--button-secondary-hover-bg-color, #5a6268);
 }

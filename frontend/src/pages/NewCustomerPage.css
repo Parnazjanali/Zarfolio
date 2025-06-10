@@ -1,26 +1,96 @@
 /* frontend/src/pages/NewCustomerPage.css */
+:root {
+  --ncp-page-bg: var(--secondary-bg-color, #f4f6f8);
+  --ncp-page-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --ncp-form-bg: var(--primary-bg-color, #ffffff);
+  --ncp-page-title-color: var(--primary-text-color, #2c3e50);
+  --ncp-label-color: var(--secondary-text-color, #34495e);
+  /* Inputs will use global --border-color, --accent-color for focus */
+
+  /* Specific button colors if not using global .action-button classes */
+  --ncp-add-button-bg: var(--success-color, #28a745); /* Define --success-color globally if possible */
+  --ncp-add-button-text: var(--accent-text-color, white);
+  --ncp-add-button-border: var(--success-darker-color, #208c3a); /* Define globally */
+  --ncp-add-button-hover-bg: var(--success-darker-color, #218838);
+
+  --ncp-remove-button-border: var(--danger-color, #e74c3c);
+  --ncp-remove-button-bg: rgba(var(--danger-color-rgb, 220,53,69), 0.05); /* Assuming --danger-color-rgb */
+  --ncp-remove-button-text: var(--danger-hover-color, #c0392b); /* Darker red for text */
+  --ncp-remove-button-hover-bg: rgba(var(--danger-color-rgb, 220,53,69), 0.15);
+  --ncp-remove-button-hover-border: var(--danger-hover-color, #c0392b);
+
+  --ncp-field-suggestion-text: var(--secondary-text-color, #7f8c8d);
+  --ncp-section-border: var(--border-color, #ecf0f1);
+  --ncp-section-title-color: var(--primary-text-color, #2c3e50);
+  --ncp-section-title-border-color: var(--accent-color, #3498db); /* Blue accent for this title */
+
+  --ncp-combined-balance-item-bg: var(--secondary-bg-color, #fdfdfd);
+  --ncp-combined-balance-item-border: var(--border-color, #e7e9ec);
+  --ncp-balance-text-equivalent-color: var(--primary-text-color, #34495e);
+  --ncp-radio-group-label-color: var(--primary-text-color, #333);
+
+  --ncp-currency-entry-bg: var(--secondary-bg-color, #f0f4f7);
+  --ncp-currency-entry-border: var(--border-color, #dfe3e7);
+
+  /* Buttons using global .action-button classes will inherit their themes */
+  /* Error/Success messages from global AuthForms.css or specific classes */
+}
+
+body.dark-mode {
+  --ncp-page-bg: var(--primary-bg-color, #121212);
+  --ncp-page-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  --ncp-form-bg: var(--secondary-bg-color, #1e1e1e);
+  --ncp-page-title-color: var(--primary-text-color, #e0e0e0);
+  --ncp-label-color: var(--secondary-text-color, #adb5bd);
+
+  --ncp-add-button-bg: var(--success-color, #208c3a);
+  --ncp-add-button-text: var(--accent-text-color, white);
+  --ncp-add-button-border: var(--success-darker-color, #196f2d);
+  --ncp-add-button-hover-bg: var(--success-darker-color, #196f2d);
+
+  --ncp-remove-button-border: var(--danger-color, #fca5a5);
+  --ncp-remove-button-bg: rgba(var(--danger-color-rgb, 252,165,165), 0.1);
+  --ncp-remove-button-text: var(--danger-hover-color, #ef4444);
+  --ncp-remove-button-hover-bg: rgba(var(--danger-color-rgb, 252,165,165), 0.2);
+  --ncp-remove-button-hover-border: var(--danger-hover-color, #ef4444);
+
+  --ncp-field-suggestion-text: var(--secondary-text-color, #868e96);
+  --ncp-section-border: var(--border-color, #3a3a3a);
+  --ncp-section-title-color: var(--primary-text-color, #e0e0e0);
+  --ncp-section-title-border-color: var(--accent-color, #bb86fc);
+
+  --ncp-combined-balance-item-bg: var(--primary-bg-color, #121212);
+  --ncp-combined-balance-item-border: var(--border-color, #2c2c2c);
+  --ncp-balance-text-equivalent-color: var(--primary-text-color, #c0c0c0);
+  --ncp-radio-group-label-color: var(--primary-text-color, #e0e0e0);
+
+  --ncp-currency-entry-bg: var(--primary-bg-color, #121212);
+  --ncp-currency-entry-border: var(--border-color, #2c2c2c);
+}
+
+
 .new-customer-page-container.redesigned {
-  padding: 20px;
+  padding: 1.25rem; /* 20px */
   direction: rtl;
-  background-color: #f4f6f8;
-  max-width: 900px;
-  margin: 20px auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--ncp-page-bg);
+  max-width: 56.25rem; /* 900px */
+  margin: 1.25rem auto; /* 20px */
+  border-radius: 0.5rem; /* 8px */
+  box-shadow: var(--ncp-page-shadow);
 }
 
 .page-title {
   text-align: center;
-  color: #2c3e50;
-  margin-bottom: 20px;
+  color: var(--ncp-page-title-color);
+  margin-bottom: 1.25rem; /* 20px */
   font-size: 1.6em;
   font-weight: 600;
 }
 
 .new-customer-form-redesigned {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 6px;
+  background-color: var(--ncp-form-bg);
+  padding: 1.5625rem; /* 25px */
+  border-radius: 0.375rem; /* 6px */
 }
 
 .form-main-section {

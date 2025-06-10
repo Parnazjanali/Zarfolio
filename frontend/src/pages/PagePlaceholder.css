@@ -9,13 +9,13 @@
 }
 
 .page-placeholder-container h1 {
-  color: #2c3e50;
-  margin-bottom: 20px;
+  color: var(--primary-text-color, #2c3e50); /* Use global primary text color */
+  margin-bottom: 1.25rem; /* 20px */
   font-size: 2em;
 }
 
 .page-placeholder-container p {
-  color: #7f8c8d;
+  color: var(--secondary-text-color, #7f8c8d); /* Use global secondary text color */
   font-size: 1.1em;
   line-height: 1.8;
 }

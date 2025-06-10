@@ -103,7 +103,7 @@ const FieldSettingsPanel = ({ fieldKey, fieldConfig, onUpdate, onClose }) => {
 
         </div>
         <div className="panel-footer">
-          <button onClick={handleSave} className="save-btn">ذخیره تغییرات</button>
+          <button onClick={handleSave} className="save-btn action-button primary-action">ذخیره تغییرات</button>
         </div>
       </div>
     </div>

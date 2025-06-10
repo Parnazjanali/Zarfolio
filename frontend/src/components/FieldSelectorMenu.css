@@ -1,44 +1,72 @@
 /* frontend/src/components/FieldSelectorMenu.css */
+:root {
+  --fsm-backdrop-bg: rgba(0, 0, 0, 0.3);
+  --fsm-menu-bg: var(--primary-bg-color, white);
+  --fsm-menu-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  --fsm-header-bg: var(--secondary-bg-color, #f8f9fa);
+  --fsm-header-border-color: var(--border-color, #dee2e6);
+  --fsm-header-text-color: var(--primary-text-color, #212529);
+  --fsm-close-button-color: var(--secondary-text-color, #6c757d);
+  --fsm-close-button-hover-color: var(--primary-text-color, #343a40);
+  --fsm-list-item-border-color: var(--border-color, #f1f3f5); /* Lighter border for list items */
+  --fsm-list-label-text-color: var(--primary-text-color, #495057);
+  --fsm-checkbox-accent-color: var(--accent-color); /* For the checkbox itself */
+}
+
+body.dark-mode {
+  --fsm-backdrop-bg: rgba(0, 0, 0, 0.5); /* Darker backdrop */
+  --fsm-menu-bg: var(--secondary-bg-color, #2b2b2b); /* Menu on secondary dark bg */
+  --fsm-menu-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+  --fsm-header-bg: var(--primary-bg-color, #1e1e1e); /* Header slightly different from menu content */
+  --fsm-header-border-color: var(--border-color, #3a3a3a);
+  --fsm-header-text-color: var(--primary-text-color, #e0e0e0);
+  --fsm-close-button-color: var(--secondary-text-color, #a0aec0);
+  --fsm-close-button-hover-color: var(--primary-text-color, #e0e0e0);
+  --fsm-list-item-border-color: var(--border-color, #3a3a3a);
+  --fsm-list-label-text-color: var(--primary-text-color, #c0c0c0);
+  --fsm-checkbox-accent-color: var(--accent-color);
+}
+
 .field-selector-menu-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3); /* پس‌زمینه تیره‌تر برای تمرکز روی منو */
-  z-index: 1040; /* زیر پنل تنظیمات فیلد اما بالای بقیه */
+  background-color: var(--fsm-backdrop-bg);
+  z-index: 1040;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* منو از بالا شروع شود */
-  padding-top: 80px; /* فاصله از بالای صفحه */
+  align-items: flex-start;
+  padding-top: 5rem; /* 80px */
 }
 
 .field-selector-menu {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background-color: var(--fsm-menu-bg);
+  border-radius: 0.5rem; /* 8px */
+  box-shadow: var(--fsm-menu-shadow);
   width: 90%;
-  max-width: 280px;
+  max-width: 17.5rem; /* 280px */
   direction: rtl;
-  overflow: hidden; /* برای گرد شدن گوشه‌ها */
+  overflow: hidden;
 }
 
 .menu-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  padding: 0.625rem 0.9375rem; /* 10px 15px */
+  background-color: var(--fsm-header-bg);
+  border-bottom: 1px solid var(--fsm-header-border-color);
 }
 
 .menu-header h4 {
   margin: 0;
   font-size: 1em;
-  color: #212529;
+  color: var(--fsm-header-text-color);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem; /* 8px */
 }
 
 .close-menu-btn {
@@ -46,24 +74,25 @@
   border: none;
   font-size: 1.1rem;
   cursor: pointer;
-  color: #6c757d;
+  color: var(--fsm-close-button-color);
   padding: 0;
 }
 .close-menu-btn:hover {
-  color: #343a40;
+  color: var(--fsm-close-button-hover-color);
 }
 
 .field-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 300px; /* محدودیت ارتفاع و اسکرول در صورت نیاز */
+  max-height: 18.75rem; /* 300px */
   overflow-y: auto;
+  /* Consider theming scrollbar like in other modals if needed */
 }
 
 .field-list li {
-  padding: 10px 15px;
-  border-bottom: 1px solid #f1f3f5;
+  padding: 0.625rem 0.9375rem; /* 10px 15px */
+  border-bottom: 1px solid var(--fsm-list-item-border-color);
 }
 .field-list li:last-child {
   border-bottom: none;
@@ -72,15 +101,16 @@
 .field-list label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem; /* 10px */
   font-size: 0.95em;
-  color: #495057;
+  color: var(--fsm-list-label-text-color);
   cursor: pointer;
   width: 100%;
 }
 
 .field-list input[type="checkbox"] {
   cursor: pointer;
-  width: 16px; /* اندازه چک‌باکس */
-  height: 16px;
+  width: 1rem; /* 16px */
+  height: 1rem; /* 16px */
+  accent-color: var(--fsm-checkbox-accent-color); /* Theme checkbox color */
 }
