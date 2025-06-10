@@ -1,6 +1,5 @@
-// src/components/Tabs.jsx
-import React, { useState }
-from 'react';
+// frontend/src/components/Tabs.jsx
+import React, { useState } from 'react';
 import './Tabs.css';
 
 export const Tab = ({ label, isActive, onClick, icon }) => (
@@ -11,7 +10,7 @@ export const Tab = ({ label, isActive, onClick, icon }) => (
     aria-selected={isActive}
   >
     {icon && <span className="tab-icon">{icon}</span>}
-    {label}
+    <span className="tab-label">{label}</span>
   </button>
 );
 
@@ -25,28 +24,30 @@ export const TabPanel = ({ children, isActive }) => (
   </div>
 );
 
-export const TabsContainer = ({ children, initialActiveTabId }) => {
+export const TabsContainer = ({ children, initialActiveTabId, layout = 'horizontal' }) => {
   const tabs = React.Children.toArray(children).filter(child => child.type === Tab);
   const panels = React.Children.toArray(children).filter(child => child.type === TabPanel);
 
   const [activeTab, setActiveTab] = useState(initialActiveTabId || (tabs[0] ? tabs[0].props.tabId : null));
 
+  const containerClassName = `tabs-container ${layout === 'vertical' ? 'vertical' : 'horizontal'}`;
+
   return (
-    <div className="tabs-container">
+    <div className={containerClassName}>
       <div className="tabs-list" role="tablist">
-        {tabs.map((tab, index) =>
+        {tabs.map((tab) =>
           React.cloneElement(tab, {
-            key: tab.props.tabId || index,
-            isActive: (tab.props.tabId || index) === activeTab,
-            onClick: () => setActiveTab(tab.props.tabId || index),
+            key: tab.props.tabId,
+            isActive: tab.props.tabId === activeTab,
+            onClick: () => setActiveTab(tab.props.tabId),
           })
         )}
       </div>
       <div className="tab-panels">
-        {panels.map((panel, index) =>
+        {panels.map((panel) =>
           React.cloneElement(panel, {
-            key: panel.props.tabId || index,
-            isActive: (panel.props.tabId || index) === activeTab,
+            key: panel.props.tabId,
+            isActive: panel.props.tabId === activeTab,
           })
         )}
       </div>
