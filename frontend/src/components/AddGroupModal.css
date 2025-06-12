@@ -1,46 +1,4 @@
 /* frontend/src/components/AddGroupModal.css */
-:root {
-  --modal-content-bg: var(--primary-bg-color, #fff);
-  --modal-content-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  --modal-header-text-color: var(--primary-text-color, #333);
-  --modal-close-button-color: var(--secondary-text-color, #6c757d);
-  --modal-close-button-hover-color: var(--primary-text-color, #343a40);
-  --modal-label-color: var(--secondary-text-color, #495057);
-  --modal-list-bg-color: var(--secondary-bg-color, #f8f9fa);
-  --modal-list-item-text-color: var(--secondary-text-color, #495057);
-  --modal-list-border-color: var(--border-color, #e9ecef); /* Used for list border and li border */
-
-  --delete-button-color: #e74c3c; /* Red for delete */
-  --delete-button-hover-color: #c0392b; /* Darker red */
-
-  --button-secondary-bg-color: #6c757d; /* Grey for secondary/cancel */
-  --button-secondary-text-color: #ffffff;
-  --button-secondary-hover-bg-color: #5a6268;
-
-  /* Using global --accent-color for primary action by default */
-  --button-primary-disabled-bg-color: #a5d6a7; /* Light green for disabled save */
-}
-
-body.dark-mode {
-  --modal-content-bg: var(--secondary-bg-color, #1e1e1e); /* Modals often on secondary in dark */
-  --modal-content-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Can be darker or lighter depending on effect */
-  --modal-header-text-color: var(--primary-text-color, #e0e0e0);
-  --modal-close-button-color: var(--secondary-text-color, #c0c0c0);
-  --modal-close-button-hover-color: var(--primary-text-color, #e0e0e0);
-  --modal-label-color: var(--secondary-text-color, #c0c0c0);
-  --modal-list-bg-color: var(--primary-bg-color, #121212); /* List bg slightly different from modal content */
-  --modal-list-item-text-color: var(--secondary-text-color, #c0c0c0);
-  --modal-list-border-color: var(--border-color, #2c2c2c);
-
-  --delete-button-color: #fca5a5; /* Lighter red for dark mode */
-  --delete-button-hover-color: #ef4444; /* Brighter red for dark mode hover */
-
-  --button-secondary-bg-color: #4a5568;
-  --button-secondary-hover-bg-color: #3b4363;
-
-  --button-primary-disabled-bg-color: #388e3c; /* Darker, less saturated green for dark disabled */
-}
-
 .modal-overlay.add-group-modal-overlay {
   position: fixed;
   top: 0;
@@ -53,17 +11,15 @@ body.dark-mode {
   justify-content: center;
   z-index: 1050;
   direction: rtl;
-  /* Overlay background can be themed too if needed, e.g. using rgba with a base color */
-  /* background-color: rgba(var(--primary-text-color-rgb, 0,0,0), 0.6); */
 }
 
 .modal-content.add-group-modal-content {
-  background-color: var(--modal-content-bg);
-  padding: 1.25rem; /* 20px */
-  border-radius: 0.5rem; /* 8px */
-  box-shadow: var(--modal-content-shadow);
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   width: 90%;
-  max-width: 30rem; /* 480px */
+  max-width: 480px; /* کمی عریض‌تر برای جای دادن دکمه‌ها */
   display: flex;
   flex-direction: column;
 }
@@ -72,15 +28,15 @@ body.dark-mode {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 0.75rem; /* 12px */
-  margin-bottom: 0.9375rem; /* 15px */
-  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .add-group-modal-content .modal-header h3 {
   margin: 0;
   font-size: 1.25em;
-  color: var(--modal-header-text-color);
+  color: #333;
 }
 
 .add-group-modal-content .modal-close-button {
@@ -88,60 +44,64 @@ body.dark-mode {
   border: none;
   font-size: 1.5em;
   cursor: pointer;
-  color: var(--modal-close-button-color);
+  color: #6c757d;
 }
 .add-group-modal-content .modal-close-button:hover {
-  color: var(--modal-close-button-hover-color);
+  color: #343a40;
 }
 
 .add-group-modal-content .modal-body .form-group {
-  margin-bottom: 0.9375rem; /* 15px */
+  margin-bottom: 15px;
 }
 .add-group-modal-content .modal-body label {
   display: block;
-  margin-bottom: 0.375rem; /* 6px */
+  margin-bottom: 6px;
   font-weight: 500;
-  color: var(--modal-label-color);
+  color: #495057;
 }
-/* Input fields will inherit global styles from index.css */
-/* Remove specific input styling if global is sufficient */
 .add-group-modal-content .modal-body input[type="text"] {
   width: 100%;
-  /* padding, border, border-radius, font-size, background, color are from index.css */
-  box-sizing: border-box; /* Keep this */
+  padding: 9px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
 }
-/* Focus style will also be from index.css */
-/* .add-group-modal-content .modal-body input[type="text"]:focus { ... } */
+.add-group-modal-content .modal-body input[type="text"]:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
 
 .existing-groups-section {
-    margin-top: 1.25rem; /* 20px */
-    border-top: 1px solid var(--border-color);
-    padding-top: 0.9375rem; /* 15px */
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
 }
 .existing-groups-section h4 {
     margin-top: 0;
-    margin-bottom: 0.625rem; /* 10px */
+    margin-bottom: 10px;
     font-size: 1em;
-    color: var(--modal-header-text-color); /* Same as modal header for consistency */
+    color: #333;
 }
 .existing-groups-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 11.25rem; /* 180px */
+    max-height: 180px; /* افزایش ارتفاع برای نمایش بهتر لیست */
     overflow-y: auto;
-    border: 1px solid var(--modal-list-border-color);
-    border-radius: 0.25rem; /* 4px */
-    background-color: var(--modal-list-bg-color);
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #f8f9fa;
 }
 .existing-groups-list li {
-    padding: 0.5rem 0.75rem; /* 8px 12px */
+    padding: 8px 12px;
     font-size: 0.9em;
-    color: var(--modal-list-item-text-color);
-    border-bottom: 1px solid var(--modal-list-border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    color: #495057;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex; /* برای چینش نام گروه و دکمه حذف در یک ردیف */
+    justify-content: space-between; /* دکمه حذف به سمت چپ (در rtl) رانده می‌شود */
+    align-items: center; /* هم‌ترازی عمودی */
 }
 .existing-groups-list li:last-child {
     border-bottom: none;
@@ -150,71 +110,63 @@ body.dark-mode {
 .delete-group-button {
   background: none;
   border: none;
-  color: var(--delete-button-color);
+  color: #e74c3c; /* قرمز */
   cursor: pointer;
-  font-size: 1em;
-  padding: 0 0.3125rem; /* 5px */
+  font-size: 1em; /* اندازه آیکون */
+  padding: 0 5px; 
   transition: color 0.2s ease;
-  display: inline-flex;
+  display: inline-flex; /* برای همترازی بهتر آیکون */
   align-items: center;
 }
 .delete-group-button:hover {
-  color: var(--delete-button-hover-color);
+  color: #c0392b; /* قرمز تیره‌تر */
 }
 
 .no-groups-message {
   text-align: center;
-  color: var(--no-groups-text-color, var(--secondary-text-color)); /* Fallback to secondary text */
+  color: #6c757d;
   font-style: italic;
-  padding: 0.625rem; /* 10px */
+  padding: 10px;
 }
 
 
 .add-group-modal-content .modal-footer {
   display: flex;
   justify-content: flex-start; 
-  gap: 0.625rem; /* 10px */
-  padding-top: 0.9375rem; /* 15px */
-  margin-top: 1.25rem; /* 20px */
-  border-top: 1px solid var(--border-color);
+  gap: 10px;
+  padding-top: 15px;
+  margin-top: 20px;
+  border-top: 1px solid #e9ecef;
 }
 
-/* General action button style for modal, can be overridden by primary/secondary */
 .add-group-modal-content .action-button {
-  padding: 0.5rem 1.125rem; /* 8px 18px */
-  border-radius: 0.3125rem; /* 5px */
+  padding: 8px 18px;
+  border-radius: 5px;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9em;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease;
   display: inline-flex;
   align-items: center;
-  border: 1px solid transparent; /* Base border */
 }
-
 .add-group-modal-content .action-button.primary-action {
-  background-color: var(--accent-color);
-  color: var(--accent-text-color);
-  border-color: var(--accent-color);
+  background-color: #27ae60; 
+  color: white;
+  border: none;
 }
 .add-group-modal-content .action-button.primary-action:hover {
-  background-color: var(--link-hover-color); /* Using global link hover for a darker accent */
-  border-color: var(--link-hover-color);
+  background-color: #218838;
 }
 .add-group-modal-content .action-button.primary-action:disabled {
-  background-color: var(--button-primary-disabled-bg-color);
-  border-color: var(--button-primary-disabled-bg-color);
-  color: var(--accent-text-color); /* Assuming text color might still be light */
-  opacity: 0.65; /* Standard disabled opacity */
+  background-color: #a5d6a7; /* سبز روشن‌تر برای حالت غیرفعال */
   cursor: not-allowed;
 }
 
 .add-group-modal-content .action-button.secondary-action {
-  background-color: var(--button-secondary-bg-color);
-  color: var(--button-secondary-text-color);
-  border-color: var(--button-secondary-bg-color); /* Border same as bg */
+  background-color: #6c757d; 
+  color: white;
+  border: none;
 }
 .add-group-modal-content .action-button.secondary-action:hover {
-  background-color: var(--button-secondary-hover-bg-color);
-  border-color: var(--button-secondary-hover-bg-color);
+  background-color: #5a6268;
 }

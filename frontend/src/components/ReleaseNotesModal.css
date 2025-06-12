@@ -1,89 +1,11 @@
 /* src/components/ReleaseNotesModal.css */
-:root {
-  --rnm-overlay-bg: rgba(0, 0, 0, 0.75);
-  --rnm-content-bg: var(--primary-bg-color, #ffffff);
-  --rnm-content-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-
-  --rnm-header-bg: var(--secondary-bg-color, #f8f9fa);
-  --rnm-header-border-color: var(--border-color, #dee2e6);
-  --rnm-header-text-color: var(--primary-text-color, #333);
-  --rnm-header-icon-color: #e67e22; /* Orange for FaGift - specific accent */
-
-  --rnm-close-button-color: var(--secondary-text-color, #888);
-  --rnm-close-button-hover-color: var(--primary-text-color, #333);
-  --rnm-close-button-hover-bg: var(--border-color, #e9ecef);
-
-  --rnm-scrollbar-thumb-bg: #ced4da;
-  --rnm-scrollbar-track-bg: #f1f1f1;
-
-  --rnm-intro-text-color: var(--primary-text-color, #343a40);
-  --rnm-intro-strong-text-color: var(--link-hover-color, #0056b3); /* Darker blue for emphasis */
-  --rnm-feedback-text-color: var(--secondary-text-color, #495057);
-  --rnm-feedback-border-color: var(--border-color, #ced4da);
-
-  --rnm-entry-border-color: var(--border-color, #e9ecef);
-  --rnm-version-header-border-color: var(--border-color, #dee2e6);
-  --rnm-version-text-color: var(--accent-color, #007bff);
-  --rnm-date-text-color: var(--secondary-text-color, #495057);
-  --rnm-date-bg-color: var(--secondary-bg-color, #e9ecef);
-  --rnm-main-title-text-color: var(--primary-text-color, #212529);
-  --rnm-list-item-text-color: var(--primary-text-color, #343a40);
-  --rnm-change-icon-color: #17a2b8; /* Teal for change icons - specific accent */
-
-  --rnm-footer-bg-color: var(--secondary-bg-color, #f8f9fa);
-  --rnm-footer-border-color: var(--border-color, #dee2e6);
-  /* Buttons in footer will use global .action-button styles or specific classes */
-  --rnm-report-bug-button-bg: var(--button-secondary-bg-color, #6c757d); /* Using global secondary button vars */
-  --rnm-report-bug-button-text: var(--button-secondary-text-color, #fff);
-  --rnm-report-bug-button-hover-bg: var(--button-secondary-hover-bg-color, #5a6268);
-}
-
-body.dark-mode {
-  --rnm-overlay-bg: rgba(0, 0, 0, 0.85);
-  --rnm-content-bg: var(--secondary-bg-color, #1e1e1e);
-  --rnm-content-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-
-  --rnm-header-bg: var(--primary-bg-color, #121212); /* Darker header */
-  --rnm-header-border-color: var(--border-color, #2c2c2c);
-  --rnm-header-text-color: var(--primary-text-color, #e0e0e0);
-  /* --rnm-header-icon-color: #e67e22; /* Orange might still work well */
-
-  --rnm-close-button-color: var(--secondary-text-color, #a0aec0);
-  --rnm-close-button-hover-color: var(--primary-text-color, #e0e0e0);
-  --rnm-close-button-hover-bg: var(--border-color, #2c2c2c);
-
-  --rnm-scrollbar-thumb-bg: #555;
-  --rnm-scrollbar-track-bg: var(--primary-bg-color, #121212);
-
-  --rnm-intro-text-color: var(--primary-text-color, #e0e0e0);
-  --rnm-intro-strong-text-color: var(--link-color, #bb86fc); /* Use dark link color */
-  --rnm-feedback-text-color: var(--secondary-text-color, #a0aec0);
-  --rnm-feedback-border-color: var(--border-color, #2c2c2c);
-
-  --rnm-entry-border-color: var(--border-color, #2c2c2c);
-  --rnm-version-header-border-color: var(--border-color, #3a3a3a); /* Slightly different for inner border */
-  --rnm-version-text-color: var(--accent-color, #bb86fc);
-  --rnm-date-text-color: var(--secondary-text-color, #a0aec0);
-  --rnm-date-bg-color: var(--secondary-bg-color, #2a2a2a);
-  --rnm-main-title-text-color: var(--primary-text-color, #e0e0e0);
-  --rnm-list-item-text-color: var(--primary-text-color, #c0c0c0); /* Slightly more muted for list items */
-  /* --rnm-change-icon-color: #26c6da; /* Lighter Teal for dark mode */
-
-  --rnm-footer-bg-color: var(--primary-bg-color, #121212);
-  --rnm-footer-border-color: var(--border-color, #2c2c2c);
-  --rnm-report-bug-button-bg: var(--button-secondary-bg-color, #4a5568);
-  --rnm-report-bug-button-text: var(--button-secondary-text-color, #fff);
-  --rnm-report-bug-button-hover-bg: var(--button-secondary-hover-bg-color, #3b4363);
-}
-
-
 .modal-overlay.release-notes-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--rnm-overlay-bg);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,9 +22,9 @@ body.dark-mode {
 .modal-overlay.release-notes-overlay .modal-content {
   max-width: 700px; 
   width: 90%;
-  background-color: var(--rnm-content-bg);
+  background-color: #ffffff; 
   border-radius: 10px;
-  box-shadow: var(--rnm-content-shadow);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); 
   display: flex;
   flex-direction: column;
   max-height: 88vh; 
@@ -117,46 +39,43 @@ body.dark-mode {
 
 .modal-overlay.release-notes-overlay .modal-header {
   padding: 16px 24px; 
-  border-bottom: 1px solid var(--rnm-header-border-color);
+  border-bottom: 1px solid #dee2e6; 
   text-align: right;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0; 
-  background-color: var(--rnm-header-bg);
+  background-color: #f8f9fa;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
 
 .modal-overlay.release-notes-overlay .modal-header h2 {
   font-size: 1.35em; 
-  color: var(--rnm-header-text-color);
+  color: #333; 
   font-weight: 600;
   margin: 0;
   display: flex;
   align-items: center;
 }
 .modal-overlay.release-notes-overlay .modal-header h2 svg {
-    color: var(--rnm-header-icon-color);
+    color: #e67e22; 
 }
 
-.modal-close-button { /* Assuming this is a generic class potentially styled elsewhere or in index.css */
+.modal-close-button {
   position: static; 
   transform: none; 
-  color: var(--rnm-close-button-color);
-  font-size: 1.1em;
-  padding: 6px 8px;
+  color: #888; /* رنگ خنثی تر */
+  font-size: 1.1em; /* اندازه دکمه ضربدر کوچکتر شد */
+  padding: 6px 8px; /* کاهش padding برای کوچکتر شدن */
   border-radius: 50%;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
-  line-height: 1;
-  margin-right: -8px;
-  background: none; /* Ensure it's transparent if not set globally */
-  border: none; /* Ensure it's borderless if not set globally */
-  cursor: pointer; /* Ensure cursor is pointer */
+  line-height: 1; /* برای جلوگیری از ارتفاع اضافه */
+  margin-right: -8px; /* برای نزدیکتر شدن به لبه در حالت flex */
 }
 .modal-close-button:hover { 
-  color: var(--rnm-close-button-hover-color);
-  background-color: var(--rnm-close-button-hover-bg);
+  color: #333; 
+  background-color: #e9ecef; 
   transform: scale(1.1); 
 }
 .modal-close-button:active {
@@ -169,46 +88,46 @@ body.dark-mode {
   flex-grow: 1; 
   direction: rtl;
   scrollbar-width: thin;
-  scrollbar-color: var(--rnm-scrollbar-thumb-bg) var(--rnm-scrollbar-track-bg);
+  scrollbar-color: #ced4da #f1f1f1; 
   line-height: 1.75; 
 }
 .modal-overlay.release-notes-overlay .modal-body::-webkit-scrollbar {
-  width: 7px;
+  width: 7px; /* عرض کمتر اسکرول بار */
 }
 .modal-overlay.release-notes-overlay .modal-body::-webkit-scrollbar-track {
-  background: var(--rnm-scrollbar-track-bg);
+  background: #f1f1f1;
   border-radius: 3px;
 }
 .modal-overlay.release-notes-overlay .modal-body::-webkit-scrollbar-thumb {
-  background-color: var(--rnm-scrollbar-thumb-bg);
+  background-color: #ced4da;
   border-radius: 3px;
 }
 .modal-overlay.release-notes-overlay .modal-body::-webkit-scrollbar-thumb:hover {
-  background-color: var(--secondary-text-color); /* Using a slightly darker global var for hover */
+  background-color: #adb5bd;
 }
 
 .release-intro-text, .release-feedback-text {
     margin-bottom: 22px;
     font-size: 0.95em;
-    color: var(--rnm-intro-text-color);
+    color: #343a40;
     line-height: 1.7;
 }
 .release-intro-text strong {
-    color: var(--rnm-intro-strong-text-color);
+    color: #0056b3; /* رنگ برجسته برای شماره نسخه */
     font-weight: 600;
 }
 .release-feedback-text {
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 1px dashed var(--rnm-feedback-border-color);
+    border-top: 1px dashed #ced4da;
     font-size: 0.9em;
-    color: var(--rnm-feedback-text-color);
+    color: #495057;
 }
 
 .release-entry {
   margin-bottom: 22px;
   padding-bottom: 22px;
-  border-bottom: 1px solid var(--rnm-entry-border-color);
+  border-bottom: 1px solid #e9ecef;
 }
 .release-entry:last-child {
   margin-bottom: 0;
@@ -219,23 +138,23 @@ body.dark-mode {
 .release-version-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; /* تراز عمودی بهتر */
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--rnm-version-header-border-color);
+  border-bottom: 1px solid #dee2e6; /* خط جدا کننده کمی واضح تر */
 }
 
 .release-version-header h3 {
   margin: 0;
   font-size: 1.2em;
-  color: var(--rnm-version-text-color);
+  color: #007bff;
   font-weight: 600;
 }
 
 .release-date {
   font-size: 0.9em;
-  color: var(--rnm-date-text-color);
-  background-color: var(--rnm-date-bg-color);
+  color: #495057;
+  background-color: #e9ecef;
   padding: 4px 10px;
   border-radius: 5px;
 }
@@ -244,7 +163,7 @@ body.dark-mode {
   font-weight: 500;
   margin-top: 5px;
   margin-bottom: 15px;
-  color: var(--rnm-main-title-text-color);
+  color: #212529;
   font-size: 1.05em;
   line-height: 1.5;
 }
@@ -259,14 +178,14 @@ body.dark-mode {
   margin-bottom: 10px;
   font-size: 0.9rem;
   line-height: 1.7;
-  color: var(--rnm-list-item-text-color);
+  color: #343a40;
   display: flex;
   align-items: flex-start;
 }
 
 .release-change-icon {
   margin-left: 12px;
-  color: var(--rnm-change-icon-color);
+  color: #17a2b8;
   font-size: 0.95em;
   margin-top: 5px;
   flex-shrink: 0;
@@ -279,14 +198,14 @@ body.dark-mode {
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  border-top: 1px solid var(--rnm-footer-border-color);
-  background-color: var(--rnm-footer-bg-color);
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
   flex-shrink: 0;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
 }
 
-.modal-action-button { /* This is a local scope .modal-action-button */
+.modal-action-button {
   border: none; padding: 10px 22px; border-radius: 6px;
   font-size: 0.95em; font-weight: 500; cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
@@ -296,18 +215,13 @@ body.dark-mode {
 }
 .modal-action-button:hover{ transform: translateY(-1px); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
 
-.modal-action-button.primary {
-  background-color: var(--accent-color); /* Global accent */
-  color: var(--accent-text-color); /* Global accent text */
-}
-.modal-action-button.primary:hover {
-  background-color: var(--link-hover-color); /* Global link hover as darker accent */
-}
+.modal-action-button.primary { background-color: #007bff; color: white; }
+.modal-action-button.primary:hover { background-color: #0069d9; }
 
 .modal-action-button.report-bug-button {
-  background-color: var(--rnm-report-bug-button-bg);
-  color: var(--rnm-report-bug-button-text);
+  background-color: #6c757d;
+  color: white;
 }
 .modal-action-button.report-bug-button:hover {
-  background-color: var(--rnm-report-bug-button-hover-bg);
+  background-color: #5a6268;
 }

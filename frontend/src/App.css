@@ -3,15 +3,43 @@
   display: flex;
   direction: rtl;
   min-height: 100vh;
+  /* background-color: #FAF8F3; Ant Design's Layout component might handle its own background */
+  /* or it can be set on .main-content-area specifically if needed. */
 }
 
 .main-content-area {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Allow content to scroll */
   overflow-x: hidden;
-  background-color: #FAF8F3;
-  position: relative;
+  background-color: #FAF8F3; /* Or inherit from ConfigProvider's theme */
+  position: relative; /* Ensure it's part of the flow for margin calculations */
+  
+  /* Default margin, assuming expanded Sider width (e.g., 230px from Sidebar.jsx) */
+  margin-right: 230px; 
+  transition: margin-right 0.2s cubic-bezier(0.215, 0.61, 0.355, 1); /* Ant Design default ease */
+  padding: 16px; /* Default padding for content area */
+  width: calc(100% - 230px); /* Optional: if you need to define width explicitly */
+  box-sizing: border-box;
 }
+
+/* This class should be applied to the parent of .main-content-area (e.g., .main-layout) 
+   or a higher wrapper when the sidebar is collapsed. 
+   It's often managed by JavaScript in App.jsx or MainLayout.jsx based on Sider's state.
+   The class .sidebar-is-collapsed-globally was used in previous versions. */
+.sidebar-is-collapsed-globally .main-content-area {
+  /* Margin when Sider is collapsed (e.g., 80px from Sidebar.jsx) */
+  margin-right: 80px; 
+  width: calc(100% - 80px); /* Optional: if you need to define width explicitly */
+}
+
+/* Remove underline hover effect from Ant Design Menu links within the Sider */
+.ant-layout-sider .ant-menu-item .ant-menu-title-content a:hover,
+.ant-layout-sider .ant-menu-submenu-title .ant-menu-title-content a:hover, /* If submenu titles are links */
+.ant-layout-sider .ant-menu-item a:hover, /* More general catch-all if structure varies */
+.ant-layout-sider .ant-menu-submenu-title:hover { /* For the submenu title itself, if it's a link and gets underlined */
+  text-decoration: none;
+}
+
 
 .login-page-wrapper {
   display: flex; /* Takes full width/height from login-page-background */
@@ -31,4 +59,55 @@
   width: 100vw;
   font-size: 1.5rem;
   color: #888;
+}
+
+/* Increase icon sizes in the Sidebar */
+
+/* For icons within Ant Design Menu items in the Sider (both main and footer menus) */
+.ant-layout-sider .ant-menu .anticon {
+  font-size: 1.25em; /* Relative to menu item font size, default is often 1em or 14px */
+  vertical-align: middle; /* Ensure proper alignment */
+}
+
+/* Specifically for react-icons if they are not further nested by antd or if .anticon doesn't catch them */
+.ant-layout-sider .ant-menu-item svg,
+.ant-layout-sider .ant-menu-submenu-title svg {
+  font-size: 1.25em; /* Ensure react-icons also scale if not caught by .anticon */
+  vertical-align: middle;
+}
+
+/* For the brand icon in the sidebar header (if it's an SVG and needs override) */
+/* The FaCube icon in Sidebar.jsx has size={24} prop, which might be sufficient.
+   If CSS override is preferred or needed for other brand icons: */
+/* .ant-layout-sider > .ant-layout-sider-children > div:first-child svg { */
+/*   font-size: 28px; Ensure this selector is specific to your brand icon's container */
+/* } */
+
+/* For the icon within the collapse trigger button in the footer */
+.sidebar-footer-sticky .ant-btn svg {
+  font-size: 1.25em; /* Default size for expanded state */
+  vertical-align: middle;
+  transition: font-size 0.2s cubic-bezier(0.215, 0.61, 0.355, 1); /* Smooth transition */
+}
+
+.ant-layout-sider-collapsed .sidebar-footer-sticky .ant-btn svg {
+  font-size: 20px; /* Fixed size for collapsed state */
+  vertical-align: middle; /* Ensure alignment */
+}
+
+/* Adjust icon size for collapsed Sider to fixed pixel value */
+/* When collapsed, menu items often only show icons. */
+.ant-layout-sider-collapsed .ant-menu .anticon,
+.ant-layout-sider-collapsed .ant-menu-item svg,
+.ant-layout-sider-collapsed .ant-menu-submenu-title svg {
+  font-size: 20px; /* Fixed size for collapsed state */
+  vertical-align: middle; /* Ensure alignment */
+  /* margin-right: 0 !important; Reset margin if antd adds it for text spacing, AntD usually handles this */
+}
+/* Ensure the .ant-menu-item height can accommodate larger icons when collapsed if necessary */
+.ant-layout-sider-collapsed .ant-menu-item {
+  /* padding: 0 calc((80px - (1.5em * 1.2))) !important; /* Example: Center icon if it's 1.5em */
+  /* display: flex; */
+  /* align-items: center; */
+  /* justify-content: center; */
 }

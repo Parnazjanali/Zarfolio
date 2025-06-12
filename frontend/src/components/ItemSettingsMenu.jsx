@@ -40,12 +40,12 @@ const ItemSettingsMenu = ({
     left: `${Math.max(5, anchorEl.getBoundingClientRect().right - (menuRef.current?.offsetWidth || 220))}px`,
     zIndex: 1030,
     // استایل‌های زیر بهتر است در فایل CSS جداگانه باشند
-    // backgroundColor: '#fff', // Moved to CSS
-    // border: '1px solid #e0e0e0', // Moved to CSS
-    borderRadius: '6px', // Kept for consistency, or move to CSS if all menus are same
-    // boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Moved to CSS
-    minWidth: '200px', // Layout specific, can stay or move
-    // padding: '8px 0', // Moved to CSS
+    backgroundColor: '#fff',
+    border: '1px solid #e0e0e0',
+    borderRadius: '6px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    minWidth: '200px',
+    padding: '8px 0',
   };
 
   const hasWidgetSpecificSettings = config.type === 'widget' && (itemKey === 'digitalClockWidget' || itemKey === 'jalaliCalendarWidget');

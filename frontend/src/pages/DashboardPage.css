@@ -1,102 +1,11 @@
 /* src/pages/DashboardPage.css */
 :root {
-  /* Dashboard Page Specific Variables */
-  --dp-page-bg-grid-line-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.08); /* For the wrapper grid */
-
-  --dp-card-bg: rgba(255, 255, 255, 0.8);
-  --dp-card-border-color: rgba(200, 200, 200, 0.3);
-  --dp-card-shadow: 0 2px 8px rgba(0,0,0,0.1);
-
-  --dp-placeholder-bg: rgba(248, 249, 250, 0.85);
-  --dp-placeholder-text-color: var(--secondary-text-color, #718096);
-  --dp-placeholder-border-color: var(--border-color, #dee2e6);
-
-  --dp-section-card-header-text-color: var(--primary-text-color, #2c3e50);
-  --dp-section-card-header-border-color: rgba(var(--rgb-border-color, 222,226,230), 0.7); /* Lighter border */
-
-  --dp-quick-action-button-bg: rgba(233, 245, 255, 0.85);
-  --dp-quick-action-button-border-color: rgba(184, 214, 251, 0.7);
-  --dp-quick-action-button-text-color: #004085; /* Specific blue */
-  --dp-quick-action-button-hover-bg: rgba(209, 231, 255, 0.9);
-  --dp-quick-action-button-hover-border-color: rgba(162, 199, 245, 0.8);
-
-  --dp-table-header-bg: rgba(248, 250, 252, 0.8);
-  --dp-table-header-text-color: var(--primary-text-color, #34495e);
-  --dp-table-row-hover-bg: rgba(247, 250, 252, 0.85);
-  --dp-table-row-border-color: rgba(var(--rgb-border-color, 237,242,247), 0.7);
-
-  /* Customize Button on background image */
-  --dp-customize-btn-on-img-bg: rgba(240, 240, 240, 0.25);
-  --dp-customize-btn-on-img-border: rgba(255, 255, 255, 0.5);
-  --dp-customize-btn-on-img-text: #fff;
-  --dp-customize-btn-on-img-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  --dp-customize-btn-on-img-hover-bg: rgba(255, 255, 255, 0.35);
-  --dp-customize-btn-on-img-hover-border: rgba(255, 255, 255, 0.7);
-
-  /* Generic Modal styles - these should ideally be global but are themed here for now */
-  --dp-modal-overlay-bg: rgba(0,0,0,0.55);
-  --dp-modal-content-bg: var(--primary-bg-color, #fff);
-  --dp-modal-content-shadow: 0 5px 20px rgba(0,0,0,0.15);
-  --dp-modal-header-border-color: var(--border-color, #e9ecef);
-  --dp-modal-header-text-color: var(--primary-text-color, #212529);
-  --dp-modal-close-button-color: var(--secondary-text-color, #6c757d);
-  --dp-modal-close-button-hover-color: var(--primary-text-color, #343a40);
-
-  /* Semantic icon colors for dashboard cards */
-  --dp-receivable-icon-color: #27ae60; /* Green */
-  --dp-payable-icon-color: #c0392b;   /* Red */
+  /* متغیرهای CSS مربوط به خطوط گرید حذف شده‌اند چون دیگر کاربردی ندارند */
 }
-
-body.dark-mode {
-  --dp-page-bg-grid-line-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.1);
-
-  --dp-card-bg: rgba(var(--rgb-secondary-bg, 30,30,30), 0.75); /* Darker semi-transparent */
-  --dp-card-border-color: rgba(var(--rgb-border-color, 44,44,44), 0.5);
-  --dp-card-shadow: 0 2px 8px rgba(0,0,0,0.3);
-
-  --dp-placeholder-bg: rgba(var(--rgb-secondary-bg, 30,30,30), 0.85);
-  --dp-placeholder-text-color: var(--secondary-text-color, #a0aec0);
-  --dp-placeholder-border-color: var(--border-color, #444);
-
-  --dp-section-card-header-text-color: var(--primary-text-color, #e0e0e0);
-  --dp-section-card-header-border-color: rgba(var(--rgb-border-color, 58,58,58), 0.7);
-
-  --dp-quick-action-button-bg: rgba(var(--rgb-accent-color, 187,134,252), 0.15);
-  --dp-quick-action-button-border-color: rgba(var(--rgb-accent-color, 187,134,252), 0.3);
-  --dp-quick-action-button-text-color: var(--accent-color, #bb86fc);
-  --dp-quick-action-button-hover-bg: rgba(var(--rgb-accent-color, 187,134,252), 0.25);
-  --dp-quick-action-button-hover-border-color: rgba(var(--rgb-accent-color, 187,134,252), 0.4);
-
-  --dp-table-header-bg: rgba(var(--rgb-secondary-bg, 42,42,42), 0.8);
-  --dp-table-header-text-color: var(--primary-text-color, #c0c0c0);
-  --dp-table-row-hover-bg: rgba(var(--rgb-border-color, 58,58,58), 0.85);
-  --dp-table-row-border-color: rgba(var(--rgb-border-color, 44,44,44), 0.7);
-
-  --dp-customize-btn-on-img-bg: rgba(var(--rgb-primary-bg, 18,18,18), 0.35);
-  --dp-customize-btn-on-img-border: rgba(var(--rgb-primary-text,224,224,224), 0.4);
-  --dp-customize-btn-on-img-text: var(--primary-text-color, #e0e0e0);
-  --dp-customize-btn-on-img-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  --dp-customize-btn-on-img-hover-bg: rgba(var(--rgb-primary-bg, 18,18,18), 0.45);
-  --dp-customize-btn-on-img-hover-border: rgba(var(--rgb-primary-text,224,224,224), 0.6);
-
-  /* Generic Modal styles for dark mode */
-  --dp-modal-overlay-bg: rgba(0,0,0,0.75);
-  --dp-modal-content-bg: var(--secondary-bg-color, #1e1e1e);
-  --dp-modal-content-shadow: 0 5px 20px rgba(0,0,0,0.35);
-  --dp-modal-header-border-color: var(--border-color, #3a3a3a);
-  --dp-modal-header-text-color: var(--primary-text-color, #e0e0e0);
-  --dp-modal-close-button-color: var(--secondary-text-color, #a0aec0);
-  --dp-modal-close-button-hover-color: var(--primary-text-color, #e0e0e0);
-
-  /* Dark mode semantic icon colors */
-  --dp-receivable-icon-color: #66bb6a; /* Lighter Green */
-  --dp-payable-icon-color: #f07178;   /* Lighter Red */
-}
-
 
 .dashboard-page-content {
   width: 100%;
-  padding-top: 0.625rem; /* 10px */
+  padding-top: 10px;
   padding-bottom: 20px;
   padding-left: 0;
   padding-right: 0;
@@ -133,37 +42,9 @@ body.dark-mode {
   margin-bottom: 10px;
   position: relative;
   z-index: 102;
-}
-
-.dashboard-customize-button { /* دکمه dashboard-action-toggle-button حذف شده است */
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px; /* گردی دکمه‌ها */
-  font-size: 0.95em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  white-space: nowrap;
-}
-
-.dashboard-customize-button:hover {
-  background-color: #5a6268;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.dashboard-customize-button svg {
-  font-size: 1.1em;
-}
-
-.dashboard-customize-button svg + .button-text {
-    margin-right: 8px;
+  /* Custom styles for .dashboard-customize-button are removed as it's now an antd Button. */
+  /* Ant Design buttons will inherit global styles and specific type="primary" etc. styles. */
+  /* We might need to adjust margin or alignment if needed later via a wrapper or antd's <Space>. */
 }
 
 .summary-cards-grid-layout {
@@ -483,16 +364,29 @@ body.dark-mode {
 .dashboard-page-content.has-background-image .recent-transactions-section h2 {
   /* در صورت نیاز به تغییر رنگ متن روی پس‌زمینه، اینجا اعمال شود */
 }
-.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button {
-  background-color: rgba(240, 240, 240, 0.25); 
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  color: #fff; 
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+/* Styling for Ant Design button when a background image is present */
+.dashboard-page-content.has-background-image .dashboard-header-actions .ant-btn-primary {
+  background-color: rgba(255, 255, 255, 0.2); /* Lighter, more transparent */
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045), 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow */
 }
-.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
-  background-color: rgba(255, 255, 255, 0.35);
+.dashboard-page-content.has-background-image .dashboard-header-actions .ant-btn-primary:hover,
+.dashboard-page-content.has-background-image .dashboard-header-actions .ant-btn-primary:focus {
+  background-color: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+
+/* Styling for Ant Design type="link" button when a background image is present (for the placeholder) */
+.dashboard-page-content.has-background-image .no-sections-placeholder .ant-btn-link {
+  color: #fff; /* Make link button text white */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.dashboard-page-content.has-background-image .no-sections-placeholder .ant-btn-link:hover,
+.dashboard-page-content.has-background-image .no-sections-placeholder .ant-btn-link:focus {
+  color: rgba(255, 255, 255, 0.85); /* Slightly dimmer on hover */
 }
 /* پایان استایل‌های شرطی پس‌زمینه */
 
@@ -520,7 +414,7 @@ body.dark-mode {
   flex-shrink: 0;
 }
 .cheque-alert-widget h4 svg {
-  margin-left: 8px; 
+  margin-left: 8px; /* Ensure correct spacing for RTL, should be margin-right if text is LTR */
   color: #e67e22;
 }
 .cheque-alert-widget ul {

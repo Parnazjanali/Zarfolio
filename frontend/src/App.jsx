@@ -2,7 +2,10 @@
 
 // STEP 1: 'lazy' و 'Suspense' از کتابخانه react وارد می‌شوند
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { ConfigProvider, theme, FloatButton } from 'antd'; // Changed Button to FloatButton
+import { PlusOutlined } from '@ant-design/icons';
+import { FaFileInvoiceDollar, FaUserPlus, FaTags } from 'react-icons/fa'; // Added FaTags
 
 // --- START: کامپوننت‌هایی که برای بارگذاری اولیه نیاز هستند ---
 // این کامپوننت‌ها چون بلافاصله نیاز هستند، به صورت عادی وارد می‌شوند
@@ -48,7 +51,62 @@ function BackgroundManager() {
   return null;
 }
 
-function MainLayout({ children }) {
+// Remove currentTheme and setCurrentTheme from MainLayout props
+function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed }) {
+  const navigate = useNavigate(); // Instantiate useNavigate
+
+  return (
+    <div className={`main-layout ${isSidebarCollapsed ? 'sidebar-is-collapsed-globally' : ''}`}>
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed} 
+        setIsCollapsed={setIsSidebarCollapsed}
+        // currentTheme and setCurrentTheme removed from Sidebar props
+      />
+      <main className="main-content-area">
+        {React.Children.map(children, child => {
+          if (React.isValidElement(child)) {
+            // currentTheme removed from being passed to children
+            // @ts-ignore
+            return React.cloneElement(child, { isSidebarCollapsed });
+          }
+          return child;
+        })}
+      </main>
+      <FloatButton.Group
+        trigger="click"
+        type="primary"
+        style={{
+          bottom: 30,
+          left: 30, // RTL context: bottom-left
+          // boxShadow is usually handled by FloatButton component itself
+        }}
+        icon={<PlusOutlined />}
+        tooltip="ثبت جدید"
+      >
+        <FloatButton 
+          icon={<FaTags />} 
+          tooltip={{ title: "افزودن اتیکت", placement: "right" }}
+          onClick={() => navigate('/etiket')} 
+        />
+        <FloatButton 
+          icon={<FaFileInvoiceDollar />} 
+          tooltip={{ title: "فاکتور جدید", placement: "right" }}
+          onClick={() => navigate('/invoices/new')} 
+        />
+        <FloatButton 
+          icon={<FaUserPlus />} 
+          tooltip={{ title: "مخاطب جدید", placement: "right" }}
+          onClick={() => navigate('/customers/new')}
+        />
+      </FloatButton.Group>
+    </div>
+  );
+}
+
+function App() {
+  const isAuthenticated = !!localStorage.getItem('authToken');
+  // Remove currentTheme and setCurrentTheme state
+  // const [currentTheme, setCurrentTheme] = useState('light'); 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const savedState = localStorage.getItem('sidebarCollapsed');
     return savedState !== null ? JSON.parse(savedState) : false;
@@ -58,68 +116,60 @@ function MainLayout({ children }) {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
-  return (
-    <div className={`main-layout ${isSidebarCollapsed ? 'sidebar-is-collapsed-globally' : ''}`}>
-      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
-      <main className="main-content-area">
-        {React.Children.map(children, child => {
-          if (React.isValidElement(child)) {
-            // @ts-ignore
-            return React.cloneElement(child, { isSidebarCollapsed });
-          }
-          return child;
-        })}
-      </main>
-    </div>
-  );
-}
-
-function App() {
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  // Define a fixed theme for the app, or use Ant Design's default (light)
+  // If the whole app should be dark, use: theme: { algorithm: theme.darkAlgorithm }
+  // For default light theme for app content (sidebar is separately dark):
+  const antdAppTheme = {
+    algorithm: theme.defaultAlgorithm, // Or remove theme prop entirely for default light
+    components: {
+      Button: {
+        // Example of component-level customization if needed
+      },
+    },
+  };
 
   return (
-    <>
+    <ConfigProvider theme={antdAppTheme}>
       <BackgroundManager />
-      {/* STEP 2: تمام مسیرها داخل کامپوننت Suspense قرار می‌گیرند */}
-      {/* fallback یک کامپوننت یا JSX است که تا زمان بارگذاری کد صفحه جدید نمایش داده می‌شود */}
-      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>در حال بارگذاری...</div>}>
+      <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
         <Routes>
-          {/* مسیرهای احراز هویت */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
           <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-          {/* مسیرهای اصلی برنامه که به صورت lazy لود می‌شوند */}
-          <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/*" element={
+            <ProtectedRoute>
+              <MainLayout 
+                isSidebarCollapsed={isSidebarCollapsed}
+                setIsSidebarCollapsed={setIsSidebarCollapsed}
+                // currentTheme and setCurrentTheme removed
+              >
+                <Routes>
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="invoices" element={<InvoicesPage />} />
+                  <Route path="invoices/new" element={<NewInvoicePage />} />
+                  <Route path="inventory" element={<InventoryPage />} />
+                  <Route path="customers" element={<CustomersPage />} />
+                  <Route path="customers/new" element={<NewCustomerPage />} />
+                  <Route path="etiket" element={<EtiketPage />} />
+                  <Route path="reports/*" element={<ReportsPage />} />
+                  <Route path="account/settings" element={<AccountManagementPage />} />
+                  <Route path="settings/system" element={<SystemSettingsPage />} />
+                  {/* Default redirect for authenticated users inside the layout */}
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Routes>
+              </MainLayout>
+            </ProtectedRoute>
+          }/>
           
-          <Route path="/invoices" element={<ProtectedRoute><MainLayout><InvoicesPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/invoices/new" element={<ProtectedRoute><MainLayout><NewInvoicePage /></MainLayout></ProtectedRoute>} />
-          
-          <Route path="/inventory" element={<ProtectedRoute><MainLayout><InventoryPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/customers" element={<ProtectedRoute><MainLayout><CustomersPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/customers/new" element={<ProtectedRoute><MainLayout><NewCustomerPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/etiket" element={<ProtectedRoute><MainLayout><EtiketPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/reports/*" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
-
-          <Route
-            path="/account/settings"
-            element={<ProtectedRoute><MainLayout><AccountManagementPage /></MainLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/settings/system"
-            element={<ProtectedRoute><MainLayout><SystemSettingsPage /></MainLayout></ProtectedRoute>}
-          />
-
-          {/* مسیرهای پیش‌فرض و ریدایرکت */}
-          <Route
-            path="/"
-            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />}
-          />
-          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+          {/* Fallback for non-authenticated users or unmatched routes */}
+          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+          {/* A global catch-all for any other unmatched paths might be useful, or rely on individual routing structures */}
+          {/* <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} /> */}
         </Routes>
       </Suspense>
-    </>
+    </ConfigProvider>
   );
 }
 

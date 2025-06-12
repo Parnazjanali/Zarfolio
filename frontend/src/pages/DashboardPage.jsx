@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Button, Modal, Space } from 'antd'; // Ant Design components
 import './DashboardPage.css'; //
 import ReleaseNotesModal from '../components/ReleaseNotesModal'; //
 import DashboardCustomizeModal from '../components/DashboardCustomizeModal'; //
@@ -19,6 +20,7 @@ import {
 } from 'react-icons/fa';
 
 import { Responsive, WidthProvider } from 'react-grid-layout';
+// Styles for react-grid-layout are still needed
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -32,8 +34,8 @@ const DASHBOARD_ELEMENTS_CONFIG = [
   { key: 'summaryCardTransactions', label: 'تعداد تراکنش‌ها (ماه)', type: 'summaryCard', defaultVisible: true, icon: <FaFileAlt /> },
   { key: 'summaryCardCustomers', label: 'تعداد مشتریان', type: 'summaryCard', defaultVisible: true, icon: <FaUserPlus /> },
   { key: 'chequeAlertWidget', label: 'چک‌های نزدیک به سررسید', type: 'widget', defaultVisible: true, icon: <FaMoneyCheckAlt /> },
-  { key: 'summaryCardGoldReceivable', label: 'مجموع طلب طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowUp className="icon-receivable"/> },
-  { key: 'summaryCardGoldPayable', label: 'مجموع بدهی طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowDown className="icon-payable"/> },
+  { key: 'summaryCardGoldReceivable', label: 'مجموع طلب طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowUp style={{color: '#27ae60'}}/> },
+  { key: 'summaryCardGoldPayable', label: 'مجموع بدهی طلایی (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArrowDown style={{color: '#c0392b'}}/> },
   { key: 'summaryCardMeltedGoldInSafe', label: 'آبشده موجود در صندوق (گرم)', type: 'summaryCard', defaultVisible: true, icon: <FaArchive /> },
   { key: 'summaryCardCoinsInSafe', label: 'سکه موجود در صندوق (عدد)', type: 'summaryCard', defaultVisible: true, icon: <FaCoins /> },
   { key: 'summaryCardMiscInSafe', label: 'متفرقه موجود در صندوق', type: 'summaryCard', defaultVisible: true, icon: <FaShapes /> },
@@ -418,8 +420,8 @@ function DashboardPage({ isSidebarCollapsed }) {
     summaryCardCash: { title: "موجودی نقدی (تومان)", value: "۱۵,۲۵۰,۰۰۰", icon: <FaMoneyBillWave />, iconBg: 'value' },
     summaryCardTransactions: { title: "تعداد تراکنش‌ها (ماه)", value: "۷۸", icon: <FaFileAlt />, iconBg: 'invoices' },
     summaryCardCustomers: { title: "تعداد مشتریان", value: "۴۲", icon: <FaUserPlus />, iconBg: 'price' },
-    summaryCardGoldReceivable: { title: "مجموع طلب طلایی (گرم)", value: "۲۵۰.۷۵", icon: <FaArrowUp className="icon-receivable"/>, iconBg: 'gold-receivable' },
-    summaryCardGoldPayable: { title: "مجموع بدهی طلایی (گرم)", value: "۸۵.۱۰", icon: <FaArrowDown className="icon-payable"/>, iconBg: 'gold-payable' },
+    summaryCardGoldReceivable: { title: "مجموع طلب طلایی (گرم)", value: "۲۵۰.۷۵", icon: <FaArrowUp style={{color: '#27ae60'}}/>, iconBg: 'gold-receivable' },
+    summaryCardGoldPayable: { title: "مجموع بدهی طلایی (گرم)", value: "۸۵.۱۰", icon: <FaArrowDown style={{color: '#c0392b'}}/>, iconBg: 'gold-payable' },
     summaryCardMeltedGoldInSafe: { title: "آبشده موجود در صندوق (گرم)", value: "۱,۲۵۰.۰۰", icon: <FaArchive />, iconBg: 'melted-gold' },
     summaryCardCoinsInSafe: { title: "سکه موجود در صندوق (عدد)", value: "۱۵ عدد تمام", icon: <FaCoins />, iconBg: 'coins' },
     summaryCardMiscInSafe: { title: "متفرقه موجود در صندوق", value: "ارزش: ۳,۵۰۰,۰۰۰ ت", icon: <FaShapes />, iconBg: 'misc' },
@@ -522,9 +524,9 @@ function DashboardPage({ isSidebarCollapsed }) {
       <div ref={dashboardPageRef} className={`dashboard-page-content ${blurContent ? 'content-blurred' : ''} ${isSidebarCollapsed ? 'sidebar-is-collapsed-globally' : ''}`}>
         <main className="dashboard-main-content">
           <div className="dashboard-header-actions">
-            <button type="button" onClick={handleOpenCustomizeModal} className="dashboard-customize-button">
-              <FaEdit /> <span className="button-text">سفارشی‌سازی داشبورد</span>
-            </button>
+            <Button type="primary" icon={<FaEdit />} onClick={handleOpenCustomizeModal}>
+              سفارشی‌سازی داشبورد
+            </Button>
           </div>
 
           {visibleGridElements.length > 0 ? (
@@ -611,9 +613,9 @@ function DashboardPage({ isSidebarCollapsed }) {
              <div className="no-sections-placeholder">
                 <FaEyeSlash />
                 <p>هیچ بخشی برای نمایش در داشبورد انتخاب نشده است.</p>
-                <button type="button" onClick={handleOpenCustomizeModal} className="dashboard-customize-button">
-                    <FaEdit /> سفارشی سازی داشبورد
-                </button>
+                <Button icon={<FaEdit />} onClick={handleOpenCustomizeModal} type="link">
+                    سفارشی سازی داشبورد
+                </Button>
             </div>
           )}
         </main>

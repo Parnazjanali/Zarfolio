@@ -1,127 +1,21 @@
 /* frontend/src/pages/SettingsPage.css */
-:root {
-  --sp-page-bg: var(--secondary-bg-color, #f4f7f9);
-  --sp-header-text-color: var(--primary-text-color, #2c3e50);
-
-  --sp-tabs-menu-bg: var(--primary-bg-color, #ffffff);
-  --sp-tabs-menu-shadow: var(--card-shadow, 0 5px 15px rgba(0,0,0,0.07)); /* Assuming global card shadow */
-  --sp-tab-button-text-color: var(--secondary-text-color, #52616B);
-  --sp-tab-button-hover-bg: var(--secondary-bg-color, #f8f9fa);
-  --sp-tab-button-hover-text-color: var(--accent-color, #007bff);
-  --sp-tab-button-active-bg: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1); /* Light accent */
-  --sp-tab-button-active-text-color: var(--accent-color, #007bff);
-  --sp-tab-button-active-border-color: var(--accent-color, #007bff);
-  --sp-tab-icon-color: var(--secondary-text-color, #869ab0); /* Muted icon */
-  --sp-tab-icon-active-color: var(--accent-color, #007bff);
-
-  --sp-content-section-bg: var(--primary-bg-color, #ffffff);
-  --sp-content-section-shadow: var(--card-shadow, 0 5px 15px rgba(0,0,0,0.07));
-  --sp-section-title-text-color: var(--primary-text-color, #343a40);
-  --sp-section-title-border-color: var(--border-color, #e9ecef);
-  --sp-section-title-icon-color: var(--accent-color, #007bff);
-
-  --sp-form-label-color: var(--secondary-text-color, #495057);
-  --sp-form-label-subtext-color: var(--secondary-text-color, #6c757d);
-  /* Inputs, selects, textareas use global styles from index.css */
-  --sp-checkbox-label-color: var(--secondary-text-color, #495057);
-  --sp-checkbox-accent-color: var(--accent-color, #007bff);
-
-  --sp-actions-border-color: var(--border-color, #e9ecef);
-  /* Save button uses global .action-button.primary */
-  /* Other action buttons use global .action-button.secondary */
-
-  --sp-feedback-success-bg: var(--success-bg-color, #d1e7dd); /* Global success bg */
-  --sp-feedback-success-text: var(--success-text-color, #0f5132); /* Global success text */
-  --sp-feedback-success-border: var(--success-border-color, #badbcc); /* Global success border */
-  --sp-feedback-error-bg: var(--danger-bg-color, #f8d7da); /* Global danger bg */
-  --sp-feedback-error-text: var(--danger-text-color, #58151c); /* Global danger text */
-  --sp-feedback-error-border: var(--danger-border-color, #f5c2c7); /* Global danger border */
-
-  --sp-fieldset-bg: var(--secondary-bg-color, #fdfdfd); /* Slightly off-white */
-  --sp-fieldset-border-color: var(--border-color, #e0e0e0);
-  --sp-fieldset-legend-color: var(--accent-color, #007bff);
-
-  --sp-preview-area-border-color: var(--border-color, #ced4da);
-  --sp-preview-area-header-color: var(--secondary-text-color, #495057);
-  --sp-preview-placeholder-border-color: var(--border-color, #adb5bd); /* Darker dashed border */
-  --sp-preview-placeholder-text-color: var(--secondary-text-color, #6c757d);
-  --sp-preview-placeholder-bg-color: var(--secondary-bg-color, #f8f9fa);
-
-  /* Responsive tab menu */
-  --sp-responsive-tabs-menu-bg: var(--secondary-bg-color, #f8f9fa);
-  --sp-responsive-tabs-border-color: var(--border-color, #dfe4ea);
-  --sp-responsive-tab-active-bg: var(--primary-bg-color, #fff);
-}
-
-body.dark-mode {
-  --sp-page-bg: var(--primary-bg-color, #121212); /* Page is on primary dark */
-  --sp-header-text-color: var(--primary-text-color, #e0e0e0);
-
-  --sp-tabs-menu-bg: var(--secondary-bg-color, #1e1e1e); /* Tabs menu distinct */
-  --sp-tabs-menu-shadow: 0 5px 15px rgba(0,0,0,0.25);
-  --sp-tab-button-text-color: var(--secondary-text-color, #a0aec0);
-  --sp-tab-button-hover-bg: var(--border-color, #2c2c2c); /* Use border for subtle hover */
-  --sp-tab-button-hover-text-color: var(--accent-color, #bb86fc);
-  --sp-tab-button-active-bg: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
-  --sp-tab-button-active-text-color: var(--accent-color, #bb86fc);
-  --sp-tab-button-active-border-color: var(--accent-color, #bb86fc);
-  --sp-tab-icon-color: var(--secondary-text-color, #888);
-  --sp-tab-icon-active-color: var(--accent-color, #bb86fc);
-
-  --sp-content-section-bg: var(--secondary-bg-color, #1e1e1e); /* Sections also distinct */
-  --sp-content-section-shadow: 0 5px 15px rgba(0,0,0,0.25);
-  --sp-section-title-text-color: var(--primary-text-color, #e0e0e0);
-  --sp-section-title-border-color: var(--border-color, #3a3a3a);
-  --sp-section-title-icon-color: var(--accent-color, #bb86fc);
-
-  --sp-form-label-color: var(--secondary-text-color, #adb5bd);
-  --sp-form-label-subtext-color: var(--secondary-text-color, #868e96);
-  --sp-checkbox-label-color: var(--secondary-text-color, #adb5bd);
-  --sp-checkbox-accent-color: var(--accent-color, #bb86fc);
-
-  --sp-actions-border-color: var(--border-color, #3a3a3a);
-
-  --sp-feedback-success-bg: var(--success-bg-color, rgba(102,187,106,0.15));
-  --sp-feedback-success-text: var(--success-text-color, #a5d6a7);
-  --sp-feedback-success-border: var(--success-border-color, rgba(102,187,106,0.3));
-  --sp-feedback-error-bg: var(--danger-bg-color, rgba(240,113,120,0.15));
-  --sp-feedback-error-text: var(--danger-text-color, #f07178);
-  --sp-feedback-error-border: var(--danger-border-color, rgba(240,113,120,0.3));
-
-  --sp-fieldset-bg: var(--primary-bg-color, #121212); /* Fieldset blends more with page bg */
-  --sp-fieldset-border-color: var(--border-color, #3a3a3a);
-  --sp-fieldset-legend-color: var(--accent-color, #bb86fc);
-
-  --sp-preview-area-border-color: var(--border-color, #444);
-  --sp-preview-area-header-color: var(--secondary-text-color, #a0aec0);
-  --sp-preview-placeholder-border-color: var(--border-color, #555);
-  --sp-preview-placeholder-text-color: var(--secondary-text-color, #888);
-  --sp-preview-placeholder-bg-color: var(--primary-bg-color, #121212);
-
-  --sp-responsive-tabs-menu-bg: var(--primary-bg-color, #121212);
-  --sp-responsive-tabs-border-color: var(--border-color, #3a3a3a);
-  --sp-responsive-tab-active-bg: var(--secondary-bg-color, #1e1e1e);
-}
-
 .settings-page-container {
   width: 100%;
-  padding: 1.5625rem 1.875rem; /* 25px 30px */
+  padding: 25px 30px;
   box-sizing: border-box;
   direction: rtl;
-  font-family: var(--font-family); /* Global */
-  background-color: var(--sp-page-bg);
-  min-height: 100vh; /* Ensure page takes full height */
+  font-family: 'Vazirmatn', sans-serif;
+  background-color: #f4f7f9;
 }
 
 .settings-page-header {
-  margin-bottom: 1.5625rem; /* 25px */
-  padding-bottom: 0.9375rem; /* 15px */
-  /* Removed border, often page headers don't have bottom border if content is carded */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
 }
 
 .settings-page-header h1 {
   font-size: 2em;
-  color: var(--sp-header-text-color);
+  color: #2c3e50;
   margin: 0;
   font-weight: 700;
 }
@@ -133,11 +27,11 @@ body.dark-mode {
 }
 
 .settings-tabs-menu {
-  flex: 0 0 15rem; /* 240px */
-  background-color: var(--sp-tabs-menu-bg);
-  border-radius: 0.625rem; /* 10px */
-  box-shadow: var(--sp-tabs-menu-shadow);
-  padding: 0.625rem 0; /* 10px */
+  flex: 0 0 240px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+  padding: 10px 0;
   align-self: flex-start;
 }
 
@@ -145,14 +39,14 @@ body.dark-mode {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.875rem 1.375rem; /* 14px 22px */
+  padding: 14px 22px;
   border: none;
   background-color: transparent;
   text-align: right;
-  font-family: var(--font-family); /* Global */
+  font-family: 'Vazirmatn', sans-serif;
   font-size: 0.98em;
   font-weight: 500;
-  color: var(--sp-tab-button-text-color);
+  color: #52616B;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease, border-right-color 0.25s ease, padding-right 0.25s ease;
   border-right: 4px solid transparent;
@@ -160,45 +54,45 @@ body.dark-mode {
 }
 
 .tab-button:hover {
-  background-color: var(--sp-tab-button-hover-bg);
-  color: var(--sp-tab-button-hover-text-color);
+  background-color: #f8f9fa;
+  color: #007bff;
 }
 
 .tab-button.active {
-  background-color: var(--sp-tab-button-active-bg);
-  color: var(--sp-tab-button-active-text-color);
+  background-color: #e9f5ff;
+  color: #007bff;
   font-weight: 600;
-  border-right-color: var(--sp-tab-button-active-border-color);
-  padding-right: 1.125rem; /* 18px */
+  border-right-color: #007bff;
+  padding-right: 18px;
 }
 
 .tab-icon {
-  margin-left: 0.75rem; /* 12px */
+  margin-left: 12px;
   font-size: 1.2em;
-  width: 1.375rem; /* 22px */
+  width: 22px;
   text-align: center;
-  color: var(--sp-tab-icon-color);
+  color: #869ab0;
   transition: color 0.2s ease;
 }
 .tab-button:hover .tab-icon,
 .tab-button.active .tab-icon {
-  color: var(--sp-tab-icon-active-color);
+  color: #007bff;
 }
 
 .settings-content {
   flex-grow: 1;
 }
 .feedback-message.top-feedback {
-    margin-bottom: 1.25rem; /* 20px */
+    margin-bottom: 20px;
     margin-top: 0;
 }
 
 .settings-section {
-  background-color: var(--sp-content-section-bg);
-  padding: 1.5625rem 1.875rem 1.875rem 1.875rem; /* 25px 30px 30px 30px */
-  border-radius: 0.625rem; /* 10px */
-  box-shadow: var(--sp-content-section-shadow);
-  margin-bottom: 1.5625rem; /* 25px */
+  background-color: #ffffff;
+  padding: 25px 30px 30px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+  margin-bottom: 25px;
 }
 .settings-section:last-child {
   margin-bottom: 0;
@@ -206,47 +100,47 @@ body.dark-mode {
 
 .settings-section-title {
   font-size: 1.35em;
-  color: var(--sp-section-title-text-color);
+  color: #343a40;
   margin-top: 0;
-  margin-bottom: 1.875rem; /* 30px */
-  padding-bottom: 0.75rem; /* 12px */
-  border-bottom: 1px solid var(--sp-section-title-border-color);
+  margin-bottom: 30px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
   display: flex;
   align-items: center;
   font-weight: 600;
 }
 .settings-section-title .section-icon {
-  margin-left: 0.75rem; /* 12px */
+  margin-left: 12px;
   font-size: 1.1em;
-  color: var(--sp-section-title-icon-color);
+  color: #007bff;
 }
 
 .form-row {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 1.375rem; /* 22px */
-  gap: 1.25rem; /* 20px */
+  margin-bottom: 22px;
+  gap: 20px;
 }
 .form-row:last-child {
   margin-bottom: 0;
 }
 
 .form-label {
-  flex: 0 0 15rem; /* 240px */
+  flex: 0 0 240px;
   font-size: 0.9em;
-  color: var(--sp-form-label-color);
+  color: #495057;
   font-weight: 500;
-  text-align: left; /* For LTR, this should be right if form is RTL */
-  padding-left: 0.625rem; /* 10px */
+  text-align: left;
+  padding-left: 10px;
   line-height: 1.5;
-  padding-top: 0.5rem; /* 8px */
+  padding-top: 8px;
 }
 .form-label-subtext {
   display: block;
   font-size: 0.8em;
-  color: var(--sp-form-label-subtext-color);
+  color: #6c757d;
   font-weight: normal;
-  margin-top: 0.25rem; /* 4px */
+  margin-top: 4px;
   line-height: 1.4;
 }
 
@@ -255,15 +149,14 @@ body.dark-mode {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.5rem; /* 8px */
+  gap: 8px;
 }
 .form-input-control.inline-elements {
     flex-direction: row;
     align-items: center;
-    gap: 0.625rem; /* 10px */
+    gap: 10px;
 }
 
-/* Inputs, selects, textareas use global styles from index.css */
 .form-input-control input[type="text"],
 .form-input-control input[type="tel"],
 .form-input-control input[type="email"],
@@ -271,57 +164,71 @@ body.dark-mode {
 .form-input-control input[type="url"],
 .form-input-control select,
 .form-input-control textarea {
-  /* Inherits from global styles in index.css */
-  /* Example of specific override IF NEEDED:
-     background-color: var(--custom-input-bg, var(--secondary-bg-color));
-  */
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.9em;
+  font-family: 'Vazirmatn', sans-serif;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fdfdfe;
+  color: #495057;
 }
-/* Focus styles also from global index.css */
-
+.form-input-control input[type="text"]:focus,
+.form-input-control input[type="tel"]:focus,
+.form-input-control input[type="email"]:focus,
+.form-input-control input[type="number"]:focus,
+.form-input-control input[type="url"]:focus,
+.form-input-control select:focus,
+.form-input-control textarea:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
+}
 .form-input-control input[type="file"] {
-    border: 1px solid var(--border-color);
-    border-radius: 0.375rem; /* 6px */
-    padding: 0.5rem 0.75rem; /* 8px 12px */
+    padding: 8px 12px;
     font-size: 0.85em;
-    background-color: var(--secondary-bg-color); /* Match other inputs */
-    color: var(--primary-text-color);
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    width: 100%;
 }
 .form-input-control input[type="color"] {
-    padding: 0.125rem; /* 2px */
-    height: 2.375rem; /* 38px */
-    min-width: 3.125rem; /* 50px */
-    border: 1px solid var(--border-color);
-    border-radius: 0.375rem; /* 6px */
-    background-color: var(--secondary-bg-color); /* Ensure background for picker */
+    padding: 2px;
+    height: 38px;
+    min-width: 50px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
 }
 
 .form-input-control textarea {
-  min-height: 5rem; /* 80px */
+  min-height: 80px;
   resize: vertical;
 }
 .form-input-control input[type="checkbox"] {
-  margin-left: 0.3125rem; /* 5px */
+  width: auto;
+  margin-left: 5px;
   margin-right: 0;
   transform: scale(1.1);
-  accent-color: var(--sp-checkbox-accent-color);
+  accent-color: #007bff;
   cursor: pointer;
   vertical-align: middle;
 }
 .checkbox-group {
     display: flex;
     flex-direction: row;
-    gap: 0.9375rem; /* 15px */
+    gap: 15px;
     flex-wrap: wrap;
     align-items: center;
 }
 .checkbox-group.vertical {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem; /* 8px */
+    gap: 8px;
 }
 .checkbox-label {
     font-size: 0.9em;
-    color: var(--sp-checkbox-label-color);
+    color: #495057;
     cursor: pointer;
     font-weight: normal;
     display: flex;
@@ -331,73 +238,109 @@ body.dark-mode {
 .conversion-rates {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* 8px */
+    gap: 8px;
 }
 .conversion-rates span {
     display: inline-flex;
     align-items: center;
-    gap: 0.3125rem; /* 5px */
+    gap: 5px;
     font-size: 0.9em;
-    color: var(--primary-text-color); /* Ensure text color is appropriate */
 }
 .conversion-rates input[type="number"] {
-    width: 5.625rem !important; /* 90px */
-    padding: 0.375rem 0.5rem !important; /* 6px 8px */
+    width: 90px !important;
+    padding: 6px 8px !important;
     font-size: 0.9em !important;
     text-align: center;
 }
 
 .settings-section-actions {
-  margin-top: 2.1875rem; /* 35px */
-  padding-top: 1.5625rem; /* 25px */
-  border-top: 1px solid var(--sp-actions-border-color);
-  text-align: left; /* For LTR button alignment */
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #e9ecef;
+  text-align: left;
 }
 
-/* .save-button and .action-button (secondary) should use global .action-button classes */
-/* Example usage in JSX: <button className="action-button primary save-button">Save</button> */
-/* <button className="action-button secondary">Cancel</button> */
-.save-button { /* If specific styling needed beyond .action-button.primary */
-  /* Default styling from .action-button.primary in index.css */
-  /* Specific overrides here if any */
+.save-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 22px;
+  font-size: 0.95em;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
 }
-/* .action-button { */ /* If specific styling needed for secondary buttons beyond .action-button.secondary */
-  /* Default styling from .action-button.secondary in index.css */
-/* } */
+.save-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  transform: translateY(-1px);
+}
+.save-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+.save-button svg {
+  font-size: 1.1em;
+}
+.save-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
+.action-button {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 15px;
+  font-size: 0.85em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease;
+  font-family: 'Vazirmatn', sans-serif;
+}
+.action-button:hover {
+  background-color: #5a6268;
+}
+.action-button svg {
+  margin-left: 5px;
+}
 
-.feedback-message { /* General class for feedback banners */
+.feedback-message {
   width: 100%;
-  padding: 0.625rem 0.9375rem; /* 10px 15px */
-  margin-top: 0.9375rem; /* 15px */
-  border-radius: 0.375rem; /* 6px */
+  padding: 10px 15px;
+  margin-top: 15px;
+  border-radius: 6px;
   font-size: 0.9em;
   text-align: center;
   box-sizing: border-box;
-  border: 1px solid transparent; /* Base for border */
-  display: flex; /* For icon and text alignment */
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem; /* Space between icon and text */
 }
-.feedback-message.feedback-success { /* More specific class */
-  background-color: var(--sp-feedback-success-bg);
-  color: var(--sp-feedback-success-text);
-  border-color: var(--sp-feedback-success-border);
+.fbs-success {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
 }
-.feedback-message.feedback-error { /* More specific class */
-  background-color: var(--sp-feedback-error-bg);
-  color: var(--sp-feedback-error-text);
-  border-color: var(--sp-feedback-error-border);
+.fbs-error {
+  background-color: #f8d7da;
+  color: #58151c;
+  border: 1px solid #f5c2c7;
 }
 
 .settings-fieldset {
-  border: 1px solid var(--sp-fieldset-border-color);
-  border-radius: 0.5rem; /* 8px */
-  padding: 0.9375rem 1.25rem 1.25rem 1.25rem; /* 15px 20px 20px 20px */
-  margin-top: 1.25rem; /* 20px */
-  margin-bottom: 1.5625rem; /* 25px */
-  background-color: var(--sp-fieldset-bg);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px 20px 20px 20px;
+  margin-top: 20px;
+  margin-bottom: 25px;
+  background-color: #fdfdfd;
 }
 .settings-fieldset:first-of-type {
     margin-top: 0;
@@ -406,39 +349,39 @@ body.dark-mode {
 .settings-fieldset legend {
   font-size: 1.1em;
   font-weight: 600;
-  color: var(--sp-fieldset-legend-color);
-  padding: 0 0.625rem; /* 10px */
-  margin-right: 0.625rem; /* 10px for RTL */
+  color: #007bff;
+  padding: 0 10px;
+  margin-right: 10px;
 }
 
 .checkbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)); /* 200px */
-  gap: 0.625rem 0.9375rem; /* 10px 15px */
-  margin-top: 0.625rem; /* 10px */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px 15px;
+  margin-top: 10px;
 }
 
 .invoice-preview-area {
-  margin-top: 1.875rem; /* 30px */
-  padding-top: 1.25rem; /* 20px */
-  border-top: 1px dashed var(--sp-preview-area-border-color);
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed #ced4da;
 }
 
 .invoice-preview-area h4 {
   font-size: 1.1em;
-  color: var(--sp-preview-area-header-color);
-  margin-bottom: 0.9375rem; /* 15px */
+  color: #495057;
+  margin-bottom: 15px;
   text-align: center;
 }
 
 .invoice-preview-placeholder {
-  border: 2px dashed var(--sp-preview-placeholder-border-color);
-  border-radius: 0.5rem; /* 8px */
-  padding: 3.125rem 1.25rem; /* 50px 20px */
+  border: 2px dashed #adb5bd;
+  border-radius: 8px;
+  padding: 50px 20px;
   text-align: center;
-  color: var(--sp-preview-placeholder-text-color);
-  background-color: var(--sp-preview-placeholder-bg-color);
-  min-height: 12.5rem; /* 200px */
+  color: #6c757d;
+  background-color: #f8f9fa;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
