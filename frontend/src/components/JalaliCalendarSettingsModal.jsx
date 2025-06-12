@@ -43,40 +43,39 @@ const JalaliCalendarSettingsModal = ({ isOpen, onClose, initialSettings, onSaveS
   return (
     <ModalWrapper> {/* از Portal استفاده کنید اگر موجود است */}
       <div className="modal-overlay generic-modal-overlay">
-        {/* Removed inline fontFamily, maxWidth from modal-content. These should be in CSS if specific to this modal. */}
-        <div className="modal-content generic-modal-content jcsm-modal-content">
-          {/* Removed inline styles from modal-header, h3, close-button. Added classes for CSS targeting. */}
-          <div className="modal-header jcsm-modal-header">
-            <h3 className="jcsm-modal-title">تنظیمات نمایش تقویم جلالی</h3>
-            <button type="button" onClick={onClose} className="modal-close-button jcsm-modal-close-button" aria-label="بستن">
+        <div className="modal-content generic-modal-content" style={{ fontFamily: "'Vazirmatn FD', sans-serif", maxWidth: '500px' }}>
+          <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.2em', color: '#333' }}>تنظیمات نمایش تقویم جلالی</h3>
+            <button type="button" onClick={onClose} className="close-button" style={{ background: 'none', border: 'none', fontSize: '1.3em', cursor: 'pointer', color: '#777' }}>
               <FaTimes />
             </button>
           </div>
-          <div className="modal-body jcsm-modal-body">
-            {/* Removed inline styles from p tag */}
-            <p className="jcsm-modal-description">
+          <div className="modal-body">
+            <p style={{ fontSize: '0.9em', color: '#555', marginBottom: '20px' }}>
               یکی از سبک‌های نمایش زیر را برای ویجت تقویم جلالی انتخاب کنید:
             </p>
-            {/* Removed inline styles from style-options-container */}
-            <div className="style-options-container jcsm-style-options-container">
+            <div className="style-options-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
               {CALENDAR_STYLES_CONFIG.map(style => (
                 <button
                   type="button"
                   key={style.id}
                   onClick={() => setSelectedStyleId(style.id)}
                   className={`style-option-button ${selectedStyleId === style.id ? 'selected' : ''}`}
-                  // Removed all inline styles from here, will be handled by CSS
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '12px',
+                    borderRadius: '6px', border: `2px solid ${selectedStyleId === style.id ? '#007bff' : '#e0e0e0'}`,
+                    backgroundColor: selectedStyleId === style.id ? '#e7f3ff' : '#f9f9f9',
+                    cursor: 'pointer', textAlign: 'right', width: '100%',
+                    transition: 'all 0.2s ease',
+                  }}
                 >
-                  {/* Added specific classes for icons and text content for better CSS targeting */}
-                  <span className="style-option-icon">
-                    {selectedStyleId === style.id
-                      ? <FaCheckCircle />
-                      : <FaPalette />
-                    }
-                  </span>
-                  <div className="style-option-text-content">
-                    <div className="style-option-title">{style.name}</div>
-                    <div className="style-option-description">{style.description}</div>
+                  {selectedStyleId === style.id
+                    ? <FaCheckCircle style={{ color: '#007bff', fontSize: '1.2em', flexShrink: 0 }} />
+                    : <FaPalette style={{ color: '#777', fontSize: '1.2em', flexShrink: 0, opacity: selectedStyleId === style.id ? 1 : 0.5 }} />
+                  }
+                  <div style={{ flexGrow: 1 }}>
+                    <div style={{ fontWeight: '500', fontSize: '1em', color: selectedStyleId === style.id ? '#007bff' : '#333' }}>{style.name}</div>
+                    <div style={{ fontSize: '0.8em', color: selectedStyleId === style.id ? '#0056b3' : '#666', marginTop: '3px' }}>{style.description}</div>
                   </div>
                 </button>
               ))}
@@ -97,26 +96,31 @@ const JalaliCalendarSettingsModal = ({ isOpen, onClose, initialSettings, onSaveS
                     </div>
                     <span className="theme-name">{theme.name}</span>
                      {selectedThemeId === theme.id && 
-                        // Added class for styling the check icon
-                        <FaCheckCircle className="selected-check-icon" />
+                        <FaCheckCircle style={{ position: 'absolute', top: '5px', right: '5px', color: '#007bff', fontSize:'0.8em' }} />
                      }
                   </button>
                 ))}
               </div>
             </div>
-            {/* Removed inline styles from modal-actions, added classes to buttons */}
-            <div className="modal-actions jcsm-modal-actions">
+
+            <div className="modal-actions" style={{ textAlign: 'left', marginTop: '25px', paddingTop: '15px', borderTop: '1px solid #eee' }}>
               <button
                 type="button"
                 onClick={onClose}
-                className="action-button secondary-action jcsm-cancel-button" // Added secondary-action
+                style={{
+                  padding: '8px 15px', borderRadius: '5px', border: '1px solid #ccc',
+                  backgroundColor: '#f8f9fa', color: '#333', cursor: 'pointer', marginLeft: '10px'
+                }}
               >
                 انصراف
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="action-button primary-action jcsm-save-button" // Added primary-action
+                style={{
+                  padding: '8px 20px', borderRadius: '5px', border: 'none',
+                  backgroundColor: '#007bff', color: 'white', cursor: 'pointer'
+                }}
               >
                 ذخیره تغییرات
               </button>

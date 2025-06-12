@@ -1,217 +1,100 @@
-/* frontend/src/pages/NewInvoicePage.css */
-:root {
-  /* Page specific variables */
-  --nip-page-header-border: var(--border-color, #e0e0e0);
-  --nip-page-header-icon-color: var(--accent-color, #007bff);
-  --nip-page-header-text-color: var(--primary-text-color, #2c3e50);
-  --nip-page-header-subtext-color: var(--secondary-text-color, #52616B);
-
-  --nip-card-bg: var(--primary-bg-color, #fff); /* Using primary for cards on this page, assuming page bg is secondary */
-  --nip-card-shadow: 0 2px 5px rgba(0,0,0,0.07);
-  --nip-card-border: var(--border-color); /* For sections styled as cards */
-
-  --nip-form-label-color: var(--secondary-text-color, #555);
-  /* Inputs/Selects use global styles from index.css for border, bg, text, focus */
-
-  --nip-mini-display-bg: var(--secondary-bg-color, #f8f9fa);
-  --nip-mini-display-border: var(--border-color, #e9ecef);
-  --nip-mini-display-label-color: var(--secondary-text-color, #6c757d);
-  --nip-mini-display-value-color: var(--primary-text-color, #212529);
-
-  --nip-additional-info-bar-text-color: var(--link-color, #007bff);
-  --nip-additional-info-bar-border-color: var(--border-color, #eee);
-
-  --nip-item-type-selector-bg: var(--success-color, #28a745); /* Green bar */
-  --nip-item-type-btn-bg: var(--primary-bg-color, #fff);
-  --nip-item-type-btn-text: var(--success-color, #28a745);
-  --nip-item-type-btn-border: var(--success-color, #28a745);
-  --nip-item-type-btn-hover-bg: rgba(var(--success-color-rgb, 40,167,69), 0.1); /* Assuming --success-color-rgb */
-  --nip-item-type-btn-hover-text: var(--success-darker-color, #1e7e34); /* Assuming --success-darker-color */
-  --nip-item-type-btn-hover-border: var(--success-darker-color, #1e7e34);
-
-  --nip-items-section-header-text-color: var(--primary-text-color, #34495e);
-  --nip-items-section-header-border-color: var(--border-color, #eee);
-  --nip-item-row-border-color: var(--border-color, #f0f0f0); /* Lighter for inner items */
-  --nip-item-label-color: var(--secondary-text-color, #6c757d);
-  --nip-item-seq-text-color: var(--secondary-text-color, #555);
-
-  --nip-item-remove-btn-bg: transparent;
-  --nip-item-remove-btn-text-color: var(--danger-color, #dc3545);
-  --nip-item-remove-btn-hover-bg: var(--danger-color, #dc3545);
-  --nip-item-remove-btn-hover-text-color: var(--accent-text-color, white);
-
-  --nip-add-item-btn-bg: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
-  --nip-add-item-btn-text-color: var(--accent-color, #007bff);
-  --nip-add-item-btn-border-color: var(--accent-color, #007bff);
-  --nip-add-item-btn-hover-bg: var(--accent-color, #007bff);
-  --nip-add-item-btn-hover-text-color: var(--accent-text-color, white);
-
-  --nip-summary-details-border-color: var(--border-color, #eee);
-  --nip-summary-row-label-text-color: var(--secondary-text-color, #555);
-  --nip-summary-row-value-text-color: var(--primary-text-color, #333);
-  --nip-summary-grand-total-text-color: var(--success-color, #28a745);
-  --nip-summary-grand-total-border-color: var(--border-color, #ddd);
-
-  --nip-flow-toggle-label-text-color: var(--primary-text-color, #343a40);
-  --nip-flow-toggle-border-color: var(--accent-color, #007bff);
-  --nip-flow-btn-bg-color: var(--primary-bg-color, #fff);
-  --nip-flow-btn-text-color: var(--accent-color, #007bff);
-  --nip-flow-btn-hover-bg-color: rgba(var(--focus-ring-color-rgb, 0,123,255), 0.1);
-  --nip-flow-btn-active-bg-color: var(--accent-color, #007bff);
-  --nip-flow-btn-active-text-color: var(--accent-text-color, white);
-}
-
-body.dark-mode {
-  --nip-page-header-border: var(--border-color);
-  --nip-page-header-icon-color: var(--accent-color);
-  --nip-page-header-text-color: var(--primary-text-color);
-  --nip-page-header-subtext-color: var(--secondary-text-color);
-
-  --nip-card-bg: var(--secondary-bg-color);
-  --nip-card-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  --nip-card-border: var(--border-color);
-
-  --nip-form-label-color: var(--secondary-text-color);
-
-  --nip-mini-display-bg: var(--primary-bg-color);
-  --nip-mini-display-border: var(--border-color);
-  --nip-mini-display-label-color: var(--secondary-text-color);
-  --nip-mini-display-value-color: var(--primary-text-color);
-
-  --nip-additional-info-bar-text-color: var(--link-color);
-  --nip-additional-info-bar-border-color: var(--border-color);
-
-  --nip-item-type-selector-bg: var(--success-darker-color, #1e7e34); /* Darker green bar */
-  --nip-item-type-btn-bg: var(--secondary-bg-color);
-  --nip-item-type-btn-text: var(--success-color, #66bb6a); /* Lighter green text */
-  --nip-item-type-btn-border: var(--success-color, #66bb6a);
-  --nip-item-type-btn-hover-bg: rgba(var(--success-color-rgb, 102,187,106), 0.2);
-  --nip-item-type-btn-hover-text: var(--success-darker-color, #a5d6a7);
-  --nip-item-type-btn-hover-border: var(--success-darker-color, #a5d6a7);
-
-  --nip-items-section-header-text-color: var(--primary-text-color);
-  --nip-items-section-header-border-color: var(--border-color);
-  --nip-item-row-border-color: var(--border-color);
-  --nip-item-label-color: var(--secondary-text-color);
-  --nip-item-seq-text-color: var(--secondary-text-color);
-
-  --nip-item-remove-btn-text-color: var(--danger-color, #fca5a5); /* Lighter red */
-  --nip-item-remove-btn-hover-bg: var(--danger-color, #fca5a5);
-  --nip-item-remove-btn-hover-text-color: var(--primary-bg-color); /* Dark text on light danger bg */
-
-  --nip-add-item-btn-bg: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
-  --nip-add-item-btn-text-color: var(--accent-color);
-  --nip-add-item-btn-border-color: var(--accent-color);
-  --nip-add-item-btn-hover-bg: var(--accent-color);
-  --nip-add-item-btn-hover-text-color: var(--accent-text-color);
-
-  --nip-summary-details-border-color: var(--border-color);
-  --nip-summary-row-label-text-color: var(--secondary-text-color);
-  --nip-summary-row-value-text-color: var(--primary-text-color);
-  --nip-summary-grand-total-text-color: var(--success-color, #66bb6a); /* Lighter green */
-  --nip-summary-grand-total-border-color: var(--border-color);
-
-  --nip-flow-toggle-label-text-color: var(--primary-text-color);
-  --nip-flow-toggle-border-color: var(--accent-color);
-  --nip-flow-btn-bg-color: var(--secondary-bg-color);
-  --nip-flow-btn-text-color: var(--accent-color);
-  --nip-flow-btn-hover-bg-color: rgba(var(--focus-ring-color-rgb, 187,134,252), 0.15);
-  --nip-flow-btn-active-bg-color: var(--accent-color);
-  --nip-flow-btn-active-text-color: var(--accent-text-color);
-}
-
-/* --- General Page Styles --- */
+/* src/pages/NewInvoicePage.css */
 .new-invoice-page .page-header {
-  margin-bottom: 1.5625rem; /* 25px */
-  padding-bottom: 0.9375rem; /* 15px */
-  border-bottom: 1px solid var(--nip-page-header-border);
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .new-invoice-page .page-header h1 {
   font-size: 1.8em;
-  color: var(--nip-page-header-text-color);
-  margin: 0 0 0.3125rem 0; /* 5px */
+  color: #2c3e50;
+  margin: 0 0 5px 0;
   display: flex;
   align-items: center;
 }
 .new-invoice-page .page-header h1 svg {
-  margin-left: 0.75rem; /* 12px */
-  color: var(--nip-page-header-icon-color);
+  margin-left: 12px; /* برای RTL */
+  color: #007bff;
 }
 
 .new-invoice-page .page-header p {
   font-size: 0.95em;
-  color: var(--nip-page-header-subtext-color);
+  color: #52616B;
   margin: 0;
 }
 
 .invoice-form-v2 {
   display: flex;
   flex-direction: column;
-  gap: 1.5625rem; /* 25px */
+  gap: 25px; /* فاصله بین بخش‌های اصلی فرم */
 }
 
 .invoice-static-header,
-.invoice-items-section,
-.invoice-summary-actions,
-.document-flow-toggle {
-  background-color: var(--nip-card-bg);
-  padding: 1.25rem; /* 20px */
-  border-radius: 0.5rem; /* 8px */
-  box-shadow: var(--nip-card-shadow);
-  border: 1px solid var(--nip-card-border);
+.invoice-items-section, /* اگر خارج از تب‌ها باشد */
+.invoice-summary-actions {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
 }
 
-/* Static Header Section */
 .invoice-static-header .form-row {
   display: flex;
-  gap: 0.9375rem; /* 15px */
-  margin-bottom: 0.9375rem;
-  align-items: flex-end;
+  gap: 15px;
+  margin-bottom: 15px;
+  align-items: flex-end; /* برای تراز بهتر لیبل و اینپوت */
 }
 .invoice-static-header .form-group {
   flex: 1;
-  min-width: 9.375rem; /* 150px */
+  min-width: 150px;
 }
 .invoice-static-header .form-group label {
   font-size: 0.85em;
-  color: var(--nip-form-label-color);
-  margin-bottom: 0.25rem; /* 4px */
-  display: block;
+  color: #555;
+  margin-bottom: 4px;
+  display: block; /* اطمینان از اینکه لیبل فضای خودش را بگیرد */
 }
-/* Inputs and selects here use global styles from index.css */
+.invoice-static-header .form-group input,
+.invoice-static-header .form-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9em;
+  box-sizing: border-box; /* اضافه شده برای محاسبه صحیح پدینگ و بوردر */
+}
 .invoice-static-header .form-group.mini-display {
-    background-color: var(--nip-mini-display-bg);
-    padding: 0.3125rem 0.5rem; /* 5px 8px */
-    border-radius: 0.25rem; /* 4px */
-    border: 1px solid var(--nip-mini-display-border);
+    background-color: #f8f9fa;
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
     font-size: 0.8em;
     display: flex;
     flex-direction: column;
-    min-width: 6.25rem; /* 100px */
-    justify-content: center;
-    height: 3.125rem; /* 50px */
+    min-width: 100px;
+    justify-content: center; /* برای تراز بهتر محتوا */
+    height: 50px; /* ارتفاع ثابت برای هم‌ترازی بهتر با فیلدها */
     box-sizing: border-box;
 }
 .invoice-static-header .form-group.mini-display label {
-    color: var(--nip-mini-display-label-color);
+    color: #6c757d;
     font-size: 0.75em;
     margin-bottom: 2px;
 }
 .invoice-static-header .form-group.mini-display span {
     font-weight: 500;
-    color: var(--nip-mini-display-value-color);
+    color: #212529;
 }
 .invoice-static-header .additional-info-bar {
     font-size: 0.8em;
-    color: var(--nip-additional-info-bar-text-color);
-    padding-top: 0.625rem; /* 10px */
-    margin-top: 0.625rem; /* 10px */
-    border-top: 1px dashed var(--nip-additional-info-bar-border-color);
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 0.625rem; /* 10px */
+    color: #007bff;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px dashed #eee;
+    display: flex; /* برای چیدمان افقی */
+    justify-content: space-around; /* توزیع با فاصله */
+    flex-wrap: wrap; /* برای واکنش‌گرایی */
+    gap: 10px; /* فاصله بین آیتم‌ها */
 }
 .invoice-static-header .additional-info-bar span {
     cursor: pointer;
@@ -220,210 +103,329 @@ body.dark-mode {
     text-decoration: underline;
 }
 
-/* Item Type Selector Bar */
+
 .item-type-selector-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem; /* 8px */
-  padding: 0.625rem 0.9375rem; /* 10px 15px */
-  background-color: var(--nip-item-type-selector-bg);
-  border-radius: 0.375rem; /* 6px */
-  margin-bottom: 1.25rem; /* 20px */
+  gap: 8px;
+  padding: 10px 15px;
+  background-color: #28a745; /* رنگ سبز مشابه تصویر */
+  border-radius: 6px;
+  margin-bottom: 20px;
 }
 
-.item-type-btn { /* These are specific styled buttons */
-  background-color: var(--nip-item-type-btn-bg);
-  color: var(--nip-item-type-btn-text);
-  border: 1px solid var(--nip-item-type-btn-border);
-  padding: 0.375rem 0.75rem; /* 6px 12px */
+.item-type-btn {
+  background-color: #fff;
+  color: #28a745;
+  border: 1px solid #28a745;
+  padding: 6px 12px;
   font-size: 0.85em;
   font-weight: 500;
-  border-radius: 0.25rem; /* 4px */
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .item-type-btn:hover {
-  background-color: var(--nip-item-type-btn-hover-bg);
-  color: var(--nip-item-type-btn-hover-text);
-  border-color: var(--nip-item-type-btn-hover-border);
+  background-color: #e6ffee;
+  color: #1e7e34;
+  border-color: #1e7e34;
 }
 
-/* Invoice Items Section */
-.invoice-items-section h2 {
+/* استایل برای ردیف آیتم‌های فاکتور (نسخه جدید) */
+.invoice-items-section h2 { /* استایل برای عنوان بخش آیتم‌ها */
   font-size: 1.3em;
-  color: var(--nip-items-section-header-text-color);
+  color: #34495e;
   margin-top: 0;
-  margin-bottom: 1.25rem; /* 20px */
-  padding-bottom: 0.625rem; /* 10px */
-  border-bottom: 1px solid var(--nip-items-section-header-border-color);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
 }
 .invoice-items-section h2 svg {
-  margin-left: 0.625rem; /* 10px */
-  color: inherit; /* Icon matches header text */
+  margin-left: 10px; /* برای RTL */
 }
 
 .invoice-item-row-v2 {
   display: flex;
-  align-items: center;
-  gap: 0.625rem; /* 10px */
-  margin-bottom: 0.625rem; /* 10px */
-  padding-bottom: 0.625rem; /* 10px */
-  border-bottom: 1px solid var(--nip-item-row-border-color);
+  align-items: center; /* تراز عمودی آیتم‌ها در ردیف */
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
 }
 .invoice-item-row-v2:last-of-type {
   border-bottom: none;
 }
 .invoice-item-row-v2 .form-group {
   margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
+  display: flex; /* برای تراز لیبل و اینپوت در صورت نیاز */
+  flex-direction: column; /* لیبل بالای اینپوت */
 }
-.invoice-item-row-v2 .form-group label {
+.invoice-item-row-v2 .form-group label { /* استایل لیبل آیتم‌ها */
   font-size: 0.8em;
-  color: var(--nip-item-label-color);
+  color: #6c757d;
   margin-bottom: 3px;
 }
-/* Inputs in item rows use global styles */
+.invoice-item-row-v2 .form-group input[type="text"],
+.invoice-item-row-v2 .form-group input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9em;
+  box-sizing: border-box;
+}
 
 .invoice-item-row-v2 .item-seq {
-  width: 1.875rem; /* 30px */
+  width: 30px;
   text-align: center;
   font-weight: 500;
-  color: var(--nip-item-seq-text-color);
-  align-self: center;
-  padding-top: 1.25rem;
+  color: #555;
+  align-self: center; /* برای تراز بهتر با اینپوت‌ها */
+  padding-top: 20px; /* برای هماهنگی با لیبل‌ها */
 }
-.invoice-item-row-v2 .item-description { flex: 3; min-width: 12.5rem; /* 200px */ }
-
+.invoice-item-row-v2 .item-description { flex: 3; min-width: 200px; }
+/* سایر فیلدهای آیتم را flex-basis یا flex-grow بدهید */
+/* مثال:
+.invoice-item-row-v2 .item-quantity { flex: 1; min-width: 80px; }
+.invoice-item-row-v2 .item-unit-price { flex: 1.5; min-width: 120px; }
+.invoice-item-row-v2 .item-total-price-display {
+  flex: 1.5; min-width: 120px;
+  background-color: #e9ecef;
+  font-weight: bold;
+  text-align: center;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+*/
 .invoice-item-row-v2 .item-actions {
-  align-self: flex-end;
-  padding-bottom: 0.5rem; /* 8px */
+  align-self: flex-end; /* دکمه حذف در پایین ستون خودش */
+  padding-bottom: 8px; /* برای تراز با اینپوت‌ها */
 }
 .invoice-item-row-v2 .item-actions .remove-item-btn {
-  background-color: var(--nip-item-remove-btn-bg);
-  color: var(--nip-item-remove-btn-text-color);
+  background-color: transparent;
+  color: #dc3545;
   border: none;
-  padding: 0.375rem; /* 6px */
+  padding: 6px;
   font-size: 1em;
   cursor: pointer;
-  border-radius: 0.25rem; /* 4px */
+  border-radius: 4px;
 }
 .invoice-item-row-v2 .item-actions .remove-item-btn:hover {
-  background-color: var(--nip-item-remove-btn-hover-bg);
-  color: var(--nip-item-remove-btn-hover-text-color);
+  background-color: #dc3545;
+  color: white;
 }
-.add-item-btn-v2 { /* This button might be deprecated */
-  background-color: var(--nip-add-item-btn-bg);
-  color: var(--nip-add-item-btn-text-color);
-  border: 1px solid var(--nip-add-item-btn-border-color);
-  padding: 0.5rem 0.9375rem; /* 8px 15px */
+.add-item-btn-v2 {
+  background-color: #e7f3ff;
+  color: #007bff;
+  border: 1px solid #007bff;
+  padding: 8px 15px;
   font-size: 0.9em;
   font-weight: 500;
-  border-radius: 0.25rem; /* 4px */
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  margin-top: 0.9375rem; /* 15px */
+  margin-top: 15px;
 }
 .add-item-btn-v2 svg {
-  margin-left: 0.5rem; /* 8px */
+  margin-left: 8px; /* برای RTL */
 }
 .add-item-btn-v2:hover {
-  background-color: var(--nip-add-item-btn-hover-bg);
-  color: var(--nip-add-item-btn-hover-text-color);
+  background-color: #007bff;
+  color: white;
 }
 
-/* Invoice Summary Actions */
 .invoice-summary-actions {
-  margin-top: 1.25rem; /* 20px */
+  margin-top: 20px;
 }
 .invoice-summary-actions .summary-details {
-  margin-bottom: 1.25rem; /* 20px */
-  padding-bottom: 0.9375rem; /* 15px */
-  border-bottom: 1px solid var(--nip-summary-details-border-color);
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 .invoice-summary-actions .summary-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0; /* 8px */
+  padding: 8px 0; /* افزایش پدینگ برای خوانایی بهتر */
   font-size: 0.95em;
 }
 .invoice-summary-actions .summary-row span:first-child {
-  color: var(--nip-summary-row-label-text-color);
+  color: #555;
 }
 .invoice-summary-actions .summary-row span:last-child {
   font-weight: 500;
-  color: var(--nip-summary-row-value-text-color);
+  color: #333;
 }
 .invoice-summary-actions .summary-row.grand-total {
-  font-size: 1.2em;
+  font-size: 1.2em; /* افزایش اندازه فونت مبلغ کل */
   font-weight: bold;
-  color: var(--nip-summary-grand-total-text-color);
-  margin-top: 0.625rem; /* 10px */
-  padding-top: 0.625rem; /* 10px */
-  border-top: 1px solid var(--nip-summary-grand-total-border-color);
+  color: #28a745; /* رنگ سبز برای مبلغ نهایی */
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd; /* خط جداکننده واضح‌تر */
 }
 .invoice-summary-actions .summary-row.grand-total span:last-child {
-    color: var(--nip-summary-grand-total-text-color);
+    color: #28a745;
 }
 .invoice-summary-actions .form-actions {
-  text-align: left;
-  margin-top: 1.25rem; /* 20px */
+  text-align: left; /* یا right */
+  margin-top: 20px;
 }
-/* Footer buttons should use global classes .action-button .primary-action etc. */
-/* .invoice-summary-actions .form-actions .primary-btn { ... } */
+.invoice-summary-actions .form-actions .primary-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+.invoice-summary-actions .form-actions .primary-btn:hover {
+  background-color: #0056b3;
+}
+.invoice-summary-actions .form-actions .primary-btn svg {
+  margin-left: 8px; /* برای RTL */
+}
+
+/* استایل‌های عمومی form-group, label, input از صفحه قبلی می‌توانند اعمال شوند یا در اینجا بازنویسی شوند */
+/* مثال کلی برای focus */
+input:focus, select:focus, textarea:focus {
+  border-color: #007bff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2) !important;
+}
 
 
-/* Remove specific input focus override, should be handled by global index.css */
-/* input:focus, select:focus, textarea:focus { ... } */
+/* Responsive adjustments */
+@media (max-width: 992px) { /* برای تبلت و پایین‌تر */
+  .invoice-static-header .form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px; /* کاهش فاصله در حالت ستونی */
+  }
+  .invoice-static-header .form-group {
+    min-width: unset; /* حذف حداقل عرض */
+  }
+}
 
+@media (max-width: 768px) { /* برای موبایل */
+  .new-invoice-page .page-header h1 {
+    font-size: 1.5em;
+  }
+  .invoice-static-header,
+  .invoice-items-section,
+  .invoice-summary-actions,
+  .tabs-container .tab-panel { /* همچنین پنل تب‌ها */
+    padding: 15px;
+  }
 
-/* Document Flow Toggle */
+  .item-type-selector-bar {
+    justify-content: center;
+    padding: 10px;
+  }
+  .item-type-btn {
+    font-size: 0.8em;
+    padding: 5px 10px;
+  }
+
+  .invoice-item-row-v2 {
+    flex-direction: column;
+    align-items: stretch; /* آیتم‌ها عرض کامل بگیرند */
+    gap: 10px;
+  }
+  .invoice-item-row-v2 .item-seq {
+      display: none; /* مخفی کردن شماره ردیف در موبایل برای فضای بیشتر */
+  }
+  .invoice-item-row-v2 .item-actions {
+    align-self: flex-end; /* دکمه حذف در انتهای سمت راست */
+    padding-bottom: 0;
+    margin-top: 5px;
+  }
+  .invoice-summary-actions .summary-row {
+    font-size: 0.9em;
+  }
+  .invoice-summary-actions .summary-row.grand-total {
+    font-size: 1.1em;
+  }
+  .invoice-summary-actions .form-actions {
+    text-align: center;
+  }
+  .invoice-summary-actions .form-actions .primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+.document-flow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* فاصله بین لیبل و دکمه‌ها */
+  padding: 10px 15px; /* پدینگ مشابه سایر card-style ها */
+  margin-bottom: 20px; /* فاصله از تب‌ها */
+  /* background-color: #f8f9fa; /* یک پس‌زمینه ملایم */
+}
+
 .document-flow-toggle .toggle-label {
   font-weight: 500;
-  color: var(--nip-flow-toggle-label-text-color);
+  color: #343a40;
   font-size: 0.95em;
 }
+
 .document-flow-toggle .toggle-buttons {
   display: flex;
-  border: 1px solid var(--nip-flow-toggle-border-color);
-  border-radius: 0.375rem; /* 6px */
-  overflow: hidden;
+  border: 1px solid #007bff; /* بوردر برای گروه دکمه‌ها */
+  border-radius: 6px;
+  overflow: hidden; /* برای اینکه border-radius روی دکمه‌ها اعمال شود */
 }
+
 .document-flow-toggle .flow-btn {
-  background-color: var(--nip-flow-btn-bg-color);
-  color: var(--nip-flow-btn-text-color);
+  background-color: #fff;
+  color: #007bff;
   border: none;
-  padding: 0.5rem 1.125rem; /* 8px 18px */
+  /* border-left: 1px solid #007bff; برای دکمه دوم به بعد */
+  padding: 8px 18px;
   font-size: 0.9em;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.375rem; /* 6px */
+  gap: 6px;
 }
 .document-flow-toggle .flow-btn:first-child {
-  border-top-right-radius: 0.3125rem; /* 5px */
-  border-bottom-right-radius: 0.3125rem; /* 5px */
+  border-top-right-radius: 5px; /* گردی برای اولین دکمه */
+  border-bottom-right-radius: 5px;
 }
 .document-flow-toggle .flow-btn:last-child {
-  border-left: 1px solid var(--nip-flow-toggle-border-color);
-  border-top-left-radius: 0.3125rem; /* 5px */
-  border-bottom-left-radius: 0.3125rem; /* 5px */
+  border-left: 1px solid #007bff; /* جداکننده بین دکمه‌ها */
+  border-top-left-radius: 5px; /* گردی برای آخرین دکمه */
+  border-bottom-left-radius: 5px;
 }
+
+
 .document-flow-toggle .flow-btn:hover {
-  background-color: var(--nip-flow-btn-hover-bg-color);
+  background-color: #e7f3ff;
 }
+
 .document-flow-toggle .flow-btn.active {
-  background-color: var(--nip-flow-btn-active-bg-color);
-  color: var(--nip-flow-btn-active-text-color);
+  background-color: #007bff;
+  color: white;
 }
+
 .document-flow-toggle .flow-btn svg {
   font-size: 1.1em;
 }
 
-/* Responsive adjustments */
+/* اصلاح لیبل مشتری بر اساس نوع سند */
+.invoice-static-header .form-group label[for="customerName"] {
+  /* استایل فعلی شما برای لیبل‌ها */
+}

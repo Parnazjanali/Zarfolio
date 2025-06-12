@@ -1,56 +1,68 @@
 /* frontend/src/pages/EtiketPage.css */
 
-/* :root variables removed, using global variables from index.css */
+:root {
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-color: #6c757d;
+  --secondary-hover-color: #5a6268;
+  --success-color: #28a745;
+  --success-hover-color: #218838;
+  --info-color: #17a2b8;
+  --info-hover-color: #138496;
+  --background-color: #f4f7f9;
+  --card-background-color: #ffffff;
+  --text-primary-color: #2c3e50;
+  --text-secondary-color: #52616B;
+  --border-color: #e0e0e0;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --card-radius: 10px;
+}
 
 /* --- استایل‌های اصلی چیدمان صفحه اتیکت --- */
 .etiket-page-container {
-  padding: 1.25rem 1.5625rem; /* 20px 25px */
+  padding: 20px 25px;
   box-sizing: border-box;
   direction: rtl;
-  font-family: var(--font-family); /* Global font */
-  background-color: var(--primary-bg-color); /* Page background */
-  color: var(--primary-text-color); /* Default text color for page */
-  min-height: 100vh; /* Ensure page takes full height */
+  font-family: 'Vazirmatn', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary-color);
 }
 
 .etiket-page-container .page-header {
-  margin-bottom: 1.5625rem; /* 25px */
+  margin-bottom: 25px;
   text-align: right;
   border-bottom: 2px solid var(--border-color);
-  padding-bottom: 0.9375rem; /* 15px */
+  padding-bottom: 15px;
 }
 
 .page-header h1 {
   font-size: 1.8rem;
-  margin: 0 0 0.3125rem 0; /* 5px */
-  color: var(--primary-text-color);
+  margin: 0 0 5px 0;
+  color: var(--text-primary-color);
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* 12px */
-}
-.page-header h1 svg { /* Styling icon in header */
-  color: var(--accent-color);
+  gap: 12px;
 }
 
 .page-header p {
   font-size: 1rem;
-  color: var(--secondary-text-color);
+  color: var(--text-secondary-color);
   margin: 0;
 }
 
-.card-style { /* This class is used for sections on this page */
-  background-color: var(--secondary-bg-color); /* Cards on secondary bg */
+.card-style {
+  background-color: var(--card-background-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--card-radius, 0.625rem); /* 10px, fallback if --card-radius not global */
-  box-shadow: var(--card-shadow, 0 4px 12px rgba(0,0,0,0.06)); /* Fallback if --card-shadow not global */
-  padding: 1.5625rem; /* 25px */
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 25px;
   box-sizing: border-box;
 }
 
 .etiket-layout {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5625rem; /* 25px */
+  grid-template-columns: 1fr; /* چیدمان پیش‌فرض برای موبایل */
+  gap: 25px;
 }
 
 /* چیدمان برای دسکتاپ */
@@ -62,88 +74,68 @@
 
   .etiket-preview-appearance-section {
     position: sticky;
-    top: 1.25rem; /* 20px */
-    max-height: calc(100vh - 2.5rem); /* 40px */
+    top: 20px;
+    max-height: calc(100vh - 40px);
     overflow-y: auto;
-    align-self: flex-start;
+    align-self: flex-start; /* برای اطمینان از چسبیدن به بالا */
   }
 }
 
 .etiket-input-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5625rem; /* 25px */
+  gap: 25px;
 }
 
+/* ... سایر استایل‌های عمومی که قبلا وجود داشتند ... */
 .main-actions {
   display: flex;
-  gap: 0.9375rem; /* 15px */
-  margin-top: 0.9375rem; /* 15px */
+  gap: 15px;
+  margin-top: 15px;
   border-top: 1px solid var(--border-color);
-  padding-top: 1.5625rem; /* 25px */
+  padding-top: 25px;
 }
 
-/* .action-button styles should be inherited from global index.css */
-/* If specific layout adjustments are needed for buttons on this page: */
-.main-actions .action-button {
-  /* Example: flex-grow: 1; if they should fill space */
+.action-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
 }
-
 
 .sticky-content-wrapper {
   position: sticky;
   top: 0;
-  z-index: 10; /* Ensure this is below modals if they overlap */
+  z-index: 10;
 }
 
 .preview-wrapper .preview-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.9375rem; /* 15px */
+  margin-bottom: 15px;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.625rem; /* 10px */
+  padding-bottom: 10px;
 }
 
 .preview-wrapper h4 {
   margin: 0;
   font-size: 1.15rem;
-  color: var(--primary-text-color);
+  color: var(--text-primary-color);
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* 8px */
-}
-.preview-wrapper h4 svg { /* Icon in preview header */
-  color: var(--accent-color);
-}
-
-/* Settings button in preview header */
-.preview-action-button.settings-btn-header {
-  /* This button might need specific styling or use a global small/icon button style */
-  background-color: transparent;
-  color: var(--secondary-text-color);
-  border: 1px solid var(--border-color);
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.25rem;
-}
-.preview-action-button.settings-btn-header:hover {
-  background-color: var(--secondary-bg-color);
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-body.dark-mode .preview-action-button.settings-btn-header {
-  color: var(--secondary-text-color);
-  border-color: var(--border-color);
-}
-body.dark-mode .preview-action-button.settings-btn-header:hover {
-  background-color: var(--border-color); /* Darker hover for dark mode */
-  color: var(--accent-color);
-  border-color: var(--accent-color);
+  gap: 8px;
 }
 
 
 /* --- استایل‌های حیاتی برای حالت تمام صفحه --- */
-/* Fullscreen styles mostly manipulate layout, colors are inherited or from LabelPreview.css */
 
 /*
   نکته: این کلاس باید توسط JavaScript به تگ <body> اضافه شود تا سایدبار اصلی برنامه مخفی گردد.
@@ -208,73 +200,59 @@ body.etiket-fullscreen-mode .app-header {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background-color: transparent !important;
-  display: block !important;
+  background-color: transparent !important; /* پس‌زمینه را شفاف می‌کنیم تا پس‌زمینه LabelPreview دیده شود */
+  display: block !important; /* از flex به block تغییر می‌دهیم تا LabelPreview خودش فضا را مدیریت کند */
 }
 
 
-/* --- استایل‌های مودال و چاپ --- */
-/* Local Modal for "تنظیمات کلی اتیکت" */
-.modal-backdrop { /* This is a local modal backdrop, not generic */
+/* --- استایل‌های مودال و چاپ (بدون تغییر) --- */
+
+.modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--fsm-backdrop-bg); /* Using FieldSelectorMenu backdrop as it's similar */
-  z-index: 1000; /* Below settings modal content */
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
 }
-.settings-modal-content { /* This is the local modal for EtiketPage settings */
+.settings-modal-content {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1001;
   width: 90%;
-  max-width: 800px; /* Can be a variable */
+  max-width: 800px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--primary-bg-color); /* Use primary bg for modal content */
-  border: 1px solid var(--border-color);
-  border-radius: var(--card-radius, 0.5rem);
-  box-shadow: var(--card-shadow, 0 4px 12px rgba(0,0,0,0.1));
 }
-.settings-modal-content .modal-header { /* Overriding generic if needed, or use specific class */
-  /* display, justify-content, align-items already set */
-  padding-bottom: 0.9375rem; /* 15px */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.25rem; /* 20px */
+  margin-bottom: 20px;
 }
-.settings-modal-content .modal-header h3 {
+.modal-header h3 {
   margin: 0;
-  color: var(--primary-text-color);
-  font-size: 1.25em; /* Consistent with other modal headers */
 }
-.settings-modal-content .close-modal-btn { /* Specific close for this modal */
+.close-modal-btn {
   background: transparent;
   border: none;
   font-size: 1.8rem;
   line-height: 1;
-  color: var(--secondary-text-color);
-  cursor: pointer;
+  color: var(--secondary-color);
 }
-.settings-modal-content .close-modal-btn:hover {
-  color: var(--primary-text-color);
+.close-modal-btn:hover {
+  color: var(--text-primary-color);
 }
-.settings-modal-content .modal-body {
+.modal-body {
   overflow-y: auto;
-  padding: 0 1.25rem 1.25rem 1.25rem; /* Add padding around body */
+  padding-left: 15px;
 }
-.settings-modal-content .modal-footer {
-  padding: 0.9375rem 1.25rem; /* 15px 20px */
-  border-top: 1px solid var(--border-color);
-  text-align: left; /* For LTR button alignment */
-}
-.settings-modal-content .modal-footer .action-button {
-  /* Should use global .action-button styles */
-}
-
 
 @media print {
   body * {

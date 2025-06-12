@@ -2,7 +2,6 @@
 import React from 'react';
 import { FaDollarSign, FaCalculator, FaMagic, FaInfoCircle, FaIdBadge } from 'react-icons/fa';
 import { FieldLabel } from './FieldLabel';
-import './ProductPricingSection.css'; // Import the new CSS file
 
 const ProductPricingSection = ({
   productData,
@@ -18,7 +17,6 @@ const ProductPricingSection = ({
       {/* قیمت‌گذاری طلای ساده */}
       {productData.productType === 'plain_gold' && !productData.useCustomFormula && (
         <div className="price-calculation-section">
-          {/* Added className="settings-subtitle" to h5 */}
           <h5 className="settings-subtitle"><FaCalculator /> محاسبه قیمت طلای ساده</h5>
           <div className="form-row">
             <FieldLabel htmlFor="dailyGoldPrice" label="قیمت هر گرم طلای روز (تومان):" fieldId="dailyGoldPrice" />
@@ -77,8 +75,7 @@ const ProductPricingSection = ({
                         <strong>توجه:</strong> از این قابلیت با دقت استفاده کنید. فرمول‌های پیچیده یا نادرست می‌توانند منجر به نتایج غیرمنتظره شوند.
                      </p>
                 </div>
-                {/* Added primary-action class to button */}
-                <button type="button" className="action-button primary-action" onClick={onApplyCustomFormula} style={{marginTop: '10px'}}>
+                <button type="button" className="action-button" onClick={onApplyCustomFormula} style={{marginTop: '10px'}}>
                     اعمال فرمول و محاسبه
                 </button>
                 {formulaError && <p className="error-message formula-error-text">{formulaError}</p>}

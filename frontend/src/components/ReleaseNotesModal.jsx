@@ -68,8 +68,7 @@ function ReleaseNotesModal({ onClose }) {
       <div className="modal-overlay release-notes-overlay" onClick={onClose}>
         <div className="modal-content release-notes-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
-            {/* Removed inline style from FaGift, color will be handled by CSS var --rnm-header-icon-color */}
-            <h2><FaGift style={{ marginLeft: '10px' }} /> تازه‌های زرفولیو</h2>
+            <h2><FaGift style={{ marginLeft: '10px', color: '#e67e22' }} /> تازه‌های زرفولیو</h2>
             <button type="button" className="modal-close-button" onClick={onClose} aria-label="بستن">
               <FaTimes />
             </button>

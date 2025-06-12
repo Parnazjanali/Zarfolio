@@ -375,8 +375,7 @@ function NewInvoicePage() {
             </div>
           </div>
           <div className="form-actions">
-            {/* Changed class to align with global button styles */}
-            <button type="submit" className="action-button primary-action submit-btn large-submit-button">
+            <button type="submit" className="submit-btn primary-btn">
               <FaSave /> ثبت و تایید نهایی (F1)
             </button>
           </div>

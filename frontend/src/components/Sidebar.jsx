@@ -1,29 +1,23 @@
 // src/components/Sidebar.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
-import './Sidebar.css';
-import Portal from './Portal'; // اطمینان از وجود Portal.jsx
-import ThemeToggleSwitch from './ThemeToggleSwitch'; // Import the new component
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Layout, Menu, Switch, Button, Typography, Space } from 'antd';
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar, FaCog,
-  FaBell, FaUserCircle, FaSignOutAlt, FaSearch,
-  FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaBookOpen,
-  FaAngleLeft, FaAngleDown,
-  FaBars, FaTimes,
-  FaCube, FaUserCog, FaTags,
-  FaSun, FaMoon // Added theme icons
+  FaSignOutAlt, FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
+  FaCube, FaUserCog, FaAngleLeft, FaAngleRight, FaUserCircle // Added FaUserCircle
 } from 'react-icons/fa';
+import { SettingOutlined, LogoutOutlined, ProfileOutlined, EditOutlined } from '@ant-design/icons';
 
+
+const { Sider } = Layout;
+const { Text } = Typography;
+
+// Remove currentTheme and setCurrentTheme from props
 function Sidebar({ isCollapsed, setIsCollapsed }) {
-  const [isNewEntryDropdownOpen, setIsNewEntryDropdownOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [openSubmenu, setOpenSubmenu] = useState(null);
-  const [profileImgError, setProfileImgError] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-
-  const newEntryButtonRef = useRef(null);
-  const profileButtonRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [openKeys, setOpenKeys] = useState([]);
 
   const handleLogout = async () => {
     if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
@@ -31,7 +25,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       try {
         const token = localStorage.getItem('authToken');
         if (!token) {
-          console.warn("هیچ توکنی برای خروج یافت نشد.");
           navigate('/login');
           return;
         }
@@ -40,9 +33,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
         });
-        if (response.ok) {
-          console.log("درخواست خروج به بک‌اند با موفقیت ارسال شد.");
-        } else {
+        if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: "پاسخ سرور قابل خواندن نیست" }));
           console.error("خطا در خروج از حساب در سمت سرور:", response.status, errorData.message);
         }
@@ -53,321 +44,192 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
         localStorage.removeItem('userData');
         navigate('/login');
       }
-    } else {
-      console.log("خروج کاربر لغو شد.");
     }
   };
-  
-  // *** این تابع اصلاح شد تا رویداد کلیک را دریافت و متوقف کند ***
-  const toggleDropdown = (setter, otherSetter, e) => {
-    if (e) e.stopPropagation(); // جلوگیری از انتشار رویداد کلیک
-    setter(prev => !prev);
-    otherSetter(false);
-    setOpenSubmenu(null);
-  };
 
-  const toggleSidebar = () => {
-    const newCollapsedState = !isCollapsed;
-    setIsCollapsed(newCollapsedState);
-    setOpenSubmenu(null);
-    setIsNewEntryDropdownOpen(false);
-    setIsProfileDropdownOpen(false);
+  const getSelectedKeys = () => {
+    // Basic matching: /invoices/new -> /invoices
+    const currentPath = location.pathname;
+    if (currentPath.startsWith('/invoices/')) return ['/invoices'];
+    if (currentPath.startsWith('/reports/')) return ['/reports'];
+    return [currentPath];
+  };
+  
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
   };
 
   useEffect(() => {
-    function handleClickOutside(event) {
-        const newEntryDropdownEl = document.querySelector('.new-entry-actual-menu.open-dropdown');
-        const profileDropdownEl = document.querySelector('.profile-dropdown-actual-menu.open-dropdown');
-
-        if (isNewEntryDropdownOpen && newEntryButtonRef.current && !newEntryButtonRef.current.contains(event.target) && (!newEntryDropdownEl || !newEntryDropdownEl.contains(event.target))) {
-            setIsNewEntryDropdownOpen(false);
-        }
-        if (isProfileDropdownOpen && profileButtonRef.current && !profileButtonRef.current.contains(event.target) && (!profileDropdownEl || !profileDropdownEl.contains(event.target))) {
-            setIsProfileDropdownOpen(false);
-        }
-    }
-    if (isNewEntryDropdownOpen || isProfileDropdownOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isNewEntryDropdownOpen, isProfileDropdownOpen]);
-
-  const handleSubmenuToggle = (itemName, e) => {
-    e.stopPropagation();
-    if (isCollapsed) {
-      setIsCollapsed(false);
-      setTimeout(() => { setOpenSubmenu(openSubmenu === itemName ? null : itemName); }, 300);
+    // Automatically open submenu if a child route is active
+    const currentPath = location.pathname;
+    if (currentPath.startsWith('/invoices/')) {
+      setOpenKeys(['invoicesSubmenu']);
+    } else if (currentPath.startsWith('/reports/')) {
+      setOpenKeys(['reportsSubmenu']);
     } else {
-      setOpenSubmenu(openSubmenu === itemName ? null : itemName);
+      // setOpenKeys([]); // Optionally close other submenus
     }
-    setIsNewEntryDropdownOpen(false);
-    setIsProfileDropdownOpen(false);
-  };
+  }, [location.pathname, isCollapsed]);
+
 
   const menuItems = [
-    { path: "/dashboard", name: "داشبورد", icon: <FaTachometerAlt /> },
+    { key: '/dashboard', icon: <FaTachometerAlt />, label: <Link to="/dashboard">داشبورد</Link> },
     {
-      name: "فاکتورها", icon: <FaFileInvoice />, id: "invoicesSubmenu",
-      submenu: [
-        { path: "/invoices/new", name: "فاکتور جدید", icon: <FaPlusSquare /> },
-        { path: "/invoices/list", name: "لیست فاکتورها", icon: <FaFileInvoiceDollar /> },
+      key: 'invoicesSubmenu', icon: <FaFileInvoice />, label: 'فاکتورها',
+      children: [
+        { key: '/invoices/new', icon: <FaPlusSquare />, label: <Link to="/invoices/new">فاکتور جدید</Link> },
+        { key: '/invoices', icon: <FaFileInvoiceDollar />, label: <Link to="/invoices">لیست فاکتورها</Link> }, // Changed from /invoices/list
       ]
     },
-    { path: "/inventory", name: "موجودی‌ها", icon: <FaBoxes /> },
-    { path: "/customers", name: "مشتریان", icon: <FaUsers /> },
+    { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> },
+    { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> },
+    { key: '/customers/new', icon: <FaUserPlus />, label: <Link to="/customers/new">مشتری جدید</Link> },
+    { key: '/etiket', icon: <FaTags />, label: <Link to="/etiket">اتیکت <Text type="warning" style={{fontSize: '0.8em'}}>(beta)</Text></Link> },
     {
-      path: "/etiket",
-      name: (<>اتیکت <span className="beta-tag">beta</span></>),
-      icon: <FaTags />
-    },
-    {
-      name: "گزارشات", icon: <FaChartBar />, id: "reportsSubmenu",
-      submenu: [
-        { path: "/reports/sales", name: "گزارش فروش", icon: <FaChartBar/> },
-        { path: "/reports/inventory", name: "گزارش موجودی", icon: <FaBoxes/> },
+      key: 'reportsSubmenu', icon: <FaChartBar />, label: 'گزارشات',
+      children: [
+        { key: '/reports/sales', icon: <FaChartBar />, label: <Link to="/reports/sales">گزارش فروش</Link> },
+        { key: '/reports/inventory', icon: <FaBoxes />, label: <Link to="/reports/inventory">گزارش موجودی</Link> },
       ]
     },
+    // System Settings and Logout are removed from main menuItems
   ];
 
-  const getPortalDropdownStyle = (buttonRef) => {
-    if (!buttonRef.current) return { opacity: 0, visibility: 'hidden' };
-
-    const buttonRect = buttonRef.current.getBoundingClientRect();
-    const menuWidth = 200;
-    const menuHeight = 120;
-    const gap = 12;
-
-    let top = buttonRect.top;
-    let left = buttonRect.right + gap;
-    let transformOrigin = 'left center';
-
-    if (top + menuHeight > window.innerHeight - 20) {
-      top = window.innerHeight - menuHeight - 20;
+  // Define footerMenuItems here
+  const footerMenuItems = [
+    {
+      key: '/settings/system',
+      icon: <SettingOutlined style={{ fontSize: isCollapsed ? '20px' : '1.25em' }} />,
+      label: <Link to="/settings/system">تنظیمات سیستم</Link>,
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined style={{ color: '#ff4d4f', fontSize: isCollapsed ? '20px' : '1.25em' }} />,
+      label: <span style={{ color: '#ff4d4f' }}>خروج از حساب</span>,
+      onClick: handleLogout,
     }
-    
-    if (top < 20) {
-      top = 20;
-    }
+  ];
 
-    return {
-      position: 'fixed',
-      top: `${top}px`,
-      left: `${left}px`,
-      width: `${menuWidth}px`,
-      zIndex: 1050,
-      transformOrigin: transformOrigin,
-    };
-  };
-
-  const renderDropdownContent = (menuType, isSubmenu = false) => {
-    const closeAll = () => {
-      setIsProfileDropdownOpen(false);
-      setIsNewEntryDropdownOpen(false);
-      setOpenSubmenu(null);
-    };
-
-    const linkClass = isSubmenu ? "sidebar-link submenu-link" : "dropdown-item";
-    const iconClass = isSubmenu ? "sidebar-icon submenu-icon" : "dropdown-item-icon";
-    const textClass = isSubmenu ? "sidebar-text" : "";
-
-    const profileItems = [
-      { path: '/account/settings', icon: <FaUserCog />, label: 'تنظیمات حساب کاربری' }
-    ];
-
-    const newEntryItems = [
-      { path: '/invoices/new', icon: <FaFileInvoiceDollar />, label: 'فاکتور جدید' },
-      { path: '/customers/new', icon: <FaUserPlus />, label: 'مشتری جدید' }
-    ];
-
-    const itemsToRender = menuType === 'profile' ? profileItems : newEntryItems;
-
-    return itemsToRender.map(item => (
-        <li key={item.path} style={{listStyle:'none'}}>
-            <Link to={item.path} className={linkClass} onClick={closeAll}>
-                <span className={iconClass}>{item.icon}</span>
-                <span className={textClass}>{item.label}</span>
-            </Link>
-        </li>
-    ));
-  };
-
-  let currentUserName = "ادمین";
-  let profilePictureUrl = null;
-
-  try {
+  let currentUserName = "کاربر";
+   try {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
         const userData = JSON.parse(userDataString);
-        currentUserName = userData.fullName || userData.name || userData.username || "ادمین";
-        if (userData.profile_picture_url) {
-            profilePictureUrl = userData.profile_picture_url;
-        }
+        currentUserName = userData.fullName || userData.name || userData.username || "کاربر";
     }
   } catch (error) {
       console.error("Sidebar: Error parsing user data from localStorage", error);
   }
 
-  useEffect(() => {
-    setProfileImgError(false);
-  }, [profilePictureUrl]);
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
 
   return (
-    <aside className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
-      <div className="sidebar-header">
-        <div className="brand-container">
-          {isCollapsed ? (
-            <FaCube className="sidebar-brand-icon" title="زرفولیو" />
-          ) : (
-            <h2 className="sidebar-brand">زرفولیو</h2>
-          )}
-        </div>
-        <button
-          onClick={toggleSidebar}
-          className="sidebar-toggle-button"
-          title={isCollapsed ? "باز کردن نوار کناری" : "بستن نوار کناری"}
-        >
-          {isCollapsed ? <FaBars /> : <FaTimes />}
-        </button>
+    <Sider
+      collapsible
+      collapsed={isCollapsed}
+      onCollapse={setIsCollapsed}
+      width={230}
+      collapsedWidth={80}
+      className="custom-sidebar"
+      theme="dark" // Force dark theme for Sider
+      trigger={null} // We use a custom trigger
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        height: 'calc(100vh - 5px)', // Adjust height to account for the bottom offset
+        position: 'fixed', 
+        right: 0, 
+        top: 0, 
+        bottom: '5px', // Apply 5px offset from the bottom
+        zIndex: 1000,
+        boxSizing: 'border-box' // Ensure padding/border don't add to height/width affecting this
+      }}
+    >
+      <div style={{
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: isCollapsed ? 'center' : 'space-between',
+        padding: '0 16px',
+        borderBottom: '1px solid #303030', // Dark theme border color
+      }}>
+        {!isCollapsed && <Text strong style={{ fontSize: '20px', color: 'white' }}>زرفولیو</Text>}
+        {isCollapsed && <FaCube size={24} color={'white'} />}
       </div>
 
-      <div className="sidebar-scrollable-content">
-        <div className="sidebar-profile-section">
-          <div className={`profile-wrapper has-submenu ${openSubmenu === 'profileSubmenu' ? 'submenu-open' : ''}`}>
-             <button
-                ref={profileButtonRef}
-                className="profile-button"
-                onClick={(e) => isCollapsed ? toggleDropdown(setIsProfileDropdownOpen, setIsNewEntryDropdownOpen, e) : handleSubmenuToggle('profileSubmenu', e)}
-                title="حساب کاربری"
-             >
-                {profilePictureUrl && !profileImgError ? (
-                  <img src={profilePictureUrl} alt="Profile" className="profile-icon" style={{ borderRadius: '50%', objectFit: 'cover', width: '32px', height: '32px' }} onError={() => setProfileImgError(true)} />
-                ) : (
-                  <FaUserCircle className="profile-icon" />
-                )}
-                {!isCollapsed && <span className="profile-name">{currentUserName}</span>}
-                {!isCollapsed && (
-                    openSubmenu === 'profileSubmenu'
-                    ? <FaAngleDown className="profile-dropdown-arrow open" />
-                    : <FaAngleLeft className="profile-dropdown-arrow" />
-                )}
-            </button>
-            {!isCollapsed && (
-                <ul className={`submenu ${openSubmenu === 'profileSubmenu' ? 'open' : ''}`}>
-                    {renderDropdownContent('profile', true)}
-                </ul>
-            )}
-            {isCollapsed && isProfileDropdownOpen && (
-              <Portal>
-                  <div className="dropdown-menu sidebar-dropdown-menu profile-dropdown-actual-menu open-dropdown via-portal" style={getPortalDropdownStyle(profileButtonRef)} role="menu">
-                      <ul>{renderDropdownContent('profile', false)}</ul>
-                  </div>
-              </Portal>
-            )}
-          </div>
-          <button className="sidebar-icon-button notification-button" title="اعلان‌ها" onClick={() => console.log("Open notifications")}>
-            <FaBell className="sidebar-icon-direct" />
-            {!isCollapsed && <span className="notification-badge">۳</span>}
-          </button>
-        </div>
-
-        <nav className="sidebar-nav">
-          <ul>
-            {menuItems.map((item) => (
-              <li key={item.name || item.path} className={`${item.submenu ? 'has-submenu' : ''} ${openSubmenu === item.id ? 'submenu-open' : ''}`}>
-                {item.submenu ? (
-                  <>
-                    <div className={`sidebar-link submenu-toggle ${openSubmenu === item.id && !isCollapsed ? 'active' : ''}`}
-                         onClick={(e) => handleSubmenuToggle(item.id, e)} role="button" tabIndex={0}
-                         onKeyPress={(e) => e.key === 'Enter' && handleSubmenuToggle(item.id, e)}>
-                      <span className="sidebar-icon">{item.icon}</span>
-                      {!isCollapsed && <span className="sidebar-text">{item.name}</span>}
-                      {!isCollapsed && (<span className="submenu-arrow">{openSubmenu === item.id ? <FaAngleDown /> : <FaAngleLeft />}</span>)}
-                    </div>
-                    {!isCollapsed && (
-                      <ul className={`submenu ${openSubmenu === item.id ? 'open' : ''}`}>
-                        {item.submenu.map((subItem) => (
-                          <li key={subItem.path}>
-                            <NavLink to={subItem.path} className={({ isActive }) => "sidebar-link submenu-link" + (isActive ? " active" : "")}>
-                              {subItem.icon && <span className="sidebar-icon submenu-icon">{subItem.icon}</span>}
-                              <span className="sidebar-text">{subItem.name}</span>
-                            </NavLink>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ) : (
-                  <NavLink to={item.path} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}
-                           title={isCollapsed ? (typeof item.name === 'string' ? item.name : item.path) : undefined}
-                           onClick={() => { if(isCollapsed && item.path !== "/dashboard") setIsCollapsed(false); setOpenSubmenu(null); }}>
-                    <span className="sidebar-icon">{item.icon}</span>
-                    {!isCollapsed && <span className="sidebar-text">{item.name}</span>}
-                  </NavLink>
-                )}
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="sidebar-actions">
-          <button className="sidebar-action-button" title="جستجو" onClick={() => console.log("Search clicked")}>
-            <FaSearch className="sidebar-action-icon" />
-            {!isCollapsed && <span className="sidebar-action-text">جستجو</span>}
-          </button>
-          <div className={`dropdown-container new-entry-dropdown-container has-submenu ${openSubmenu === 'newEntrySubmenu' ? 'submenu-open' : ''}`}>
-            <button className="sidebar-action-button" title="ثبت جدید"
-                    onClick={(e) => isCollapsed ? toggleDropdown(setIsNewEntryDropdownOpen, setIsProfileDropdownOpen, e) : handleSubmenuToggle('newEntrySubmenu', e)}
-                    ref={newEntryButtonRef}>
-              <FaPlusSquare className="sidebar-action-icon" />
-              {!isCollapsed && <span className="sidebar-action-text">ثبت جدید</span>}
-              {!isCollapsed && (
-                  openSubmenu === 'newEntrySubmenu'
-                  ? <FaAngleDown className="action-dropdown-arrow open" />
-                  : <FaAngleLeft className="action-dropdown-arrow" />
-              )}
-            </button>
-            {!isCollapsed && (
-                <ul className={`submenu ${openSubmenu === 'newEntrySubmenu' ? 'open' : ''}`}>
-                    {renderDropdownContent('newEntry', true)}
-                </ul>
-            )}
-            {isCollapsed && isNewEntryDropdownOpen && (
-              <Portal>
-                  <div className="dropdown-menu sidebar-dropdown-menu new-entry-actual-menu open-dropdown via-portal" style={getPortalDropdownStyle(newEntryButtonRef)} role="menu">
-                     <ul>{renderDropdownContent('newEntry', false)}</ul>
-                  </div>
-              </Portal>
-            )}
-          </div>
-          <NavLink to="/settings/system" className={({ isActive }) => "sidebar-link settings-link" + (isActive ? " active" : "")} title="تنظیمات سیستم"
-                   onClick={() => { if(isCollapsed) setIsCollapsed(false); setOpenSubmenu(null);}}>
-            <span className="sidebar-icon"><FaCog /></span>
-            {!isCollapsed && <span className="sidebar-text">تنظیمات سیستم</span>}
-          </NavLink>
-        </div>
-      </div>
-
-      <div className="sidebar-footer-logout">
-        <button type="button" className="sidebar-link logout-button-standalone" onClick={handleLogout} title="خروج از حساب">
-          <span className="sidebar-icon"><FaSignOutAlt /></span>
-          {!isCollapsed && <span className="sidebar-text">خروج از حساب</span>}
-        </button>
+      <div style={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         {!isCollapsed && (
-          <ThemeToggleSwitch isDark={theme === 'dark'} onToggle={toggleTheme} />
+          <div 
+            className="user-profile-header" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', // Pushes items to ends
+              padding: '10px 16px',
+              borderBottom: '1px solid #444', // Separator like header
+            }}
+          >
+            <Space align="center"> {/* Use Ant Design Space for consistent spacing */}
+              <FaUserCircle style={{ fontSize: '22px', color: '#ccc' }} /> {/* User Icon */}
+              <Text strong style={{color: 'white'}}>{currentUserName}</Text>
+            </Space>
+            <Link to="/account/settings" title="حساب کاربری">
+              <Button 
+                type="text" // Use text for less emphasis, or ghost
+                icon={<FaUserCog style={{color: '#ccc', fontSize: '18px'}} />} 
+                style={{color: '#ccc'}}
+              >
+                {/* Text can be hidden or shown based on design preference */}
+              </Button>
+            </Link>
+          </div>
         )}
+        <Menu
+          theme="dark" // Force dark theme for Menu
+          mode="inline"
+          selectedKeys={getSelectedKeys()}
+          openKeys={isCollapsed ? [] : openKeys}
+          onOpenChange={onOpenChange}
+          items={menuItems}
+          style={{ borderRight: 0 }}
+        />
       </div>
-    </aside>
+      
+      {/* Sticky Footer Area */}
+      <div 
+        className="sidebar-footer-sticky"
+        style={{ 
+          paddingTop: '0', // Adjusted padding as menus are removed
+          paddingBottom: '0', // Adjusted padding
+          borderTop: 'none', // Removed border as menus above are gone
+          // marginTop: 'auto' 
+        }}
+      >
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectable={false}
+          items={footerMenuItems}
+          // hidden={isCollapsed} // Removed this prop
+                               // The Menu should now respect Sider's collapsed state for inlineCollapsed behavior
+          style={{ borderRight: 0, backgroundColor: 'transparent' }} // Ensure background matches Sider
+        />
+        
+        {/* Collapse Trigger - now at the very bottom, its own div handles top border if needed */}
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '10px 0', 
+          borderTop: isCollapsed ? 'none' : '1px solid #303030' // Separates from footer menu when expanded
+        }}>
+          <Button
+            icon={isCollapsed ? <FaAngleLeft /> : <FaAngleRight />}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            type="default" // Always default type for dark theme (white button)
+            className='neon-effect-dark' // Always apply neon effect
+            // style prop removed as neon-effect-dark should handle dark mode appearance
+          />
+        </div>
+      </div> {/* End of .sidebar-footer-sticky */}
+    </Sider>
   );
 }
 

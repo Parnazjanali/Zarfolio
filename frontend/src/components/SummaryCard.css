@@ -1,18 +1,4 @@
 /* src/components/SummaryCard.css */
-:root {
-  --card-icon-on-accent-color: #ffffff;
-  --card-icon-container-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  --card-placeholder-text-color: #718096;
-}
-
-body.dark-mode {
-  --card-icon-container-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Darker shadow on dark bg might be subtle or a light one might be better */
-  /* Or, for a more "flat" dark design, box-shadow could be minimal or border-based */
-  /* --card-icon-container-shadow: none; */
-  /* --card-icon-container-border: 1px solid rgba(255,255,255,0.1); */
-  --card-placeholder-text-color: #8a92a1; /* Lighter placeholder text for dark mode */
-}
-
 .summary-card-inner-content {
   display: flex;
   align-items: center;
@@ -33,12 +19,12 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--card-icon-on-accent-color); /* Themed icon color */
+  color: #ffffff; /* <<<< تضمین می‌کند که آیکون‌های داخل کانتینر سفید هستند >>>> */
   margin-left: clamp(8px, 1.8vw, 12px); /* فاصله آیکون از متن */
-  box-shadow: var(--card-icon-container-shadow); /* Themed shadow */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* افزودن یک سایه ملایم به کانتینر آیکون */
 }
 
-/* رنگ‌بندی پس‌زمینه آیکون‌ها (These are semantic, kept as is but icon color on them is themed) */
+/* رنگ‌بندی پس‌زمینه آیکون‌ها (بدون تغییر از کد قبلی شما) */
 .summary-card .card-icon-container.gold { background-color: #f1c40f; }
 .summary-card .card-icon-container.value { background-color: #2ecc71; }
 .summary-card .card-icon-container.invoices { background-color: #3498db; }
@@ -72,7 +58,7 @@ body.dark-mode {
   /* کوچک‌تر و سبک‌تر کردن فونت عنوان کارت */
   font-size: clamp(0.7em, 1.8vw, 0.8em);
   font-weight: 500;
-  color: var(--secondary-text-color); /* Themed title color */
+  color: #4a5568; /* کمی تیره‌تر کردن رنگ عنوان برای خوانایی بهتر */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -85,7 +71,7 @@ body.dark-mode {
   /* تنظیم دقیق‌تر اندازه فونت مقدار کارت */
   font-size: clamp(0.9em, 2.5vw, 1.05em);
   font-weight: 600; /* کمی کاهش وزن فونت برای جلوگیری از ضخامت بیش از حد */
-  color: var(--primary-text-color); /* Themed value color */
+  color: #1a202c; /* رنگ تیره‌تر برای مقدار */
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -95,7 +81,7 @@ body.dark-mode {
 /* استایل برای حالت placeholder اگر داده‌ای وجود ندارد */
 .summary-card-inner-content.placeholder-content p {
   font-size: 0.8em;
-  color: var(--card-placeholder-text-color); /* Themed placeholder text color */
+  color: #718096;
   width: 100%;
   text-align: center;
 }

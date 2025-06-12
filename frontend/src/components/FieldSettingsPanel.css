@@ -1,49 +1,23 @@
 /* frontend/src/components/FieldSettingsPanel.css */
-:root {
-  --fsp-backdrop-bg: rgba(0, 0, 0, 0.4);
-  --fsp-panel-bg: var(--secondary-bg-color, white); /* Panels often use secondary bg */
-  --fsp-panel-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  --fsp-header-border-color: var(--border-color, #e9ecef);
-  --fsp-header-text-color: var(--primary-text-color, #343a40);
-  --fsp-close-button-color: var(--secondary-text-color, #6c757d);
-  --fsp-close-button-hover-color: var(--primary-text-color, #212529);
-  --fsp-label-text-color: var(--secondary-text-color, #495057);
-  /* Input/select styles will primarily come from global index.css */
-  --fsp-footer-border-color: var(--border-color, #e9ecef);
-  /* Save button will use global accent styles */
-}
-
-body.dark-mode {
-  --fsp-backdrop-bg: rgba(0, 0, 0, 0.6);
-  --fsp-panel-bg: var(--secondary-bg-color, #2b2b2b);
-  --fsp-panel-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-  --fsp-header-border-color: var(--border-color, #3a3a3a);
-  --fsp-header-text-color: var(--primary-text-color, #e0e0e0);
-  --fsp-close-button-color: var(--secondary-text-color, #a0aec0);
-  --fsp-close-button-hover-color: var(--primary-text-color, #e0e0e0);
-  --fsp-label-text-color: var(--secondary-text-color, #adb5bd);
-  --fsp-footer-border-color: var(--border-color, #3a3a3a);
-}
-
 .field-settings-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--fsp-backdrop-bg);
-  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1050; /* بالاتر از بقیه آیتم‌ها */
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .field-settings-panel {
-  background-color: var(--fsp-panel-bg);
-  border-radius: 0.5rem; /* 8px */
-  box-shadow: var(--fsp-panel-shadow);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   width: 90%;
-  max-width: 20rem; /* 320px */
+  max-width: 320px;
   direction: rtl;
   display: flex;
   flex-direction: column;
@@ -53,14 +27,14 @@ body.dark-mode {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem; /* 12px 16px */
-  border-bottom: 1px solid var(--fsp-header-border-color);
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .panel-header h4 {
   margin: 0;
   font-size: 1.1em;
-  color: var(--fsp-header-text-color);
+  color: #343a40;
 }
 
 .close-btn {
@@ -68,69 +42,65 @@ body.dark-mode {
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
-  color: var(--fsp-close-button-color);
+  color: #6c757d;
   padding: 0;
 }
 .close-btn:hover {
-  color: var(--fsp-close-button-hover-color);
+  color: #212529;
 }
 
 .panel-body {
-  padding: 1rem; /* 16px */
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0.9375rem; /* 15px */
+  gap: 15px;
 }
 
 .setting-row {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem; /* 6px */
+  gap: 6px;
 }
 
 .setting-row label {
   font-size: 0.9em;
-  color: var(--fsp-label-text-color);
+  color: #495057;
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* 8px */
+  gap: 8px;
 }
 
-/* Inputs and selects will largely inherit from global styles in index.css */
 .setting-row input,
 .setting-row select {
   width: 100%;
-  /* padding, border, border-radius, font-family, box-sizing are from index.css */
-  /* font-family: inherit; */ /* Ensure this is set if index.css doesn't cover it well enough */
-  /* box-sizing: border-box; */
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 .setting-row input[type="color"] {
-  /* padding: 2px; Minimal padding for color input */
-  height: 2.5rem; /* 40px, consistent with global input height */
-  /* Background and border should also come from global input styles */
+  padding: 2px;
+  height: 40px;
 }
 
 .panel-footer {
-  padding: 0.75rem 1rem; /* 12px 16px */
-  border-top: 1px solid var(--fsp-footer-border-color);
-  text-align: left; /* For LTR, buttons align end. For RTL, use flex-end on a flex container if needed */
+  padding: 12px 16px;
+  border-top: 1px solid #e9ecef;
+  text-align: left;
 }
 
-/* .save-btn should now use global .action-button and .primary classes */
 .save-btn {
-  /* These styles will be applied if it's a plain button or if it has .action-button.primary from index.css */
-  /* background-color: var(--accent-color); */
-  /* color: var(--accent-text-color); */
-  /* border: none; */
-  /* padding: 0.625rem 1rem; */ /* 10px 16px */
-  /* border-radius: 0.3125rem; */ /* 5px */
-  /* cursor: pointer; */
-  /* transition: background-color 0.2s; */
+  background-color: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-/* .save-btn:hover { */
-  /* background-color: var(--link-hover-color); */ /* Using global link hover for darker accent */
-/* } */
-/* Ensure the button in JSX has class="action-button primary" to pick up global styles */
+.save-btn:hover {
+  background-color: var(--primary-hover-color, #0056b3);
 }
