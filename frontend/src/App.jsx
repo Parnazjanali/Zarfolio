@@ -1,14 +1,10 @@
 // src/App.jsx
-
-// STEP 1: 'lazy' و 'Suspense' از کتابخانه react وارد می‌شوند
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
-import { ConfigProvider, theme, FloatButton } from 'antd'; // Changed Button to FloatButton
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { ConfigProvider, theme, FloatButton, Layout } from 'antd'; // Layout وارد شد
 import { PlusOutlined } from '@ant-design/icons';
-import { FaFileInvoiceDollar, FaUserPlus, FaTags } from 'react-icons/fa'; // Added FaTags
+import { FaFileInvoiceDollar, FaUserPlus, FaTags } from 'react-icons/fa';
 
-// --- START: کامپوننت‌هایی که برای بارگذاری اولیه نیاز هستند ---
-// این کامپوننت‌ها چون بلافاصله نیاز هستند، به صورت عادی وارد می‌شوند
 import LoginPage from './pages/LoginPage.jsx';
 import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
@@ -16,11 +12,7 @@ import TwoFAVerifyPage from './pages/TwoFAVerifyPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
-// --- END: کامپوننت‌های بارگذاری اولیه ---
 
-
-// --- START: کامپوننت‌های صفحات که به صورت Lazy (تنبل) بارگذاری می‌شوند ---
-// به جای وارد کردن مستقیم، از تابع lazy برای وارد کردن داینامیک استفاده می‌کنیم
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage.jsx'));
 const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage.jsx'));
@@ -31,13 +23,10 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const SystemSettingsPage = lazy(() => import('./pages/SystemSettingsPage.jsx'));
 const AccountManagementPage = lazy(() => import('./pages/AccountManagementPage.jsx'));
 const EtiketPage = lazy(() => import('./pages/EtiketPage.jsx'));
-// --- END: کامپوننت‌های Lazy ---
-
 
 function BackgroundManager() {
   const location = useLocation();
   useEffect(() => {
-    // مسیر جدید 2fa-verify به لیست مسیرهای احراز هویت اضافه شد
     const authPaths = ['/login', '/request-password-reset', '/reset-password', '/2fa-verify'];
     if (authPaths.includes(location.pathname)) {
       document.body.classList.add('login-page-background');
@@ -51,35 +40,25 @@ function BackgroundManager() {
   return null;
 }
 
-// Remove currentTheme and setCurrentTheme from MainLayout props
+// بازنویسی MainLayout با استفاده از کامپوننت Layout از Ant Design
 function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed }) {
-  const navigate = useNavigate(); // Instantiate useNavigate
+  const navigate = useNavigate();
 
   return (
-    <div className={`main-layout ${isSidebarCollapsed ? 'sidebar-is-collapsed-globally' : ''}`}>
+    <Layout style={{ minHeight: '100vh', direction: 'rtl' }}>
       <Sidebar 
         isCollapsed={isSidebarCollapsed} 
         setIsCollapsed={setIsSidebarCollapsed}
-        // currentTheme and setCurrentTheme removed from Sidebar props
       />
-      <main className="main-content-area">
-        {React.Children.map(children, child => {
-          if (React.isValidElement(child)) {
-            // currentTheme removed from being passed to children
-            // @ts-ignore
-            return React.cloneElement(child, { isSidebarCollapsed });
-          }
-          return child;
-        })}
-      </main>
+      <Layout className="site-layout">
+        <Layout.Content style={{ margin: '16px', overflow: 'initial' }}>
+          {children}
+        </Layout.Content>
+      </Layout>
       <FloatButton.Group
         trigger="click"
         type="primary"
-        style={{
-          bottom: 30,
-          left: 30, // RTL context: bottom-left
-          // boxShadow is usually handled by FloatButton component itself
-        }}
+        style={{ bottom: 30, left: 30 }}
         icon={<PlusOutlined />}
         tooltip="ثبت جدید"
       >
@@ -99,14 +78,12 @@ function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed }) {
           onClick={() => navigate('/customers/new')}
         />
       </FloatButton.Group>
-    </div>
+    </Layout>
   );
 }
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('authToken');
-  // Remove currentTheme and setCurrentTheme state
-  // const [currentTheme, setCurrentTheme] = useState('light'); 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const savedState = localStorage.getItem('sidebarCollapsed');
     return savedState !== null ? JSON.parse(savedState) : false;
@@ -116,20 +93,12 @@ function App() {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
-  // Define a fixed theme for the app, or use Ant Design's default (light)
-  // If the whole app should be dark, use: theme: { algorithm: theme.darkAlgorithm }
-  // For default light theme for app content (sidebar is separately dark):
   const antdAppTheme = {
-    algorithm: theme.defaultAlgorithm, // Or remove theme prop entirely for default light
-    components: {
-      Button: {
-        // Example of component-level customization if needed
-      },
-    },
+    algorithm: theme.defaultAlgorithm,
   };
 
   return (
-    <ConfigProvider theme={antdAppTheme}>
+    <ConfigProvider theme={antdAppTheme} direction="rtl">
       <BackgroundManager />
       <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
         <Routes>
@@ -143,7 +112,6 @@ function App() {
               <MainLayout 
                 isSidebarCollapsed={isSidebarCollapsed}
                 setIsSidebarCollapsed={setIsSidebarCollapsed}
-                // currentTheme and setCurrentTheme removed
               >
                 <Routes>
                   <Route path="dashboard" element={<DashboardPage />} />
@@ -156,17 +124,13 @@ function App() {
                   <Route path="reports/*" element={<ReportsPage />} />
                   <Route path="account/settings" element={<AccountManagementPage />} />
                   <Route path="settings/system" element={<SystemSettingsPage />} />
-                  {/* Default redirect for authenticated users inside the layout */}
                   <Route index element={<Navigate to="dashboard" replace />} />
                 </Routes>
               </MainLayout>
             </ProtectedRoute>
           }/>
           
-          {/* Fallback for non-authenticated users or unmatched routes */}
           <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-          {/* A global catch-all for any other unmatched paths might be useful, or rely on individual routing structures */}
-          {/* <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} /> */}
         </Routes>
       </Suspense>
     </ConfigProvider>
