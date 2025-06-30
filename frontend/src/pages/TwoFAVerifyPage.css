@@ -51,6 +51,7 @@
 /* بخش فرم در سمت راست */
 .login-form-section {
   flex: 1 1 55%;
+  position: relative; /* برای جای‌گذاری دکمه بازگشت */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -184,4 +185,11 @@
   .login-container { flex-direction: column; border-radius: 0; box-shadow: none; min-height: 100vh; }
   .login-form-section { order: 2; padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 2); }
   .login-image-section { order: 1; flex-basis: auto; min-height: 160px; max-height: 30vh; }
+}
+
+/* استایل دکمه بازگشت با Ant Design */
+.back-button {
+  position: absolute;
+  top: calc(var(--spacing-unit) * 2.5);
+  right: calc(var(--spacing-unit) * 3.5);
 }

@@ -59,8 +59,9 @@ function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed }) {
         trigger="click"
         type="primary"
         style={{ bottom: 30, left: 30 }}
+        className="custom-fab-group"
         icon={<PlusOutlined />}
-        tooltip="ثبت جدید"
+        tooltip={{ title: "دسترسی سریع", placement: "right" }}
       >
         <FloatButton 
           icon={<FaTags />} 

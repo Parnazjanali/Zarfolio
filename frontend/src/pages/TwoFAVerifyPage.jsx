@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './TwoFAVerifyPage.css'; // ایمپورت کردن فایل CSS اختصاصی
-import loginPageImage from '../assets/lock.jpg'; // ایمپورت تصویر برای نمایش در کنار فرم
+import { Button } from 'antd'; // ایمپورت کامپوننت Button از Ant Design
+import { ArrowLeftOutlined } from '@ant-design/icons'; // ایمپورت آیکون از Ant Design
+import './TwoFAVerifyPage.css';
+import loginPageImage from '../assets/lock.jpg';
 import { FaShieldAlt } from 'react-icons/fa';
 
-// آدرس پایه API از متغیرهای محیطی خوانده می‌شود
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const TwoFAVerifyPage = () => {
@@ -49,20 +50,19 @@ const TwoFAVerifyPage = () => {
         throw new Error(data.message || 'کد تایید نامعتبر است.');
       }
 
-      // اگر تایید موفقیت آمیز بود، توکن نهایی و اطلاعات کاربر دریافت می‌شود
       if (data.token && data.user) {
         setSuccessMessage('تایید با موفقیت انجام شد. در حال انتقال به داشبورد...');
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userData', JSON.stringify(data.user));
-        localStorage.removeItem('2fa_user_id'); // حذف شناسه موقت
+        localStorage.removeItem('2fa_user_id');
         
-        login(); // به‌روزرسانی وضعیت احراز هویت در کل برنامه
+        login();
 
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
       } else {
-          throw new Error('پاسخ سرور نامعتبر است.');
+        throw new Error('پاسخ سرور نامعتبر است.');
       }
 
     } catch (err) {
@@ -76,6 +76,14 @@ const TwoFAVerifyPage = () => {
     <div className="auth-page">
       <div className="login-container">
         <div className="login-form-section">
+          <Button
+            className="back-button"
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(-1)}
+          >
+            بازگشت
+          </Button>
           <div className="login-form-container">
             <h2 className="form-title">تایید دو مرحله‌ای</h2>
             <p className="form-subtitle">
