@@ -14,7 +14,6 @@ import (
 )
 
 func StartServer(port string) {
-
 	utils.Log.Info("Starting Fiber Api Gateway server")
 
 	app := fiber.New()
@@ -35,28 +34,45 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("ProfileManagerClient initialized successfully.")
 
+	permissionService := service.NewPermissionService(utils.Log)
+	if permissionService == nil {
+		utils.Log.Fatal("ERROR: Failed to initialize PermissionService. Exiting application.")
+	}
+	utils.Log.Info("PermissionService initialized successfully.")
+
 	authService := service.NewAuthService(profileManagerClient)
 	if authService == nil {
 		utils.Log.Fatal("ERROR: Failed to initialize AuthService. Exiting application.")
 	}
+	utils.Log.Info("AuthService initialized successfully.")
 
-	// ساخت هندلر احراز هویت (AuthHandler) و دادن AuthService به آن.
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService) 
 	if authHandler == nil {
 		utils.Log.Fatal("ERROR: Failed to initialize AuthHandler. Exiting application.")
 	}
-	utils.Log.Info("All core dependencies initialized successfully.")
+	utils.Log.Info("AuthHandler initialized successfully.")
 
-	// 4. تنظیم تمامی مسیرهای API
-	// ما app و هندلرهای آماده شده را به تابع SetupApiRoutes می‌دهیم تا روت‌ها را ثبت کند.
+	accountHandlerAG := handler.NewAccountHandlerAG(profileManagerClient)
+	if accountHandlerAG == nil {
+		utils.Log.Fatal("ERROR: Failed to initialize AccountHandlerAG. Exiting application.")
+	}
+	utils.Log.Info("AccountHandlerAG initialized successfully.")
+
+	profileHandlerAG := handler.NewProfileHandler(profileManagerClient)
+	if profileHandlerAG == nil {
+		utils.Log.Fatal("ERROR: Failed to initialize ProfileHandler for API Gateway. Exiting application.")
+	}
+	utils.Log.Info("ProfileHandlerAG initialized successfully.")
+
+	utils.Log.Info("All core dependencies initialized successfully.")
 	utils.Log.Info("Setting up API routes for API Gateway...")
-	if err := SetUpApiRoutes(app, authHandler); err != nil { // این تابع روت‌ها را به Fiber App اضافه می‌کند.
+
+	if err := SetUpApiRoutes(app, authHandler, accountHandlerAG, permissionService, profileHandlerAG); err != nil {
 		utils.Log.Fatal("ERROR: Failed to set up API routes: %v. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("All API routes configured successfully.")
 
-	// 5. شروع گوش دادن سرور به درخواست‌ها
-	utils.Log.Info("API Gateway is attempting to listen", zap.String("address", fmt.Sprintf("0.0.0.0%s", port)))
-	// log.Fatal برنامه را در صورت خطای شروع سرور (مثلاً پورت اشغال شده) متوقف می‌کند.
-	log.Fatal(app.Listen(port))
+	fullAddr := fmt.Sprintf("0.0.0.0%s", port)
+	utils.Log.Info("API Gateway is attempting to listen", zap.String("address", fullAddr))
+	log.Fatal(app.Listen(port)) 
 }
