@@ -1,228 +1,133 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Form,
   Input,
-  InputNumber,
-  Select,
   Button,
-  Spin,
-  notification,
-  Card,
-  Row,
-  Col,
-  Typography,
-  Switch,
   Tabs,
+  Spin,
+  Typography,
+  App,
+  Divider,
 } from 'antd';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // مسیر فرضی AuthContext
 
-const { Title } = Typography;
-const { TabPane } = Tabs;
+const { Title, Paragraph } = Typography;
+const { TextArea } = Input;
 
-const SystemSettingsPage = () => {
+// کامپوننت‌های تب‌ها (بدون تغییر)
+const GeneralTabContent = () => (
+  <>
+    <Form.Item
+      label="نام فروشگاه"
+      name="shopName"
+      rules={[{ required: true, message: 'لطفاً نام فروشگاه را وارد کنید!' }]}
+    >
+      <Input />
+    </Form.Item>
+    <Form.Item label="توضیحات" name="description">
+      <TextArea rows={4} placeholder="توضیحات مختصری درباره فروشگاه" />
+    </Form.Item>
+  </>
+);
+
+const FinancialTabContent = () => (
+  <>
+    <Form.Item
+      label="کد اقتصادی"
+      name="economicCode"
+      rules={[{ required: true, message: 'لطفاً کد اقتصادی را وارد کنید!' }]}
+    >
+      <Input />
+    </Form.Item>
+    <Form.Item label="شماره ثبت" name="registrationNumber">
+      <Input placeholder="اختیاری" />
+    </Form.Item>
+  </>
+);
+
+function SystemSettingsPage() {
+  const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
-  const { authToken } = useAuth();
-  const [loading, setLoading] = useState(true); // For initial data load
-  const [saving, setSaving] = useState(false);  // For save operation
-  const [initialValues, setInitialValues] = useState({}); // To store fetched settings
+  const { notification } = App.useApp();
 
-  const apiBaseUrl = '/api'; 
+  // دریافت تنظیمات
+  useEffect(() => {
+    const fetchSettings = async () => {
+      setLoading(true);
+      try {
+        // <<<< اصلاحیه اصلی اینجا اعمال شد >>>>
+        const response = await axios.get('/api/v1/settings');
+        if (response.data) {
+          form.setFieldsValue(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        notification.error({
+          message: 'خطا در دریافت اطلاعات',
+          description: 'ارتباط با سرور برای دریافت تنظیمات برقرار نشد.',
+          placement: 'bottomLeft',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, [form, notification]);
 
-  const fetchSettings = useCallback(async () => {
-    if (!authToken) {
-      notification.error({ message: 'خطا', description: 'توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید.' });
-      setLoading(false);
-      return;
-    }
+  // ذخیره تنظیمات
+  const handleSave = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/settings`, {
-        headers: { Authorization: `Bearer ${authToken}` },
+      // <<<< اصلاحیه اصلی اینجا اعمال شد >>>>
+      await axios.post('/api/v1/settings', values);
+      notification.success({
+        message: 'انجام شد',
+        description: 'تنظیمات با موفقیت ذخیره شد.',
+        placement: 'bottomLeft',
       });
-      const fetchedData = response.data;
-      // Ensure boolean fields are correctly interpreted for Switch components
-      fetchedData.enable_email_notifications = !!fetchedData.enable_email_notifications;
-      fetchedData.send_daily_summary_email = !!fetchedData.send_daily_summary_email;
-      
-      setInitialValues(fetchedData);
-      form.setFieldsValue(fetchedData); // Set form fields after data is fetched
-      // notification.success({ message: 'موفق', description: 'تنظیمات با موفقیت بارگذاری شد.' });
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      notification.error({
-        message: 'خطا در بارگذاری تنظیمات',
-        description: error.response?.data?.error || error.message || 'مشکلی در ارتباط با سرور رخ داده است.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [authToken, form]);
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
-  const onFinish = async (values) => {
-    if (!authToken) {
-      notification.error({ message: 'خطا', description: 'توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید.' });
-      return;
-    }
-    setSaving(true);
-    
-    const payload = {
-      ...initialValues, // Start with existing settings to preserve all fields
-      ...values, // Override with form values
-      // Ensure boolean values from Switch are correctly sent as booleans
-      enable_email_notifications: !!values.enable_email_notifications,
-      send_daily_summary_email: !!values.send_daily_summary_email,
-      // Ensure numeric values are numbers
-      default_vat_percentage: Number(values.default_vat_percentage) || 0,
-      default_wage_percentage: Number(values.default_wage_percentage) || 0,
-    };
-    // Remove GORM specific fields if they exist in payload, as they are not needed for update
-    delete payload.ID;
-    delete payload.CreatedAt;
-    delete payload.UpdatedAt;
-    delete payload.DeletedAt;
-
-    try {
-      await axios.post(`${apiBaseUrl}/settings`, payload, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      notification.success({ message: 'موفق', description: 'تنظیمات با موفقیت ذخیره شد.' });
-      fetchSettings(); // Refresh settings from server
     } catch (error) {
       console.error('Error saving settings:', error);
       notification.error({
-        message: 'خطا در ذخیره تنظیمات',
-        description: error.response?.data?.error || error.message || 'مشکلی در ارتباط با سرور رخ داده است.',
+        message: 'خطا در ذخیره‌سازی',
+        description: 'مشکلی در ذخیره تنظیمات رخ داد. لطفاً دوباره تلاش کنید.',
+        placement: 'bottomLeft',
       });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
-  
-  // Show main loading spinner only if initialValues are not yet loaded.
-  if (loading && Object.keys(initialValues).length === 0) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 200px)' }}>
-        <Spin size="large" tip="در حال بارگذاری تنظیمات اولیه..." />
-      </div>
-    );
-  }
+
+  const tabItems = [
+    { key: '1', label: 'عمومی', children: <GeneralTabContent /> },
+    { key: '2', label: 'مالی', children: <FinancialTabContent /> },
+  ];
 
   return (
-    <Card title={<Title level={3} style={{ margin: 0 }}>تنظیمات سیستم</Title>} style={{ margin: '24px' }}>
-      <Spin spinning={saving || (loading && Object.keys(initialValues).length > 0)} tip={saving ? "در حال ذخیره..." : "در حال به‌روزرسانی اطلاعات..."}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          initialValues={initialValues} // Set initial values for the form
-          key={JSON.stringify(initialValues)} // Force re-render of form when initialValues change
-        >
-          <Tabs defaultActiveKey="1" type="card">
-            <TabPane tab="اطلاعات پایه" key="1">
-              <Row gutter={24}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="store_name"
-                    label="نام فروشگاه"
-                    rules={[{ required: true, message: 'لطفاً نام فروشگاه را وارد کنید' }]}
-                  >
-                    <Input placeholder="مثال: گالری طلای زرفام" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item name="economic_code" label="کد اقتصادی">
-                    <Input placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={24}>
-                <Col xs={24} sm={12}>
-                  <Form.Item name="phone_number" label="شماره تلفن">
-                    <Input placeholder="مثال: ۰۲۱-۱۲۳۴۵۶۷۸" style={{direction: 'ltr'}}/>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item name="logo_url" label="آدرس اینترنتی لوگو (URL)">
-                    <Input placeholder="مثال: https://example.com/logo.png" style={{direction: 'ltr'}}/>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item name="full_address" label="آدرس کامل">
-                <Input.TextArea rows={3} placeholder="مثال: تهران، خیابان اصلی، کوچه فرعی، پلاک ۱۰" />
-              </Form.Item>
-            </TabPane>
-
-            <TabPane tab="مالی و تخصصی طلا" key="2">
-              <Row gutter={24}>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="base_currency"
-                    label="واحد پول پایه"
-                    rules={[{ required: true, message: 'لطفاً واحد پول را انتخاب کنید' }]}
-                  >
-                    <Select placeholder="انتخاب کنید">
-                      <Select.Option value="ریال">ریال</Select.Option>
-                      <Select.Option value="تومان">تومان</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="default_vat_percentage"
-                    label="مالیات بر ارزش افزوده پیش‌فرض"
-                    rules={[{ type: 'number', min: 0, max: 100, message: 'مقدار باید بین ۰ و ۱۰۰ باشد' }]}
-                  >
-                    <InputNumber style={{ width: '100%' }} addonAfter="%" placeholder="مثال: 9" min={0} max={100}/>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="default_wage_percentage"
-                    label="اجرت ساخت پیش‌فرض"
-                    rules={[{ type: 'number', min: 0, max: 100, message: 'مقدار باید بین ۰ و ۱۰۰ باشد' }]}
-                  >
-                    <InputNumber style={{ width: '100%' }} addonAfter="%" placeholder="مثال: 7" min={0} max={100}/>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item name="gold_api_key" label="کلید API نرخ زنده طلا (اختیاری)">
-                <Input.Password placeholder="کلید API خود را وارد کنید (محرمانه)" style={{direction: 'ltr'}}/>
-              </Form.Item>
-            </TabPane>
-
-            <TabPane tab="تنظیمات چاپ" key="3">
-              <Form.Item name="invoice_header" label="متن سربرگ فاکتور">
-                <Input.TextArea rows={4} placeholder="متنی که در بالای تمام فاکتورها نمایش داده می‌شود. می‌توانید از متغیرهایی مانند {store_name} یا {date} استفاده کنید." />
-              </Form.Item>
-              <Form.Item name="invoice_footer" label="متن پاورقی فاکتور">
-                <Input.TextArea rows={4} placeholder="اطلاعاتی مانند آدرس وب‌سایت، تشکر از خرید، قوانین و مقررات و ..." />
-              </Form.Item>
-            </TabPane>
-
-            <TabPane tab="اعلان‌ها" key="4">
-              <Form.Item name="enable_email_notifications" label="فعال‌سازی اعلان‌های ایمیلی برای رویدادهای مهم" valuePropName="checked" >
-                <Switch checkedChildren="فعال" unCheckedChildren="غیرفعال" />
-              </Form.Item>
-              <Form.Item name="send_daily_summary_email" label="ارسال خلاصه گزارش روزانه به ایمیل مدیر" valuePropName="checked" >
-                <Switch checkedChildren="فعال" unCheckedChildren="غیرفعال" />
-              </Form.Item>
-            </TabPane>
-          </Tabs>
-
-          <Form.Item style={{ marginTop: '30px', textAlign: 'left' }}>
-            <Button type="primary" htmlType="submit" loading={saving} size="large">
-              ذخیره تغییرات
-            </Button>
-          </Form.Item>
-        </Form>
-      </Spin>
-    </Card>
+    <Spin spinning={loading} tip="در حال بارگذاری..." size="large">
+      <div style={{ backgroundColor: '#f5f5f5', padding: '16px 24px', borderBottom: '1px solid #e8e8e8' }}>
+        <Title level={4} style={{ marginBottom: '4px' }}>
+          تنظیمات سیستم
+        </Title>
+        <Paragraph type="secondary" style={{ marginBottom: '0' }}>
+          مدیریت تنظیمات کلی و مالی فروشگاه
+        </Paragraph>
+      </div>
+      <Form
+        form={form}
+        onFinish={handleSave}
+        layout="vertical"
+        style={{ padding: '24px' }}
+      >
+        <Tabs defaultActiveKey="1" items={tabItems} />
+        <Divider />
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={loading}>
+            ذخیره تغییرات
+          </Button>
+        </Form.Item>
+      </Form>
+    </Spin>
   );
-};
+}
 
 export default SystemSettingsPage;

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes" // اضافه شده برای پراکسی
 	"fmt"
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
