@@ -1,5 +1,4 @@
-// settings-manager/internal/handler/settings_handler.go
-
+// backend/src/SettingsManager/internal/handler/settings_handler.go
 package handler
 
 import (
@@ -9,45 +8,40 @@ import (
 	"zarfolio-backend/settings-manager/internal/service"
 )
 
-// SettingsHandler handles HTTP requests related to settings.
 type SettingsHandler struct {
 	service *service.SettingsService
 }
 
-// NewSettingsHandler creates a new handler instance.
 func NewSettingsHandler(s *service.SettingsService) *SettingsHandler {
 	return &SettingsHandler{service: s}
 }
 
-// GetBusinessInfo handles the GET /api/settings/business request.
-func (h *SettingsHandler) GetBusinessInfo(w http.ResponseWriter, r *http.Request) {
-	info, err := h.service.GetBusinessInfo()
+// GetSettings handles GET /api/settings
+func (h *SettingsHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
+	settings, err := h.service.GetSettings()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Could not retrieve settings: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(info)
+	json.NewEncoder(w).Encode(settings)
 }
 
-// UpdateBusinessInfo handles the POST /api/settings/business request.
-func (h *SettingsHandler) UpdateBusinessInfo(w http.ResponseWriter, r *http.Request) {
-	var info model.BusinessInfo
-	if err := json.NewDecoder(r.Body).Decode(&info); err != nil {
+// UpdateSettings handles POST /api/settings
+func (h *SettingsHandler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
+	var settings model.SystemSettings
+	if err := json.NewDecoder(r.Body).Decode(&settings); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	// Basic validation can be added here, or kept in the service layer.
-	
-	err := h.service.UpdateBusinessInfo(&info)
+	updatedSettings, err := h.service.UpdateSettings(&settings)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to update settings: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(info)
+	json.NewEncoder(w).Encode(updatedSettings)
 }

@@ -1,7 +1,12 @@
 package handler
 
 import (
+	"bytes"   // اضافه شد
 	"errors"
+	"fmt"      // اضافه شد
+	"net/http" // اضافه شد
+	"os"       // اضافه شد
+	"time"     // اضافه شد
 	"gold-api/internal/model"
 	"gold-api/internal/service"
 	"gold-api/internal/utils"
@@ -303,4 +308,56 @@ func (h *AuthHandler) HandleResetPassword(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Your password has been successfully reset. You can now log in with your new password.",
 	})
+}
+
+// --- تابع جدید پراکسی برای تنظیمات ---
+// ProxyToSettings forwards requests to the SettingsManager service
+func (h *AuthHandler) ProxyToSettings(c *fiber.Ctx) error {
+	settingsManagerURL := os.Getenv("SETTINGS_MANAGER_BASE_URL")
+	if settingsManagerURL == "" {
+		utils.Log.Error("SETTINGS_MANAGER_BASE_URL not set in env")
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Settings service is not configured.",
+			Code:    "500_SETTINGS_SERVICE_UNCONFIGURED",
+		})
+	}
+
+	// مسیر در سرویس SettingsManager /api/settings است
+	targetURL := fmt.Sprintf("%s/api/settings", settingsManagerURL)
+
+	proxyReq, err := http.NewRequest(c.Method(), targetURL, bytes.NewReader(c.Body()))
+	if err != nil {
+		utils.Log.Error("Failed to create proxy request to settings service", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Error creating request to settings service.",
+			Code:    "500_PROXY_REQ_ERROR",
+		})
+	}
+
+	// کپی کردن هدرها
+	proxyReq.Header = c.GetReqHeaders()
+	// حذف هدر Authorization چون ارتباط بین سرویس‌ها داخلی و امن فرض می‌شود
+	// اگر نیاز به احراز هویت بین سرویسی دارید، این خط را حذف کنید.
+	proxyReq.Header.Del("Authorization")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(proxyReq)
+	if err != nil {
+		utils.Log.Error("Failed to execute proxy request to settings service", zap.Error(err))
+		return c.Status(fiber.StatusBadGateway).JSON(model.ErrorResponse{
+			Message: "Settings service is unreachable.",
+			Code:    "502_SETTINGS_SERVICE_UNREACHABLE",
+		})
+	}
+	defer resp.Body.Close()
+
+	// کپی کردن پاسخ از سرویس تنظیمات به کلاینت اصلی
+	c.Status(resp.StatusCode)
+	for key, values := range resp.Header {
+		for _, value := range values {
+			c.Set(key, value)
+		}
+	}
+
+	return c.SendStream(resp.Body)
 }

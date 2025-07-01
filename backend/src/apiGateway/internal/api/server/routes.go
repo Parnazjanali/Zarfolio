@@ -1,13 +1,14 @@
 package server
 
 import (
-	"fmt" // For proxy
+	"bytes" // اضافه شده برای پراکسی
+	"fmt"
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/utils"
-	"net/http" // For proxy
-	"os"       // For proxy (Getenv)
-	"time"     // For proxy (http.Client timeout)
+	"net/http" // اضافه شده برای پراکسی
+	"os"       // اضافه شده برای پراکسی (Getenv)
+	"time"     // اضافه شده برای پراکسی (http.Client timeout)
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -45,6 +46,7 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	authGroup.Post("/2fa/verify", authHandler.HandleLoginTwoFA)
 	utils.Log.Info("Configuring /api/v1/auth/password and /api/v1/auth/2fa/verify routes")
 
+	// --- مسیرهای حساب کاربری ---
 	accountGroup := api.Group("/account", middleware.AuthUser) // Protected by existing AuthUser middleware
 	utils.Log.Info("Configuring /api/v1/account routes")
 	accountGroup.Post("/change-username", accountHandlerAG.HandleChangeUsername)
@@ -62,6 +64,13 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	} else {
 		utils.Log.Warn("AccountHandlerAG is nil, skipping 2FA setup routes in API Gateway.")
 	}
+
+	// --- مسیرهای جدید تنظیمات سیستم ---
+	settingsGroup := api.Group("/settings", middleware.AuthUser)
+	utils.Log.Info("Configuring /api/v1/settings routes")
+	settingsGroup.Get("/", authHandler.ProxyToSettings)  // اضافه شد
+	settingsGroup.Post("/", authHandler.ProxyToSettings) // اضافه شد
+
 
 	// Simplified GET Proxy for /api/v1/uploads/* to profileManager
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")

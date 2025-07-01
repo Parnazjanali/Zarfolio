@@ -1,5 +1,4 @@
-// settings-manager/cmd/main.go
-
+// backend/src/SettingsManager/cmd/main.go
 package main
 
 import (
@@ -16,45 +15,37 @@ import (
 )
 
 func main() {
-	// 1. Initialize dependencies (Repository -> Service -> Handler)
 	settingsRepo := repository.NewSettingsRepository()
 	settingsService := service.NewSettingsService(settingsRepo)
 	settingsHandler := handler.NewSettingsHandler(settingsService)
 
-	// 2. Create a new Chi router
 	r := chi.NewRouter()
 
-	// 3. Add middlewares
-	r.Use(middleware.Logger)    // Log requests
-	r.Use(middleware.Recoverer) // Recover from panics
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	// Setup CORS (Cross-Origin Resource Sharing)
+	// A more permissive CORS for development
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Your frontend URL
+		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:5173"}, // Allow API Gateway and Vite dev server
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		ExposedHeaders:   []string{"Link"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 
-	// 4. Define API routes
+	// Define API routes under /api prefix
 	r.Route("/api", func(r chi.Router) {
-        // In a real app, you would have an auth middleware here
-		// r.Use(myAuthMiddleware)
-
-		r.Get("/settings/business", settingsHandler.GetBusinessInfo)
-		r.Post("/settings/business", settingsHandler.UpdateBusinessInfo)
+		// In a real app, an auth middleware would be used here.
+		// For this service, auth is handled by the API Gateway.
+		r.Get("/settings", settingsHandler.GetSettings)
+		r.Post("/settings", settingsHandler.UpdateSettings)
 	})
-	
-	// A simple health check endpoint
+
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("SettingsManager Service is running!"))
 	})
 
-
-	// 5. Start the server
-	port := "8081" // Use a different port than your other services
+	port := "8082" // A dedicated port for this service
 	fmt.Printf("SettingsManager server starting on port %s...\n", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
