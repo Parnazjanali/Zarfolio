@@ -1,7 +1,7 @@
-// src/App.jsx
+// frontend/src/App.jsx
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ConfigProvider, theme, FloatButton, Layout } from 'antd'; // Layout وارد شد
+import { ConfigProvider, theme, FloatButton, Layout, App as AntApp } from 'antd'; // App as AntApp وارد شد
 import { PlusOutlined } from '@ant-design/icons';
 import { FaFileInvoiceDollar, FaUserPlus, FaTags } from 'react-icons/fa';
 
@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
 
+// Lazy loading components...
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage.jsx'));
 const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage.jsx'));
@@ -23,6 +24,7 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const SystemSettingsPage = lazy(() => import('./pages/SystemSettingsPage.jsx'));
 const AccountManagementPage = lazy(() => import('./pages/AccountManagementPage.jsx'));
 const EtiketPage = lazy(() => import('./pages/EtiketPage.jsx'));
+
 
 function BackgroundManager() {
   const location = useLocation();
@@ -40,7 +42,6 @@ function BackgroundManager() {
   return null;
 }
 
-// بازنویسی MainLayout با استفاده از کامپوننت Layout از Ant Design
 function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed }) {
   const navigate = useNavigate();
 
@@ -100,40 +101,43 @@ function App() {
 
   return (
     <ConfigProvider theme={antdAppTheme} direction="rtl">
-      <BackgroundManager />
-      <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
-          <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-          <Route path="/*" element={
-            <ProtectedRoute>
-              <MainLayout 
-                isSidebarCollapsed={isSidebarCollapsed}
-                setIsSidebarCollapsed={setIsSidebarCollapsed}
-              >
+        {/* The AntApp component now wraps the entire application, providing context */}
+        <AntApp>
+            <BackgroundManager />
+            <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
                 <Routes>
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="invoices" element={<InvoicesPage />} />
-                  <Route path="invoices/new" element={<NewInvoicePage />} />
-                  <Route path="inventory" element={<InventoryPage />} />
-                  <Route path="customers" element={<CustomersPage />} />
-                  <Route path="customers/new" element={<NewCustomerPage />} />
-                  <Route path="etiket" element={<EtiketPage />} />
-                  <Route path="reports/*" element={<ReportsPage />} />
-                  <Route path="account/settings" element={<AccountManagementPage />} />
-                  <Route path="settings/system" element={<SystemSettingsPage />} />
-                  <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
+                <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                <Route path="/*" element={
+                    <ProtectedRoute>
+                    <MainLayout 
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        setIsSidebarCollapsed={setIsSidebarCollapsed}
+                    >
+                        <Routes>
+                        <Route path="dashboard" element={<DashboardPage />} />
+                        <Route path="invoices" element={<InvoicesPage />} />
+                        <Route path="invoices/new" element={<NewInvoicePage />} />
+                        <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="customers" element={<CustomersPage />} />
+                        <Route path="customers/new" element={<NewCustomerPage />} />
+                        <Route path="etiket" element={<EtiketPage />} />
+                        <Route path="reports/*" element={<ReportsPage />} />
+                        <Route path="account/settings" element={<AccountManagementPage />} />
+                        <Route path="settings/system" element={<SystemSettingsPage />} />
+                        <Route index element={<Navigate to="dashboard" replace />} />
+                        </Routes>
+                    </MainLayout>
+                    </ProtectedRoute>
+                }/>
+                
+                <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
                 </Routes>
-              </MainLayout>
-            </ProtectedRoute>
-          }/>
-          
-          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-        </Routes>
-      </Suspense>
+            </Suspense>
+        </AntApp>
     </ConfigProvider>
   );
 }

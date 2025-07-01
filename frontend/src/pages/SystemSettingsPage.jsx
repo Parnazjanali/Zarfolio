@@ -1,3 +1,5 @@
+// frontend/src/pages/SystemSettingsPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import {
   Form,
@@ -14,18 +16,43 @@ import axios from 'axios';
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
-// کامپوننت‌های تب‌ها (بدون تغییر)
+// A helper function to get the auth token from localStorage
+const getAuthToken = () => localStorage.getItem('authToken');
+
+// Create an Axios instance with default headers
+const axiosInstance = axios.create({
+  baseURL: '/api/v1' // Assuming all API calls go to this base path
+});
+
+// Add a request interceptor to include the token in all requests
+axiosInstance.interceptors.request.use(config => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
+
 const GeneralTabContent = () => (
   <>
     <Form.Item
       label="نام فروشگاه"
-      name="shopName"
+      name="store_name" // Corrected to match the model field
       rules={[{ required: true, message: 'لطفاً نام فروشگاه را وارد کنید!' }]}
     >
       <Input />
     </Form.Item>
-    <Form.Item label="توضیحات" name="description">
-      <TextArea rows={4} placeholder="توضیحات مختصری درباره فروشگاه" />
+    <Form.Item label="کد اقتصادی" name="economic_code">
+        <Input />
+    </Form.Item>
+    <Form.Item label="شماره تماس" name="phone_number">
+        <Input />
+    </Form.Item>
+    <Form.Item label="آدرس کامل" name="full_address">
+      <TextArea rows={3} placeholder="آدرس کامل فروشگاه" />
     </Form.Item>
   </>
 );
@@ -33,16 +60,29 @@ const GeneralTabContent = () => (
 const FinancialTabContent = () => (
   <>
     <Form.Item
-      label="کد اقتصادی"
-      name="economicCode"
-      rules={[{ required: true, message: 'لطفاً کد اقتصادی را وارد کنید!' }]}
+        label="ارز پایه"
+        name="base_currency"
     >
-      <Input />
+        <Input placeholder="مثال: ریال" />
     </Form.Item>
-    <Form.Item label="شماره ثبت" name="registrationNumber">
-      <Input placeholder="اختیاری" />
+    <Form.Item label="مالیات بر ارزش افزوده پیش‌فرض (%)" name="default_vat_percentage">
+      <Input type="number" placeholder="مثال: 9" />
+    </Form.Item>
+    <Form.Item label="اجرت پیش‌فرض (%)" name="default_wage_percentage">
+      <Input type="number" placeholder="مثال: 7" />
     </Form.Item>
   </>
+);
+
+const PrintTabContent = () => (
+    <>
+        <Form.Item label="متن سربرگ فاکتور" name="invoice_header">
+            <TextArea rows={4} placeholder="متنی که در بالای تمام فاکتورها چاپ می‌شود." />
+        </Form.Item>
+        <Form.Item label="متن پاورقی فاکتور" name="invoice_footer">
+            <TextArea rows={4} placeholder="متنی که در پایین تمام فاکتورها چاپ می‌شود." />
+        </Form.Item>
+    </>
 );
 
 function SystemSettingsPage() {
@@ -55,8 +95,7 @@ function SystemSettingsPage() {
     const fetchSettings = async () => {
       setLoading(true);
       try {
-        // <<<< اصلاحیه اصلی اینجا اعمال شد >>>>
-        const response = await axios.get('/api/v1/settings');
+        const response = await axiosInstance.get('/settings');
         if (response.data) {
           form.setFieldsValue(response.data);
         }
@@ -78,8 +117,7 @@ function SystemSettingsPage() {
   const handleSave = async (values) => {
     setLoading(true);
     try {
-      // <<<< اصلاحیه اصلی اینجا اعمال شد >>>>
-      await axios.post('/api/v1/settings', values);
+      await axiosInstance.post('/settings', values);
       notification.success({
         message: 'انجام شد',
         description: 'تنظیمات با موفقیت ذخیره شد.',
@@ -100,23 +138,24 @@ function SystemSettingsPage() {
   const tabItems = [
     { key: '1', label: 'عمومی', children: <GeneralTabContent /> },
     { key: '2', label: 'مالی', children: <FinancialTabContent /> },
+    { key: '3', label: 'چاپ', children: <PrintTabContent /> },
   ];
 
   return (
     <Spin spinning={loading} tip="در حال بارگذاری..." size="large">
-      <div style={{ backgroundColor: '#f5f5f5', padding: '16px 24px', borderBottom: '1px solid #e8e8e8' }}>
+      <div style={{ backgroundColor: '#fff', padding: '16px 24px', border: '1px solid #e8e8e8', borderRadius: '8px' }}>
         <Title level={4} style={{ marginBottom: '4px' }}>
           تنظیمات سیستم
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: '0' }}>
-          مدیریت تنظیمات کلی و مالی فروشگاه
+          مدیریت تنظیمات کلی، مالی و چاپ فروشگاه
         </Paragraph>
       </div>
       <Form
         form={form}
         onFinish={handleSave}
         layout="vertical"
-        style={{ padding: '24px' }}
+        style={{ padding: '24px', marginTop: '16px', backgroundColor: '#fff', border: '1px solid #e8e8e8', borderRadius: '8px' }}
       >
         <Tabs defaultActiveKey="1" items={tabItems} />
         <Divider />
@@ -130,4 +169,11 @@ function SystemSettingsPage() {
   );
 }
 
-export default SystemSettingsPage;
+// Wrap the export with Ant Design's App component to provide context
+const SystemSettingsPageWithAppContext = () => (
+  <App>
+    <SystemSettingsPage />
+  </App>
+);
+
+export default SystemSettingsPageWithAppContext;
