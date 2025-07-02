@@ -24,6 +24,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserByID(id string) (*model.User, error)
 	UpdateUser(user *model.User) error
+	GetAllUsers() ([]*model.User, error) // New method for listing all users
 	// DeleteUser(id string) error // (بعدا)
 }
 
@@ -141,6 +142,25 @@ func (r *inMemoryUserRepository) UpdateUser(user *model.User) error {
 	return nil
 }
 
+func (r *inMemoryUserRepository) GetAllUsers() ([]*model.User, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if len(r.users) == 0 {
+		utils.Log.Info("GetAllUsers: No users found in in-memory repo.")
+		// Return empty slice and nil error, which is common practice for "not found" list operations.
+		// Or return ErrUserNotFound if the contract expects an error for empty results.
+		// For now, aligning with typical DB behavior of returning empty list.
+		return []*model.User{}, nil
+	}
+	allUsers := make([]*model.User, 0, len(r.users))
+	for _, user := range r.users {
+		allUsers = append(allUsers, user)
+	}
+	utils.Log.Info("GetAllUsers: Retrieved all users from in-memory repo.", zap.Int("count", len(allUsers)))
+	return allUsers, nil
+}
+
+
 type postgresUserRepository struct {
 	db *gorm.DB
 }
@@ -236,4 +256,22 @@ func (r *postgresUserRepository) UpdateUser(user *model.User) error {
 	}
 	utils.Log.Info("User updated in PostgreSQL", zap.String("userID", user.ID))
 	return nil
+}
+
+func (r *postgresUserRepository) GetAllUsers() ([]*model.User, error) {
+	var users []*model.User // Use slice of pointers to be consistent with other methods if they return pointers
+	result := r.db.Find(&users)
+	if result.Error != nil {
+		// Do not treat ErrRecordNotFound as an error for Find operations.
+		// GORM's Find does not return ErrRecordNotFound if no records are found, it returns an empty slice.
+		utils.Log.Error("Failed to get all users from DB", zap.Error(result.Error))
+		return nil, fmt.Errorf("failed to get all users from DB: %w", result.Error)
+	}
+	if len(users) == 0 {
+		utils.Log.Info("No users found in PostgreSQL database.")
+		// It's idiomatic to return an empty slice and nil error if no records are found.
+	} else {
+		utils.Log.Info("Retrieved all users from PostgreSQL", zap.Int("count", len(users)))
+	}
+	return users, nil
 }

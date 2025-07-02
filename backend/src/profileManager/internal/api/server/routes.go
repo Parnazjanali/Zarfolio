@@ -20,6 +20,7 @@ func SetupProfileManagerRoutes(
 	profileHandler *handler.ProfileHandler, // Can be nil if not used
 	accountHandler *handler.AccountHandler,
 	counterpartyHandler *handler.CounterpartyHandler, // Added CounterpartyHandler
+	adminHandler *handler.AdminHandler, // Added AdminHandler
 	tokenRepo redisdb.TokenRepository, // Corrected type to redisdb.TokenRepository
 	redisService *service.RedisService, // Added RedisService
 ) error {
@@ -38,6 +39,10 @@ func SetupProfileManagerRoutes(
 	if counterpartyHandler == nil { // Added check for CounterpartyHandler
 		utils.Log.Fatal("CounterpartyHandler is nil in SetupProfileManagerRoutes.")
 		return errors.New("counterpartyHandler cannot be nil")
+	}
+	if adminHandler == nil {
+		utils.Log.Fatal("AdminHandler is nil in SetupProfileManagerRoutes.")
+		return errors.New("adminHandler cannot be nil")
 	}
 
 	utils.Log.Info("Configuring Profile Manager service routes...")
@@ -87,6 +92,16 @@ func SetupProfileManagerRoutes(
 	counterpartyGroup.Get("/", counterpartyHandler.ListCounterparties)
 	counterpartyGroup.Put("/:id", counterpartyHandler.UpdateCounterparty)
 	counterpartyGroup.Delete("/:id", counterpartyHandler.DeleteCounterparty)
+
+	// Admin Routes (Protected)
+	// These routes also use the same authMw.Authenticate() which primarily checks for a valid token.
+	// Role-based authorization (e.g., ensuring only 'admin' or 'super_admin' can access)
+	// should be handled within the AdminHandler methods themselves or by a more specific role-based middleware.
+	adminGroup := app.Group("/admin", authMw.Authenticate())
+	utils.Log.Info("Configuring protected /admin routes for Profile Manager...")
+	adminGroup.Get("/users", adminHandler.HandleListUsers)                     // GET /api/v1/admin/users
+	adminGroup.Put("/users/:userId/role", adminHandler.HandleUpdateUserRole) // PUT /api/v1/admin/users/:userId/role
+
 
 	if profileHandler != nil {
 		utils.Log.Info("ProfileHandler is available. Configuring /profiles routes.")

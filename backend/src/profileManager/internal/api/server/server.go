@@ -100,11 +100,17 @@ func StartServer(port string, redisServiceInstance *service.RedisService, counte
 	}
 	utils.Log.Info("CounterpartyHandler initialized successfully.")
 
+	utils.Log.Info("Initializing AdminHandler...")
+	adminHandler := handler.NewAdminHandler(userService)
+	if adminHandler == nil {
+		utils.Log.Fatal("Failed to initialize AdminHandler. Exiting application.")
+	}
+	utils.Log.Info("AdminHandler initialized successfully.")
 
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	// Pass redisServiceInstance and counterpartyHandler to SetupProfileManagerRoutes
-	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler, counterpartyHandler, tokenRepo, redisServiceInstance); err != nil {
+	// Pass redisServiceInstance, counterpartyHandler and adminHandler to SetupProfileManagerRoutes
+	if err := SetupProfileManagerRoutes(app, authHandler, profileHandler, accountHandler, counterpartyHandler, adminHandler, tokenRepo, redisServiceInstance); err != nil {
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("Profile Manager API routes configured successfully.")

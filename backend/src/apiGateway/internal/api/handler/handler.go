@@ -361,3 +361,122 @@ func (h *AuthHandler) ProxyToSettings(c *fiber.Ctx) error {
 
 	return c.SendStream(resp.Body)
 }
+
+// ProxyListUsersToProfileManager forwards GET /api/v1/users to profileManager's /api/v1/admin/users
+func (h *AuthHandler) ProxyListUsersToProfileManager(c *fiber.Ctx) error {
+	profileManagerURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
+	if profileManagerURL == "" {
+		utils.Log.Error("PROFILE_MANAGER_BASE_URL not set in env for ProxyListUsersToProfileManager")
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "User management service is not configured.",
+			Code:    "500_USER_SERVICE_UNCONFIGURED",
+		})
+	}
+
+	targetURL := fmt.Sprintf("%s/api/v1/admin/users", profileManagerURL)
+
+	// Get the original token from context (set by AuthUser middleware)
+	userToken := c.Locals("userToken")
+	if userToken == nil || userToken.(string) == "" {
+		utils.Log.Warn("ProxyListUsersToProfileManager: User token not found in context. This should not happen if AuthUser middleware is applied.")
+		// This case should ideally be caught by AuthUser middleware itself.
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing token for proxy."})
+	}
+
+
+	proxyReq, err := http.NewRequest(http.MethodGet, targetURL, nil) // GET request, no body
+	if err != nil {
+		utils.Log.Error("Failed to create proxy request to profileManager (ListUsers)", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Error creating request to user management service.",
+			Code:    "500_PROXY_REQ_ERROR_USERS_LIST",
+		})
+	}
+
+	// Forward the original Authorization header
+	proxyReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", userToken.(string)))
+	// Copy other relevant headers if necessary, e.g., Content-Type if it were a POST/PUT
+	// For GET, Authorization is usually the main one.
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(proxyReq)
+	if err != nil {
+		utils.Log.Error("Failed to execute proxy request to profileManager (ListUsers)", zap.Error(err), zap.String("targetURL", targetURL))
+		return c.Status(fiber.StatusBadGateway).JSON(model.ErrorResponse{
+			Message: "User management service is unreachable.",
+			Code:    "502_USER_SERVICE_UNREACHABLE_LIST",
+		})
+	}
+	defer resp.Body.Close()
+
+	c.Status(resp.StatusCode)
+	for key, values := range resp.Header {
+		for _, value := range values {
+			// Forward relevant headers from the profileManager response
+			if key == "Content-Type" || key == "Content-Length" { // Add more if needed
+				c.Set(key, value)
+			}
+		}
+	}
+	return c.SendStream(resp.Body)
+}
+
+// ProxyUpdateUserRoleToProfileManager forwards PUT /api/v1/users/:userId/role to profileManager's /api/v1/admin/users/:userId/role
+func (h *AuthHandler) ProxyUpdateUserRoleToProfileManager(c *fiber.Ctx) error {
+	profileManagerURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
+	if profileManagerURL == "" {
+		utils.Log.Error("PROFILE_MANAGER_BASE_URL not set in env for ProxyUpdateUserRoleToProfileManager")
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "User management service is not configured.",
+			Code:    "500_USER_SERVICE_UNCONFIGURED_ROLE",
+		})
+	}
+
+	userID := c.Params("userId")
+	if userID == "" {
+		utils.Log.Warn("ProxyUpdateUserRoleToProfileManager: User ID missing from path params")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "User ID is required in path."})
+	}
+
+	targetURL := fmt.Sprintf("%s/api/v1/admin/users/%s/role", profileManagerURL, userID)
+
+	userToken := c.Locals("userToken")
+	if userToken == nil || userToken.(string) == "" {
+		utils.Log.Warn("ProxyUpdateUserRoleToProfileManager: User token not found in context.")
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Missing token for proxy."})
+	}
+
+	proxyReq, err := http.NewRequest(http.MethodPut, targetURL, bytes.NewReader(c.Body())) // PUT request with body
+	if err != nil {
+		utils.Log.Error("Failed to create proxy request to profileManager (UpdateUserRole)", zap.String("userID", userID), zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Error creating request to user management service.",
+			Code:    "500_PROXY_REQ_ERROR_USER_ROLE",
+		})
+	}
+
+	proxyReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", userToken.(string)))
+	proxyReq.Header.Set("Content-Type", c.Get("Content-Type")) // Forward original Content-Type
+	// Copy other relevant headers if necessary
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(proxyReq)
+	if err != nil {
+		utils.Log.Error("Failed to execute proxy request to profileManager (UpdateUserRole)", zap.String("userID", userID), zap.Error(err), zap.String("targetURL", targetURL))
+		return c.Status(fiber.StatusBadGateway).JSON(model.ErrorResponse{
+			Message: "User management service is unreachable.",
+			Code:    "502_USER_SERVICE_UNREACHABLE_ROLE",
+		})
+	}
+	defer resp.Body.Close()
+
+	c.Status(resp.StatusCode)
+	for key, values := range resp.Header {
+		for _, value := range values {
+			if key == "Content-Type" || key == "Content-Length" {
+				c.Set(key, value)
+			}
+		}
+	}
+	return c.SendStream(resp.Body)
+}

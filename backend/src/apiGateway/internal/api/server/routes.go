@@ -70,6 +70,13 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	settingsGroup.Get("/", authHandler.ProxyToSettings)  // اضافه شد
 	settingsGroup.Post("/", authHandler.ProxyToSettings) // اضافه شد
 
+	// --- مسیرهای مدیریت کاربران ---
+	// These routes will proxy to the profileManager service
+	userManagementGroup := api.Group("/users", middleware.AuthUser) // Protected
+	utils.Log.Info("Configuring /api/v1/users routes for user management")
+	userManagementGroup.Get("/", authHandler.ProxyListUsersToProfileManager)                 // GET /api/v1/users -> profileManager /api/v1/admin/users
+	userManagementGroup.Put("/:userId/role", authHandler.ProxyUpdateUserRoleToProfileManager) // PUT /api/v1/users/:userId/role -> profileManager /api/v1/admin/users/:userId/role
+
 
 	// Simplified GET Proxy for /api/v1/uploads/* to profileManager
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")

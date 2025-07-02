@@ -51,6 +51,10 @@ type UserService interface {
 	DisableTwoFA(userID string, currentPassword string) error
 	VerifyTOTP(userID string, totpCode string) (bool, error)
 	GetUserByIDForTokenGeneration(userID string) (*model.User, error)
+
+	// Admin Methods
+	ListUsers() ([]*model.User, error)
+	UpdateUserRole(userID string, newRole model.Role) (*model.User, error)
 }
 
 type userService struct {
@@ -633,5 +637,63 @@ func (s *userService) GetUserByIDForTokenGeneration(userID string) (*model.User,
 		utils.Log.Error("GetUserByIDForTokenGeneration: Error retrieving user", zap.String("userID", userID), zap.Error(err))
 		return nil, fmt.Errorf("%w: failed to get user by ID: %v", ErrInternalService, err)
 	}
+	return user, nil
+}
+
+// ListUsers retrieves all users from the repository.
+// TODO: Consider adding pagination if the number of users can be very large.
+func (s *userService) ListUsers() ([]*model.User, error) {
+	utils.Log.Info("UserService: Attempting to list all users.")
+	users, err := s.userRepo.GetAllUsers()
+	if err != nil {
+		utils.Log.Error("UserService: Failed to get all users from repository", zap.Error(err))
+		// It's possible the repo returns a specific error for "no users found" but typically an empty slice and nil error is fine.
+		// If it's a different error, wrap it.
+		if errors.Is(err, postgresDb.ErrUserNotFound) { // Or a more generic "ErrNotFound" if that's what repo returns for empty table
+			utils.Log.Info("UserService: No users found in the repository.")
+			return []*model.User{}, nil // Return empty slice if no users found
+		}
+		return nil, fmt.Errorf("%w: failed to retrieve users from repository: %v", ErrInternalService, err)
+	}
+	utils.Log.Info("UserService: Successfully retrieved all users.", zap.Int("count", len(users)))
+	return users, nil
+}
+
+// UpdateUserRole updates the role of a specific user.
+func (s *userService) UpdateUserRole(userID string, newRole model.Role) (*model.User, error) {
+	utils.Log.Info("UserService: Attempting to update user role", zap.String("userID", userID), zap.String("newRole", string(newRole)))
+
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, postgresDb.ErrUserNotFound) {
+			utils.Log.Warn("UserService: UpdateUserRole - User not found by ID", zap.String("userID", userID))
+			return nil, ErrUserNotFound
+		}
+		utils.Log.Error("UserService: UpdateUserRole - Failed to get user by ID", zap.String("userID", userID), zap.Error(err))
+		return nil, fmt.Errorf("%w: failed to retrieve user for role update: %v", ErrInternalService, err)
+	}
+
+	// Validate if the role is one of the predefined valid roles.
+	// This is also done in handler, but good to have in service layer as well for direct API/service calls.
+	isValidRole := false
+	for _, r := range []model.Role{model.SuperAdmin, model.Admin, model.Accountant, model.Seller} {
+		if newRole == r {
+			isValidRole = true
+			break
+		}
+	}
+	if !isValidRole {
+		utils.Log.Warn("UserService: UpdateUserRole - Invalid role specified", zap.String("userID", userID), zap.String("invalidRole", string(newRole)))
+		return nil, errors.New("invalid role specified") // Or a more specific error like ErrInvalidRole
+	}
+
+	user.Role = newRole
+	if err := s.userRepo.UpdateUser(user); err != nil {
+		utils.Log.Error("UserService: UpdateUserRole - Failed to update user in repository", zap.String("userID", userID), zap.Error(err))
+		// Check for specific repo errors if any, e.g., concurrent update, etc.
+		return nil, fmt.Errorf("%w: failed to update user role in repository: %v", ErrInternalService, err)
+	}
+
+	utils.Log.Info("UserService: Successfully updated user role", zap.String("userID", userID), zap.String("newRole", string(user.Role)))
 	return user, nil
 }
