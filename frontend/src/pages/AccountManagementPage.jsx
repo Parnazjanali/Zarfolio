@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './AuthForms.css'; // Reusing some auth form styles
 import './AccountManagementPage.css'; // Import dedicated CSS
-import { FaUserEdit, FaLock, FaKey, FaSpinner, FaShieldAlt, FaQrcode, FaMobileAlt, FaUserShield, FaListOl, FaCamera, FaUserCircle as DefaultUserIcon, FaEnvelope, FaIdCard } from 'react-icons/fa'; //
+import { FaUserEdit, FaLock, FaKey, FaSpinner, FaShieldAlt, FaQrcode, FaMobileAlt, FaUserShield, FaListOl, FaCamera, FaUserCircle as DefaultUserIcon, FaEnvelope, FaIdCard, FaUserTag } from 'react-icons/fa'; // FaUserTag اضافه شد
 import { QRCodeSVG } from 'qrcode.react'; //
 import { TabsContainer, Tab, TabPanel } from '../components/Tabs'; //
 
@@ -16,6 +16,7 @@ function AccountManagementPage() {
   const [firstName, setFirstName] = useState(''); //
   const [lastName, setLastName] = useState(''); //
   const [email, setEmail] = useState(''); //
+  const [userRole, setUserRole] = useState(''); // ✅ **متغیر جدید برای نقش کاربری**
   const [userAccountCode, setUserAccountCode] = useState('ZF-12345678'); // Static for now
   const [isSavingProfile, setIsSavingProfile] = useState(false); // New state for profile save button
 
@@ -73,6 +74,7 @@ function AccountManagementPage() {
               setLastName(''); //
             }
             setEmail(userData?.email || ''); //
+            setUserRole(userData?.role || 'نقش تعریف نشده'); // ✅ **خواندن نقش کاربر از localStorage**
             setPreview(userData?.profilePictureUrl || null); // Initialize preview with existing pic
             // userAccountCode is static for now, but could be set from userData.id if available
             // setUserAccountCode(userData?.id || 'ZF-12345678'); 
@@ -128,9 +130,6 @@ function AccountManagementPage() {
     alert('اطلاعات پروفایل در کنسول و localStorage به‌روزرسانی شد!'); //
     setIsSavingProfile(false); //
   };
-
-  // Existing functions (handleChangeUsername, handleChangePassword, 2FA handlers) remain unchanged below
-  // ... (Make sure to keep them exactly as they are)
 
   const handleChangeUsername = async (e) => {
     e.preventDefault(); //
@@ -394,6 +393,18 @@ function AccountManagementPage() {
                         readOnly
                       />
                     </div>
+                    {/* ✅ **بخش جدید اضافه شده برای نمایش نقش** */}
+                    <div className="form-group">
+                      <label htmlFor="userRole"><FaUserTag className="form-icon"/> نقش کاربری</label>
+                      <input
+                        type="text"
+                        id="userRole"
+                        className="form-control"
+                        value={userRole}
+                        readOnly
+                      />
+                    </div>
+                    {/* ✅ **پایان بخش جدید** */}
                     <div className="form-group">
                       <label htmlFor="firstName"><FaUserEdit className="form-icon"/> نام</label>
                       <input
@@ -438,7 +449,6 @@ function AccountManagementPage() {
           </TabPanel>
 
           <TabPanel tabId="security">
-            {/* NEW: Wrapper for side-by-side forms */}
             <div className="security-forms-row">
               <section className="account-section">
                 <h2 className="section-title"><FaUserEdit className="section-icon" /> تغییر نام کاربری</h2>
@@ -518,7 +528,6 @@ function AccountManagementPage() {
               </section>
             </div>
             
-            {/* 2FA Section remains below and at full width */}
             <section className="account-section last-section">
               <h2 className="section-title"><FaUserShield className="section-icon" /> مدیریت تایید دو مرحله‌ای (2FA)</h2>
               {twoFAMessage && <div className="message-banner success visible">{twoFAMessage}</div>}

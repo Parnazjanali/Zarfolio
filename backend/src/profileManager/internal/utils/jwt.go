@@ -8,82 +8,84 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid" // Added for JTI
 	"go.uber.org/zap"
 )
+
+// متغیر کلید را به صورت عمومی تعریف می‌کنیم اما مقداردهی نمی‌کنیم
+var jwtKey []byte
+
+// ✅ **اصلاح اصلی: تابع init حذف شد و تابع جدید InitJWT ایجاد شد**
+// این تابع باید از main و بعد از راه‌اندازی لاگر فراخوانی شود
+func InitJWT() {
+	key := os.Getenv("JWT_SECRET_KEY")
+	if key == "" {
+		// حالا با خیال راحت می‌توانیم از لاگر استفاده کنیم چون می‌دانیم مقداردهی شده است
+		Log.Warn("JWT_SECRET_KEY environment variable not set. Using a default, non-secure key. THIS IS NOT SAFE FOR PRODUCTION.")
+		key = "default-super-secret-key-that-is-not-safe"
+	}
+	jwtKey = []byte(key)
+	Log.Info("JWT Secret Key initialized.")
+}
 
 type CustomClaims struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
+	Email    string `json:"email"`
 	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
 func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecret == "" {
-		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot generate JWT.")
-	}
-
 	expirationTime := time.Now().Add(24 * time.Hour)
-	jti := uuid.NewString() // Generate a new UUID for JTI
-
 	claims := &CustomClaims{
 		UserID:   user.ID,
 		Username: user.Username,
-		Role:     user.Role,
+		Email:    user.Email,
+		Role:     string(user.Role),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			ID:        jti, // Set the JTI claim
+			Subject:   user.ID,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(jwtSecret))
+	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		Log.Error("Failed to sign JWT token", zap.Error(err), zap.String("username", user.Username))
+		Log.Error("Failed to sign JWT token", zap.String("username", user.Username), zap.Error(err))
 		return "", nil, fmt.Errorf("failed to sign token: %w", err)
 	}
 
-	Log.Info("JWT token generated successfully",
+	Log.Info("JWT Token generated successfully",
 		zap.String("username", user.Username),
-		zap.String("role", user.Role),
-		zap.String("jti", jti), // Log JTI
-		zap.Time("expires_at", expirationTime))
+		zap.String("role", string(user.Role)),
+		zap.Time("expires_at", expirationTime),
+	)
 
 	return tokenString, claims, nil
 }
-func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecret == "" {
-		// This should be a fatal error as the application cannot securely validate tokens.
-		// Ensure Log is initialized before this function could be called in a real scenario,
-		// or use log.Fatalf if Log might not be ready. Given InitLogger is called early in main, Log.Fatal is okay.
-		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot validate JWT.")
-		// Log.Fatal will exit, so the return below is effectively unreachable but good for clarity.
-		return nil, errors.New("critical: jwt secret key not configured")
-	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
+	claims := &CustomClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(jwtSecret), nil
+		return jwtKey, nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("token parsing or validation failed: %w", err)
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			Log.Warn("JWT token has expired", zap.Error(err))
+			return nil, err
+		}
+		Log.Error("Failed to parse JWT token", zap.Error(err))
+		return nil, fmt.Errorf("token validation failed: %w", err)
 	}
 
-	claims, ok := token.Claims.(*CustomClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token claims or token is not valid")
-	}
-
-	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
-		return nil, jwt.ErrTokenExpired
+	if !token.Valid {
+		Log.Warn("Invalid JWT token presented")
+		return nil, errors.New("invalid token")
 	}
 
 	return claims, nil

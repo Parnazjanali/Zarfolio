@@ -1,76 +1,68 @@
 package postgresDb
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
-	"strings" // این پکیج برای بررسی متن خطا اضافه شده است
-	"time"
-
+	"os"
 	"profile-gold/internal/model"
 	"profile-gold/internal/utils"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
-var ErrUserAlreadyExists = errors.New("user already exists")
+type AdminSeedData struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
 
-func SeedAdminUsers(userRepo UserRepository) error {
-	utils.Log.Info("Starting database seeding for admin users...")
-
-	adminUsers := []struct {
-		Username string
-		Password string
-		Email    string
-		Role     string
-	}{
-		{Username: "admin_user1", Password: "admin_pass1", Email: "admin1@example.com", Role: "admin"},
-		{Username: "admin_user2", Password: "admin_pass2", Email: "admin2@example.com", Role: "admin"},
+func SeedAdminUser(db *gorm.DB) error {
+	adminJSON, err := os.ReadFile("configs/admin_user.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			utils.Log.Warn("admin_user.json not found, skipping admin user seeding.")
+			return nil
+		}
+		utils.Log.Error("Failed to read admin_user.json", zap.Error(err))
+		return fmt.Errorf("failed to read admin config: %w", err)
 	}
 
-	for _, adminData := range adminUsers {
-		// این بخش برای بررسی اولیه نام کاربری خوب است و می‌تواند باقی بماند
-		_, err := userRepo.GetUserByUsername(adminData.Username)
-		if err == nil {
-			utils.Log.Info("Admin user already exists, skipping seed", zap.String("username", adminData.Username))
-			continue
-		}
-		if !errors.Is(err, ErrUserNotFound) {
-			utils.Log.Error("Error checking existence of admin user during seed", zap.String("username", adminData.Username), zap.Error(err))
-			return fmt.Errorf("seed failed: error checking existing user %s: %w", adminData.Username, err)
-		}
-
-		hashedPassword, err := utils.HashPassword(adminData.Password)
-		if err != nil {
-			utils.Log.Error("Failed to hash password for admin seed", zap.String("username", adminData.Username), zap.Error(err))
-			return fmt.Errorf("seed failed: failed to hash password for %s: %w", adminData.Username, err)
-		}
-
-		adminToCreate := &model.User{
-			Username:     adminData.Username,
-			PasswordHash: hashedPassword,
-			Email:        adminData.Email,
-			Role:         adminData.Role,
-			CreatedAt:    time.Now(),
-			UpdatedAt:    time.Now(),
-		}
-
-		err = userRepo.CreateUser(adminToCreate)
-		if err != nil {
-
-			if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key") {
-				utils.Log.Warn("User with this username or email already exists (duplicate key error), skipping seed",
-					zap.String("username", adminData.Username),
-					zap.String("email", adminData.Email))
-				continue
-			}
-
-			utils.Log.Error("Failed to create admin user during seed", zap.String("username", adminData.Username), zap.Error(err))
-			return fmt.Errorf("seed failed: failed to create admin user %s: %w", adminData.Username, err)
-		}
-
-		utils.Log.Info("Admin user seeded successfully", zap.String("username", adminData.Username), zap.String("role", adminData.Role))
+	var adminData AdminSeedData
+	if err := json.Unmarshal(adminJSON, &adminData); err != nil {
+		utils.Log.Error("Failed to unmarshal admin_user.json", zap.Error(err))
+		return fmt.Errorf("failed to parse admin config: %w", err)
 	}
 
-	utils.Log.Info("Database seeding for admin users completed.")
+	// Check if an admin user already exists
+	var existingUser model.User
+	if err := db.Where("username = ? OR email = ?", adminData.Username, adminData.Email).First(&existingUser).Error; err == nil {
+		utils.Log.Info("Admin user already exists, skipping seed.", zap.String("username", adminData.Username))
+		return nil
+	} else if err != gorm.ErrRecordNotFound {
+		utils.Log.Error("Failed to check for existing admin user", zap.Error(err))
+		return fmt.Errorf("db error checking for admin: %w", err)
+	}
+
+	hashedPassword, err := utils.HashPassword(adminData.Password)
+	if err != nil {
+		utils.Log.Error("Failed to hash admin password during seeding", zap.Error(err))
+		return err
+	}
+
+	adminUser := &model.User{
+		Username:     adminData.Username,
+		Email:        adminData.Email,
+		PasswordHash: hashedPassword,
+		Role:         model.Role(adminData.Role), // ✅ **اصلاح اصلی:** تبدیل نوع به model.Role
+	}
+
+	if err := db.Create(adminUser).Error; err != nil {
+		utils.Log.Error("Failed to seed admin user", zap.Error(err))
+		return fmt.Errorf("failed to create admin user in db: %w", err)
+	}
+
+	utils.Log.Info("Admin user seeded successfully.", zap.String("username", adminData.Username))
 	return nil
 }

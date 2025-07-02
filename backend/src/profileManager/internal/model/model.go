@@ -2,18 +2,29 @@ package model
 
 import "time"
 
+// Role یک نوع داده جدید برای تعریف نقش های کاربری به صورت استاندارد است
+type Role string
+
+// تعریف مقادیر ثابت برای نقش های مختلف جهت جلوگیری از خطا و افزایش خوانایی کد
+const (
+	SuperAdmin Role = "super_admin"
+	Admin      Role = "admin"
+	Accountant Role = "accountant"
+	Seller     Role = "seller"
+)
+
 type User struct {
 	ID           string `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
 	Username     string `json:"username" gorm:"unique;not null"`
 	PasswordHash string `json:"-" gorm:"column:password_hash;not null"`
 	Email        string `json:"email" gorm:"unique;not null"`
-	Role         string `json:"role" gorm:"default:'user';not null"`
+	// ✅ **تغییر اصلی:** نوع فیلد Role از string به نوع داده Role تغییر کرد.
+	// مقدار پیش فرض هم به "فروشنده" تغییر یافت.
+	Role Role `json:"role" gorm:"default:'فروشنده';not null"`
 
 	// 2FA Fields
-	TwoFASecret    string `json:"-" gorm:"column:two_fa_secret;type:text"` // Encrypted TOTP secret
-	IsTwoFAEnabled bool   `json:"is_two_fa_enabled" gorm:"column:is_two_fa_enabled;default:false"`
-	// Storing recovery codes: Using TEXT and assuming service layer will handle (e.g., JSON array of hashed codes)
-	// Alternatively, use datatypes.JSON if your GORM setup supports it well for arrays.
+	TwoFASecret        string `json:"-" gorm:"column:two_fa_secret;type:text"` // Encrypted TOTP secret
+	IsTwoFAEnabled     bool   `json:"is_two_fa_enabled" gorm:"column:is_two_fa_enabled;default:false"`
 	TwoFARecoveryCodes string `json:"-" gorm:"column:two_fa_recovery_codes;type:text"` // JSON array of HASHED recovery codes
 
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
@@ -104,8 +115,6 @@ type LoginStep1Response struct {
 	TwoFARequired bool   `json:"two_fa_required"`
 	UserID        string `json:"user_id,omitempty"` // Sent if 2FA is required, for client to use in next step
 	Message       string `json:"message"`
-	// Alternatively, an interim_token could be sent instead of user_id.
-	// InterimToken  string `json:"interim_token,omitempty"`
 }
 
 // LoginTwoFARequest defines the request body for submitting the TOTP code.
@@ -116,17 +125,17 @@ type LoginTwoFARequest struct {
 
 // Counterparty defines the structure for counterparties associated with a user/company.
 type Counterparty struct {
-	ID           string    `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	NationalID   string    `json:"national_id" gorm:"type:varchar(10);uniqueIndex:idx_counterparty_user_national_id;not null"` // Unique per UserID
-	FirstName    string    `json:"first_name" gorm:"type:varchar(100);not null"`
-	LastName     string    `json:"last_name" gorm:"type:varchar(100);not null"`
-	AccountCode  string    `json:"account_code" gorm:"type:varchar(50);uniqueIndex:idx_counterparty_user_account_code;not null"` // Unique per UserID
-	Debit        float64   `json:"debit" gorm:"type:decimal(18,2);default:0.0"`
-	Credit       float64   `json:"credit" gorm:"type:decimal(18,2);default:0.0"`
-	UserID       string    `json:"user_id" gorm:"type:uuid;not null;index;uniqueIndex:idx_counterparty_user_national_id;uniqueIndex:idx_counterparty_user_account_code"`
-	User         User      `json:"-" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"` // Foreign key relationship
-	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	ID          string    `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	NationalID  string    `json:"national_id" gorm:"type:varchar(10);uniqueIndex:idx_counterparty_user_national_id;not null"` // Unique per UserID
+	FirstName   string    `json:"first_name" gorm:"type:varchar(100);not null"`
+	LastName    string    `json:"last_name" gorm:"type:varchar(100);not null"`
+	AccountCode string    `json:"account_code" gorm:"type:varchar(50);uniqueIndex:idx_counterparty_user_account_code;not null"` // Unique per UserID
+	Debit       float64   `json:"debit" gorm:"type:decimal(18,2);default:0.0"`
+	Credit      float64   `json:"credit" gorm:"type:decimal(18,2);default:0.0"`
+	UserID      string    `json:"user_id" gorm:"type:uuid;not null;index;uniqueIndex:idx_counterparty_user_national_id;uniqueIndex:idx_counterparty_user_account_code"`
+	User        User      `json:"-" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"` // Foreign key relationship
+	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // TableName specifies the table name for GORM.
