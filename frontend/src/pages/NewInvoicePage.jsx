@@ -45,10 +45,35 @@ function NewInvoicePage() {
       const currentItem = { ...newItems[index] };
       currentItem[name] = value;
 
-      if (name === 'quantity' || name === 'unitPrice') {
-        const quantity = parseFloat(currentItem.quantity) || 0;
-        const unitPrice = parseFloat(currentItem.unitPrice) || 0;
-        currentItem.totalPrice = quantity * unitPrice;
+      // Recalculate totalPrice based on item type and changed field
+      let quantity = parseFloat(currentItem.quantity) || 0;
+      let unitPrice = parseFloat(currentItem.unitPrice) || 0;
+      let exchangeRate = parseFloat(currentItem.exchangeRate) || 0;
+      let weight = parseFloat(currentItem.weight) || 0; // Used for fabricated
+      let wage = parseFloat(currentItem.wage) || 0;     // Used for fabricated
+
+      if (currentItem.type === 'currency') {
+        if (name === 'quantity' || name === 'exchangeRate') {
+          currentItem.totalPrice = quantity * exchangeRate;
+        }
+      } else if (currentItem.type === 'fabricated') {
+        // If quantity is changed, it's actually the weight for fabricated gold
+        if (name === 'quantity') { // User is changing weight via the 'quantity' input
+            weight = quantity; 
+            currentItem.weight = weight; // Sync internal weight field
+        } else if (name === 'weight') { // If a dedicated 'weight' input is used later
+            weight = parseFloat(value) || 0;
+            currentItem.quantity = weight; // Sync quantity field for consistency if needed
+        }
+        // unitPrice for fabricated is price_per_gram_of_gold_content
+        // wage is total wage for the piece
+        if (name === 'quantity' || name === 'unitPrice' || name === 'wage' || name === 'weight') {
+          currentItem.totalPrice = (weight * unitPrice) + wage;
+        }
+      } else { // Generic, raw_gold, coin, stone, cheque, label_tag, cost etc.
+        if (name === 'quantity' || name === 'unitPrice') {
+          currentItem.totalPrice = quantity * unitPrice;
+        }
       }
       newItems[index] = currentItem;
       return newItems;
@@ -57,34 +82,51 @@ function NewInvoicePage() {
 
   // تابع جدید برای افزودن آیتم بر اساس نوع
   const handleAddItemByType = (itemType = 'generic') => {
-    let newItem = { id: Date.now(), type: itemType, description: '', quantity: 1, unitPrice: 0, totalPrice: 0 };
-    // می‌توانید بر اساس itemType مقادیر پیش‌فرض متفاوتی برای آیتم جدید تنظیم کنید
+    let newItem = { 
+      id: Date.now(), 
+      type: itemType, 
+      description: '', 
+      quantity: 1, // Default quantity, will represent 'amount' for currency, 'weight' for gold
+      unitPrice: 0, // Default unit price, will represent 'exchangeRate' for currency, 'goldPricePerGram' for gold
+      totalPrice: 0 
+    };
+
     switch (itemType) {
       case 'currency':
-        newItem.description = 'ارز جدید';
-        // فیلدهای مخصوص ارز را می‌توانید اینجا اضافه کنید یا در state آیتم پیش‌بینی کنید
+        newItem.description = 'ارز';
+        newItem.currencyName = 'USD'; // Default currency type
+        newItem.exchangeRate = 0; // Specific field for rate, quantity will be amount
+        newItem.unitPrice = 0; // Explicitly set to 0, as exchangeRate will be used
         break;
       case 'coin':
-        newItem.description = 'سکه جدید';
+        newItem.description = 'سکه';
         break;
       case 'raw_gold':
-        newItem.description = 'طلای خام جدید';
+        newItem.description = 'طلای خام';
+        // quantity will be weight, unitPrice will be price per gram
         break;
-      case 'fabricated_gold':
-        newItem.description = 'طلای کارساخته جدید';
+      case 'fabricated': // Changed from 'fabricated_gold' to match button
+        newItem.description = 'طلای کارساخته';
+        newItem.weight = 1; // Default weight, quantity field will be repurposed
+        newItem.quantity = 1; // Keep quantity for consistency, map to weight in UI
+        newItem.unitPrice = 0; // Price per gram of gold content
+        newItem.wage = 0;      // Total wage for the item
+        newItem.purity = '750'; // Default purity (18K)
         break;
-      case 'stone':
-        newItem.description = 'سنگ جدید';
+      case 'stoneM': // Changed from 'stone' to match button
+        newItem.description = 'سنگ';
         break;
       case 'cheque':
-        newItem.description = 'چک جدید';
+        newItem.description = 'چک';
         break;
-      case 'label_tag':
-        newItem.description = 'اتیکت جدید';
+      case 'labelTag': // Changed from 'label_tag' to match button
+        newItem.description = 'اتیکت';
         break;
-      // ... سایر انواع آیتم
+      case 'cost':
+        newItem.description = 'هزینه';
+        break;
       default: // generic
-        newItem.description = 'کالا/خدمت جدید';
+        newItem.description = 'کالا/خدمت';
     }
     setInvoiceItems(prevItems => [...prevItems, newItem]);
      // بعد از افزودن آیتم، به تب مربوط به آیتم‌ها اسکرول کنید (اگر بخش آیتم‌ها خارج از تب‌هاست)
@@ -330,16 +372,71 @@ function NewInvoicePage() {
                 </label>
                 <input type="text" id={`itemDescription-${item.id}`} name="description" value={item.description} onChange={(e) => handleItemChange(index, e)} placeholder="شرح یا جزئیات آیتم..." />
               </div>
-              {/* اینجا باید بر اساس item.type فیلدهای متفاوتی رندر کنید */}
-              {/* مثال برای فیلدهای عمومی که برای همه انواع آیتم‌ها ممکن است لازم باشند: */}
-              <div className="form-group item-quantity">
-                <label htmlFor={`itemQuantity-${item.id}`}>{item.type === 'raw_gold' || item.type === 'fabricated' ? 'وزن (گرم)' : 'تعداد'}</label>
-                <input type="number" id={`itemQuantity-${item.id}`} name="quantity" value={item.quantity} onChange={(e) => handleItemChange(index, e)} min="0.001" step="any" />
-              </div>
-              <div className="form-group item-unit-price">
-                <label htmlFor={`itemUnitPrice-${item.id}`}>{item.type === 'currency' ? 'نرخ واحد' : 'قیمت واحد'}</label>
-                <input type="number" id={`itemUnitPrice-${item.id}`} name="unitPrice" value={item.unitPrice} onChange={(e) => handleItemChange(index, e)} min="0" step="any" />
-              </div>
+
+              {/* Type-specific fields */}
+              {item.type === 'currency' && (
+                <>
+                  <div className="form-group item-currency-name">
+                    <label htmlFor={`itemCurrencyName-${item.id}`}>نوع ارز</label>
+                    <select id={`itemCurrencyName-${item.id}`} name="currencyName" value={item.currencyName || 'USD'} onChange={(e) => handleItemChange(index, e)}>
+                      <option value="USD">USD (دلار آمریکا)</option>
+                      <option value="EUR">EUR (یورو)</option>
+                      <option value="AED">AED (درهم امارات)</option>
+                      {/* Add other currencies as needed */}
+                    </select>
+                  </div>
+                  <div className="form-group item-quantity"> {/* Amount of currency */}
+                    <label htmlFor={`itemQuantity-${item.id}`}>مقدار ارز</label>
+                    <input type="number" id={`itemQuantity-${item.id}`} name="quantity" value={item.quantity} onChange={(e) => handleItemChange(index, e)} min="0.01" step="any" />
+                  </div>
+                  <div className="form-group item-exchange-rate">
+                    <label htmlFor={`itemExchangeRate-${item.id}`}>نرخ تبدیل</label>
+                    <input type="number" id={`itemExchangeRate-${item.id}`} name="exchangeRate" value={item.exchangeRate || ''} onChange={(e) => handleItemChange(index, e)} min="0" step="any" placeholder="نرخ به ریال" />
+                  </div>
+                </>
+              )}
+
+              {item.type === 'fabricated' && (
+                <>
+                  <div className="form-group item-quantity"> {/* Represents Weight for fabricated gold */}
+                    <label htmlFor={`itemQuantity-${item.id}`}>وزن (گرم)</label>
+                    <input type="number" id={`itemQuantity-${item.id}`} name="quantity" value={item.quantity} onChange={(e) => handleItemChange(index, e)} min="0.001" step="any" />
+                  </div>
+                  <div className="form-group item-purity">
+                    <label htmlFor={`itemPurity-${item.id}`}>عیار</label>
+                    <select id={`itemPurity-${item.id}`} name="purity" value={item.purity || '750'} onChange={(e) => handleItemChange(index, e)}>
+                      <option value="999">999 (24 عیار)</option>
+                      <option value="916">916 (22 عیار)</option>
+                      <option value="750">750 (18 عیار)</option>
+                      <option value="585">585 (14 عیار)</option>
+                      {/* Add other purities as needed */}
+                    </select>
+                  </div>
+                  <div className="form-group item-unit-price"> {/* Price per gram of gold content */}
+                    <label htmlFor={`itemUnitPrice-${item.id}`}>قیمت هر گرم طلا</label>
+                    <input type="number" id={`itemUnitPrice-${item.id}`} name="unitPrice" value={item.unitPrice} onChange={(e) => handleItemChange(index, e)} min="0" step="any" />
+                  </div>
+                  <div className="form-group item-wage">
+                    <label htmlFor={`itemWage-${item.id}`}>اجرت ساخت (کل)</label>
+                    <input type="number" id={`itemWage-${item.id}`} name="wage" value={item.wage || ''} onChange={(e) => handleItemChange(index, e)} min="0" step="any" />
+                  </div>
+                </>
+              )}
+
+              {/* Generic fields for other types or if no specific UI defined yet */}
+              {(item.type !== 'currency' && item.type !== 'fabricated') && (
+                <>
+                  <div className="form-group item-quantity">
+                    <label htmlFor={`itemQuantity-${item.id}`}>{item.type === 'raw_gold' ? 'وزن (گرم)' : 'تعداد'}</label>
+                    <input type="number" id={`itemQuantity-${item.id}`} name="quantity" value={item.quantity} onChange={(e) => handleItemChange(index, e)} min="0.001" step="any" />
+                  </div>
+                  <div className="form-group item-unit-price">
+                    <label htmlFor={`itemUnitPrice-${item.id}`}>قیمت واحد</label>
+                    <input type="number" id={`itemUnitPrice-${item.id}`} name="unitPrice" value={item.unitPrice} onChange={(e) => handleItemChange(index, e)} min="0" step="any" />
+                  </div>
+                </>
+              )}
+              
               <div className="form-group item-total-price">
                 <label>مبلغ کل</label>
                 <input type="text" value={(typeof item.totalPrice === 'number' ? item.totalPrice.toLocaleString('fa-IR') : '۰')} readOnly className="total-price-display" />

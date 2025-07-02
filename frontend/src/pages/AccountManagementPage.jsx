@@ -100,35 +100,64 @@ function AccountManagementPage() {
   };
 
   const handleSaveProfileChanges = async () => {
-    setIsSavingProfile(true); //
-    const profileDataToSave = {
-      firstName, //
-      lastName, //
-      email, //
-      profileImageFile, // This is the File object or null
-    };
-    console.log("اطلاعات پروفایل برای ذخیره:", profileDataToSave); //
+    setIsSavingProfile(true);
+    let profileUpdated = false;
+    let pictureUpdated = false;
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000)); //
-
-    // Update localStorage if these fields are stored there (example)
-    const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}'); //
-    storedUserData.fullName = `${firstName} ${lastName}`.trim(); //
-    storedUserData.email = email; //
-    if (profileImageFile) {
-      // In a real app, you'd upload the file and get a URL.
-      // For now, we can store a DataURL if needed for immediate preview persistence,
-      // or just acknowledge it's "saved".
-      // Let's assume the existing preview state is sufficient for UI.
-      // If you were to store it, it might look like:
-      // storedUserData.profilePictureUrl = preview; // 'preview' holds the DataURL
+    // TODO: Implement actual API call for updating text profile data (firstName, lastName, email)
+    // For now, we simulate it and update localStorage as before.
+    const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (storedUserData.fullName !== `${firstName} ${lastName}`.trim() || storedUserData.email !== email) {
+      storedUserData.fullName = `${firstName} ${lastName}`.trim();
+      storedUserData.email = email;
+      profileUpdated = true;
     }
-    localStorage.setItem('userData', JSON.stringify(storedUserData)); //
 
+    if (profileImageFile) {
+      const formData = new FormData();
+      formData.append('profile_picture', profileImageFile);
 
-    alert('اطلاعات پروفایل در کنسول و localStorage به‌روزرسانی شد!'); //
-    setIsSavingProfile(false); //
+      try {
+        const response = await fetch(`${API_BASE_URL}/account/profile-picture`, {
+          method: 'POST',
+          headers: {
+            // 'Content-Type' is not set; browser does it for FormData
+            'Authorization': `Bearer ${getAuthToken()}`,
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message || 'عکس پروفایل با موفقیت آپلود شد.');
+          if (data.profile_picture_url) {
+            setPreview(data.profile_picture_url); // Update preview with the new URL from server
+            storedUserData.profilePictureUrl = data.profile_picture_url; // Update localStorage
+          }
+          setProfileImageFile(null); // Clear the file input after successful upload
+          pictureUpdated = true;
+        } else {
+          alert(`خطا در آپلود عکس: ${data.message || response.statusText}`);
+        }
+      } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        alert('خطای شبکه در هنگام آپلود عکس پروفایل.');
+      }
+    }
+
+    if (profileUpdated || pictureUpdated) {
+      localStorage.setItem('userData', JSON.stringify(storedUserData));
+      if (profileUpdated && !pictureUpdated && !profileImageFile) { // Only text data was changed
+        alert('اطلاعات پروفایل (متنی) به‌روزرسانی شد.');
+      }
+      // If pictureUpdated, alert was already shown.
+      // If both, the picture alert is likely more specific.
+    } else if (!profileImageFile) {
+      alert('تغییری برای ذخیره وجود ندارد.');
+    }
+
+    setIsSavingProfile(false);
   };
 
   const handleChangeUsername = async (e) => {

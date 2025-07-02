@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space, Tooltip } from 'antd';
 import { useAuth } from '../context/AuthContext';
+import { ROLES } from '../constants/roles'; // Import ROLES
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
@@ -48,7 +49,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
 
   // --- بخش منطق دسترسی‌ها ---
   // شرط نمایش تنظیمات سیستم (فقط برای super_admin)
-  const canViewSystemSettings = user && user.role === 'super_admin';
+  const canViewSystemSettings = user && user.role === ROLES.SUPER_ADMIN;
 
   // ✅ **اصلاح اصلی: شرط نمایش تنظیمات حساب کاربری به طور کامل حذف شد.**
   // --- پایان بخش منطق ---

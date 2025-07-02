@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import React from 'react'; // Removed useState, useEffect as they are not used directly in this page anymore for UserManagement
 import { useAuth } from '../context/AuthContext';
+import { ROLES } from '../constants/roles'; // Import ROLES
 import { Tabs } from 'antd'; // Removed Table, Select, message, Spin, Alert, Tag as they are now in UserManagementPanel
 import { FaUsersCog, FaPrint, FaCogs, FaMoneyBillWave } from 'react-icons/fa';
 import './SettingsPage.css';
@@ -25,7 +24,7 @@ const SettingsPage = () => {
     const { user } = useAuth();
     
     // نقش‌هایی که به مدیریت کاربران دسترسی دارند
-    const canManageUsers = user && ['مدیر ارشد سیستم', 'مدیر'].includes(user.role);
+    const canManageUsers = user && [ROLES.SUPER_ADMIN, ROLES.ADMIN].includes(user.role);
 
     // تعریف تب‌ها
     const items = [

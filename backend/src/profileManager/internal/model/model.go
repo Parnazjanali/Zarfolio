@@ -20,7 +20,7 @@ type User struct {
 	Email        string `json:"email" gorm:"unique;not null"`
 	// ✅ **تغییر اصلی:** نوع فیلد Role از string به نوع داده Role تغییر کرد.
 	// مقدار پیش فرض هم به "فروشنده" تغییر یافت.
-	Role Role `json:"role" gorm:"default:'فروشنده';not null"`
+	Role Role `json:"role" gorm:"default:'seller';not null"`
 
 	// 2FA Fields
 	TwoFASecret        string `json:"-" gorm:"column:two_fa_secret;type:text"` // Encrypted TOTP secret
