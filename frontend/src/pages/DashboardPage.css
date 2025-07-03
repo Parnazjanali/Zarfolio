@@ -1,31 +1,22 @@
+/* src/pages/DashboardPage.css */
 .dashboard-page-optimized {
   padding: 24px;
   background-color: #f0f2f5;
 }
 
 .widget-card {
-  /* به جای ارتفاع ثابت، یک حداقل ارتفاع تعیین می‌کنیم تا انعطاف‌پذیر باشد */
-  min-height: 280px; 
-  height: 100%;
-  border-radius: 12px !important; /* کمی گردتر برای ظاهر دوستانه‌تر */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1); /* سایه ظریف‌تر */
+  height: 100%; /* برای اینکه ارتفاع کارت‌ها در یک ردیف یکسان باشد */
+  min-height: 280px;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  background-color: #ffffff; /* پس زمینه سفید برای کارت‌ها */
-}
-
-.widget-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .widget-card .ant-card-head {
   border-bottom: 0;
   font-weight: 500;
-  font-size: 0.9rem; /* کوچک‌تر کردن فونت عنوان کارت */
-  color: #595959; /* رنگ ملایم‌تر برای عنوان */
-  padding: 0 20px; /* تنظیم padding عنوان */
+  color: #595959;
 }
 
 .widget-card .ant-card-body {
@@ -33,33 +24,4 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px; /* کمی افزایش padding داخلی */
-}
-
-/* استایل خاص برای کامپوننت‌های داخل کارت‌ها */
-.widget-card .digital-clock,
-.widget-card .jalali-calendar-container,
-.widget-card .cheque-alert-widget-optimized {
-  width: 100%;
-  height: 100%;
-}
-
-.widget-card .digital-clock {
-  font-size: 2.2rem; /* کوچک کردن فونت ساعت */
-  font-weight: 600;
-  color: #333;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 8px;
-}
-
-/* بهینه‌سازی اندازه تقویم */
-.widget-card .jalali-calendar-container .calendar {
-  height: 100%;
-  font-size: 0.85rem; /* کوچک کردن فونت کلی تقویم */
-  box-shadow: none !important;
-  background-color: transparent !important;
-}
-
-.widget-card .jalali-calendar-container .calendar .month-container .month-title {
-    font-size: 1.1rem; /* تنظیم اندازه عنوان ماه */
 }

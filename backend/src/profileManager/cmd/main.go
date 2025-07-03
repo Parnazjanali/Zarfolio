@@ -1,80 +1,82 @@
+// backend/src/SettingsManager/cmd/main.go
 package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
-	"profile-gold/internal/api/server"
-	"profile-gold/internal/repository"
-	"profile-gold/internal/repository/db/postgresDb"
-	"profile-gold/internal/service"
-	"profile-gold/internal/utils"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"zarfolio-backend/settings-manager/internal/handler"
+	"zarfolio-backend/settings-manager/internal/model" // Added import for model
+	"zarfolio-backend/settings-manager/internal/repository"
+	"zarfolio-backend/settings-manager/internal/service"
 )
 
 func main() {
-	// ۱. راه‌اندازی لاگر
-	if err := utils.InitLogger(); err != nil {
-		panic(fmt.Errorf("failed to initialize logger: %w", err))
-	}
-	defer func() {
-		if err := utils.Log.Sync(); err != nil && err.Error() != "sync /dev/stdout: invalid argument" {
-			fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
-		}
-	}()
-
-	// ۲. راه‌اندازی کلید JWT (بعد از لاگر)
-	// ✅ **اصلاح اصلی:** تابع جدید را در اینجا صدا می‌زنیم
-	utils.InitJWT()
-
-	// ۳. بارگذاری متغیرهای محیطی
+	// Load environment variables
 	if err := godotenv.Load(); err != nil {
-		utils.Log.Warn("No .env file found or error loading it. Assuming environment variables are set directly.", zap.Error(err))
+		log.Println("No .env file found, using environment variables")
 	}
 
-	// ۴. راه‌اندازی سایر بخش‌ها...
-	utils.Log.Info("Initializing database connection for Profile Manager...")
-	postgresDb.InitDB()
-	utils.Log.Info("Database connection established.")
-
-	utils.Log.Info("Initializing Redis connection for Profile Manager...")
-	if err := service.InitRedis(); err != nil {
-		utils.Log.Fatal("Failed to initialize Redis", zap.Error(err))
-	}
-	utils.Log.Info("Redis connection established.")
-
-	redisServiceInstance, err := service.NewRedisService(service.GetClient(), utils.Log)
+	// Database connection
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Tehran",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		utils.Log.Fatal("Failed to create RedisService instance", zap.Error(err))
-	}
-	utils.Log.Info("RedisService instance created.")
-
-	userRepo := postgresDb.NewPostgresUserRepository(postgresDb.DB)
-	if userRepo == nil {
-		utils.Log.Fatal("Failed to initialize UserRepository. Exiting application.")
-	}
-	counterpartyRepo := repository.NewGormCounterpartyRepository(postgresDb.DB)
-	if counterpartyRepo == nil {
-		utils.Log.Fatal("Failed to initialize CounterpartyRepository. Exiting application.")
-	}
-	utils.Log.Info("Repositories initialized.")
-
-	counterpartyService := service.NewCounterpartyService(counterpartyRepo, utils.Log)
-	if counterpartyService == nil {
-		utils.Log.Fatal("Failed to initialize CounterpartyService. Exiting application.")
-	}
-	utils.Log.Info("CounterpartyService initialized.")
-
-	if os.Getenv("RUN_DB_SEED") == "true" {
-		utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
-		if err := postgresDb.SeedAdminUser(postgresDb.DB); err != nil {
-			utils.Log.Fatal("Database seeding failed", zap.Error(err)) //
-		}
-		utils.Log.Info("Database seeding completed.")
-	} else {
-		utils.Log.Info("Database seeding skipped. Set RUN_DB_SEED=true to run seed.")
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	server.StartServer(":8081", redisServiceInstance, counterpartyService)
+	// Auto-migrate the SystemSettings schema
+	log.Println("Migrating database schema...")
+	err = db.AutoMigrate(&model.SystemSettings{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database schema: %v", err)
+	}
+	log.Println("Database schema migrated successfully.")
+
+	// Initialize repository, service, and handler
+	settingsRepo := repository.NewPostgresSettingsRepository(db)
+	// No error is returned by NewPostgresSettingsRepository, so no check needed here.
+
+	settingsService := service.NewSettingsService(settingsRepo)
+	settingsHandler := handler.NewSettingsHandler(settingsService)
+
+	// Setup router
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+
+	r.Route("/api/settings", func(r chi.Router) {
+		r.Get("/", settingsHandler.GetSettings)
+		r.Post("/", settingsHandler.UpdateSettings)
+	})
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("SettingsManager Service is running!"))
+	})
+
+	port := "8082"
+	fmt.Printf("SettingsManager server starting on port %s...\n", port)
+	if err := http.ListenAndServe(":"+port, r); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

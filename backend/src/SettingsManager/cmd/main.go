@@ -38,10 +38,8 @@ func main() {
 	}
 
 	// Initialize repository, service, and handler
-	settingsRepo, err := repository.NewGormSettingsRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize settings repository: %v", err)
-	}
+	settingsRepo := repository.NewPostgresSettingsRepository(db)
+	// No error is returned by NewPostgresSettingsRepository, so no check needed here.
 
 	settingsService := service.NewSettingsService(settingsRepo)
 	settingsHandler := handler.NewSettingsHandler(settingsService)
