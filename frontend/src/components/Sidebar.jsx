@@ -47,13 +47,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [openKeys, setOpenKeys] = useState([]);
   const { user } = useAuth();
 
-  // --- بخش منطق دسترسی‌ها ---
-  // شرط نمایش تنظیمات سیستم (فقط برای super_admin)
-  const canViewSystemSettings = user && user.role === ROLES.SUPER_ADMIN;
-
-  // ✅ **اصلاح اصلی: شرط نمایش تنظیمات حساب کاربری به طور کامل حذف شد.**
-  // --- پایان بخش منطق ---
-
   const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
   const getSelectedKeys = () => { const path = location.pathname; if (path.startsWith('/invoices/')) return ['/invoices']; if (path.startsWith('/reports/')) return ['/reports']; return [path]; };
   const onOpenChange = (keys) => { setOpenKeys(keys); };
@@ -103,13 +96,13 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   ];
 
   const footerMenuItemsConfig = [
-    // آیتم تنظیمات سیستم با منطق قبلی نمایش داده می‌شود (فقط super_admin)
-    ...(canViewSystemSettings ? [{
+    //  آیتم تنظیمات سیستم همیشه نمایش داده می‌شود
+    {
         key: '/settings/system',
         icon: <SettingOutlined style={{ fontSize: isCollapsed ? '20px' : '1.25em' }} />,
         rawLabel: 'تنظیمات سیستم',
         to: '/settings/system'
-    }] : []),
+    },
     { key: 'logout', icon: <LogoutOutlined style={{ color: '#ff4d4f', fontSize: isCollapsed ? '20px' : '1.25em' }} />, rawLabel: 'خروج از حساب', specialLabel: <span style={{ color: '#ff4d4f' }}>خروج از حساب</span>, onClick: handleLogout }
   ];
 
@@ -192,7 +185,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
                 <FaUserCircle style={{ fontSize: '22px', color: '#ccc' }} />
                 <Text strong style={{ color: 'white', whiteSpace: 'nowrap' }}>{currentUserName}</Text>
               </Space>
-              {/* ✅ **اصلاح اصلی: شرط نمایش دکمه حذف شد تا همیشه نمایش داده شود** */}
+              {/* شرط نمایش دکمه حذف شد تا همیشه نمایش داده شود */}
               <Link to="/account/settings" title="حساب کاربری">
                 <Button type="text" icon={<FaUserCog style={{ color: '#ccc', fontSize: '18px' }} />} style={{ color: '#ccc' }} />
               </Link>
@@ -210,7 +203,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
               exit="exit"
               style={{ textAlign: 'center', padding: '12px 0', }}
             >
-              {/* ✅ **اصلاح اصلی: شرط نمایش دکمه در حالت بسته نیز حذف شد** */}
+              {/* شرط نمایش دکمه در حالت بسته نیز حذف شد */}
               <Tooltip title="حساب کاربری" placement="left">
                 <Link to="/account/settings">
                   <Button
