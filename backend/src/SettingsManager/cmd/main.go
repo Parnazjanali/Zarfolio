@@ -5,55 +5,62 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"zarfolio-backend/settings-manager/internal/db"
-	"zarfolio-backend/settings-manager/internal/handler"
-	"zarfolio-backend/settings-manager/internal/repository"
-	"zarfolio-backend/settings-manager/internal/service"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv" // <--- این خط را اضافه کنید
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"zarfolio-backend/settings-manager/internal/handler"
+	"zarfolio-backend/settings-manager/internal/repository"
+	"zarfolio-backend/settings-manager/internal/service"
 )
 
 func main() {
-    // --- شروع تغییرات ---
-	// بارگذاری متغیرهای محیطی از فایل .env در ریشه پوشه backend
-	// مسیر ../../../.env از پوشه cmd به ریشه backend اشاره دارد.
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Printf("Warning: Could not load .env file from parent directory. Assuming environment variables are set. Error: %v", err)
-	}
-    // --- پایان تغییرات ---
-
-	// Initialize database connection
-	database, err := db.InitDatabase()
-	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
-	// ... (بقیه کد بدون تغییر باقی می‌ماند)
+	// Database connection
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Tehran",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
-	settingsRepo := repository.NewPostgresSettingsRepository(database)
+	// Initialize repository, service, and handler
+	settingsRepo, err := repository.NewGormSettingsRepository(db)
+	if err != nil {
+		log.Fatalf("Failed to initialize settings repository: %v", err)
+	}
+
 	settingsService := service.NewSettingsService(settingsRepo)
 	settingsHandler := handler.NewSettingsHandler(settingsService)
 
+	// Setup router
 	r := chi.NewRouter()
-
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 
-	r.Route("/api", func(r chi.Router) {
-		r.Get("/settings", settingsHandler.GetSettings)
-		r.Post("/settings", settingsHandler.UpdateSettings)
+	r.Route("/api/settings", func(r chi.Router) {
+		r.Get("/", settingsHandler.GetSettings)
+		r.Post("/", settingsHandler.UpdateSettings)
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
