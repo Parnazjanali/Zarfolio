@@ -717,14 +717,6 @@ func (c *profileManagerHTTPClient) VerifyToken(token string) error {
 
 	return nil
 }
-// +++ END OF CHANGE +++
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
 
 func (s *AuthService) Logout(token string) error {
 	var tokenPrefix string
