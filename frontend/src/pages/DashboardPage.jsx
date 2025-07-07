@@ -8,7 +8,6 @@ import './DashboardPage.css';
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
-  // شبیه‌سازی بارگذاری داده‌ها از سرور
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
