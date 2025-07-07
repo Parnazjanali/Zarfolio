@@ -47,6 +47,9 @@ type ProfileManagerClient interface {
 	DisableTwoFA(req model.DisableTwoFARequestAG, userToken string) error
 	LoginTwoFA(req model.LoginTwoFARequestAG) (user *model.User, token string, exp int64, err error)
 	UploadProfilePicture(fileHeader *multipart.FileHeader, userToken string) (string, error) // Returns the new profile picture URL
+	// +++ START OF CHANGE +++
+	VerifyToken(token string) error
+	// +++ END OF CHANGE +++
 }
 
 // VerifyAndEnableTwoFA sends the 2FA code and user's password to the profile manager to verify and enable 2FA.
@@ -679,6 +682,42 @@ func (c *profileManagerHTTPClient) PerformPasswordReset(req model.ResetPasswordR
 	}
 	return nil
 }
+
+// +++ START OF CHANGE +++
+// Implement the token verification logic.
+func (c *profileManagerHTTPClient) VerifyToken(token string) error {
+	// The URL for the new endpoint in profileManager is /api/v1/auth/token/verify
+	url := fmt.Sprintf("%s/api/v1/auth/token/verify", c.baseURL)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return fmt.Errorf("could not create token verification request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		// Check for connection errors specifically
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) || strings.Contains(err.Error(), "connect: connection refused") {
+			utils.Log.Error("VerifyToken: Profile manager service is unavailable", zap.String("url", url), zap.Error(err))
+			return fmt.Errorf("%w: %v", ErrProfileManagerDown, err)
+		}
+		utils.Log.Error("VerifyToken: Error sending request to profile manager", zap.String("url", url), zap.Error(err))
+		return fmt.Errorf("error sending token verification request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		utils.Log.Warn("VerifyToken: Token rejected by profile service",
+			zap.Int("status", resp.StatusCode),
+			zap.String("url", url),
+			zap.String("responseBody", string(respBody)))
+		return fmt.Errorf("token was rejected by profile service (status: %d): %s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
+// +++ END OF CHANGE +++
 
 func min(a, b int) int {
 	if a < b {

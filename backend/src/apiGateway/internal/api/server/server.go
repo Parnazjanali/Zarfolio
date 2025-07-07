@@ -53,7 +53,10 @@ func StartServer(port string) {
 	// 4. Setting up all API routes
 	// We provide the app and prepared handlers to the SetupApiRoutes function to register the routes.
 	utils.Log.Info("Setting up API routes for API Gateway...")
-	if err := SetUpApiRoutes(app, authHandler, accountHandlerAG); err != nil { // Pass accountHandlerAG
+	// +++ START OF CHANGE +++
+	// Pass the profileManagerClient dependency down to the route setup function.
+	if err := SetUpApiRoutes(app, authHandler, accountHandlerAG, profileManagerClient); err != nil { // Pass profileManagerClient
+	// +++ END OF CHANGE +++
 		utils.Log.Fatal("ERROR: Failed to set up API routes: %v. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("All API routes configured successfully.")

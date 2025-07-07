@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"                  // For custom error types if needed, or for errors.Is
 	"gold-api/internal/model" // For ErrorResponse
+	"gold-api/internal/service" // +++ ADDED FOR ProfileManagerClient
 	"gold-api/internal/utils" // For Log
 	"os"                      // For environment variable access
 	"strings"
@@ -21,10 +22,14 @@ type CustomClaims struct {
 }
 
 // AuthUser is a middleware for JWT authentication and authorization.
-func AuthUser(c *fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		utils.Log.Warn("AuthUser (apiGateway): Missing Authorization header")
+// +++ START OF CHANGE +++
+// The middleware now depends on the ProfileManagerClient interface to perform its check.
+func AuthUser(authService service.ProfileManagerClient) fiber.Handler {
+// +++ END OF CHANGE +++
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			utils.Log.Warn("AuthUser (apiGateway): Missing Authorization header")
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 			Message: "Unauthorized: Missing Authorization header.", Code: "AG401_MISSING_AUTH_HEADER",
 		})
@@ -90,12 +95,31 @@ func AuthUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Invalid token claims (UserID missing).", Code: "AG401_MISSING_USERID_CLAIM"})
 	}
 
+	// +++ START OF CHANGE +++
+	// Step 2: Remote validation against the blacklist via profileManager.
+	err = authService.VerifyToken(tokenString) // We re-use 'err' from ParseWithClaims, it should be nil here if local validation passed.
+	if err != nil {
+		utils.Log.Warn("Token revocation check failed via profileManager", zap.Error(err), zap.String("userID", claims.UserID))
+		// Check if the error is due to the profile manager being down.
+		// The exact error type or message to check might depend on how ErrProfileManagerDown is defined and returned by the client.
+		// For this example, we'll assume it could be checked using errors.Is or by inspecting the error message.
+		// For now, adhering to the prompt's requirement of 401 for any VerifyToken error.
+		// if errors.Is(err, service.ErrProfileManagerDown) { // service.ErrProfileManagerDown would need to be exported or checkable
+		//  utils.Log.Error("Profile Manager service is down during token verification", zap.Error(err))
+		//	// Consider returning 503 Service Unavailable if the profile service is confirmed to be down.
+		//	// return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "Authentication service temporarily unavailable.", Code: "AG503_AUTH_SERVICE_DOWN"})
+		// }
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: Token has been revoked or is no longer valid.", Code: "AG401_TOKEN_REVOKED_OR_INVALID"})
+	}
+	// +++ END OF CHANGE +++
+
 	// Set user information in locals for downstream handlers
 	c.Locals("userID", claims.UserID)
 	c.Locals("userRole", claims.Role)  // Store role if present and used
 	c.Locals("tokenClaims", claims)    // Store all claims if needed by some handlers
 	c.Locals("userToken", tokenString) // Store the raw token if it needs to be forwarded
 
-	utils.Log.Info("AuthUser (apiGateway): User authenticated successfully", zap.String("userID", claims.UserID), zap.String("role", claims.Role))
+	utils.Log.Info("AuthUser (apiGateway): User authenticated successfully (local and remote)", zap.String("userID", claims.UserID), zap.String("role", claims.Role))
 	return c.Next()
+	}
 }

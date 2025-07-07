@@ -56,6 +56,19 @@ func SetupProfileManagerRoutes(
 	app.Post("/login/2fa", authHandler.HandleLoginTwoFA) // Step 2 2FA login
 	app.Post("/logout", authHandler.Logout)
 
+	// Create instance of our new AuthMiddleware
+	authMw := middleware.NewAuthMiddleware(redisService, utils.Log) // Assuming utils.Log is a compatible logger
+
+	// +++ START OF CHANGE +++
+	// Add a new endpoint for the API Gateway to verify token revocation status.
+	// This will be /api/v1/auth/token/verify
+	apiV1 := app.Group("/api/v1")
+	authApiV1 := apiV1.Group("/auth", authMw.Authenticate())
+	authApiV1.Post("/token/verify", func(c *fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusOK)
+	})
+	// +++ END OF CHANGE +++
+
 	passwordGroup := app.Group("/password")
 	utils.Log.Info("Configuring /password routes for Profile Manager...")
 	passwordGroup.Post("/request-reset", authHandler.HandleRequestPasswordReset)
@@ -65,7 +78,7 @@ func SetupProfileManagerRoutes(
 	// These routes require a valid token from apiGateway (or a direct authenticated call)
 
 	// Create instance of our new AuthMiddleware
-	authMw := middleware.NewAuthMiddleware(redisService, utils.Log) // Assuming utils.Log is a compatible logger
+	authMw = middleware.NewAuthMiddleware(redisService, utils.Log) // Assuming utils.Log is a compatible logger
 
 	// Apply the new authentication middleware
 	accountGroup := app.Group("/account", authMw.Authenticate()) // Use the new middleware
