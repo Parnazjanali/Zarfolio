@@ -4,6 +4,7 @@ import (
 	"fmt" // For proxy
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
+	"gold-api/internal/service" // +++ ADDED FOR ProfileManagerClient
 	"gold-api/internal/utils"
 	"net/http" // For proxy
 	"os"       // For proxy (Getenv)
@@ -14,7 +15,15 @@ import (
 )
 
 // Add accountHandlerAG *handler.AccountHandlerAG to signature
-func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHandlerAG *handler.AccountHandlerAG) error {
+// +++ START OF CHANGE +++
+// Update function signature to accept the client.
+func SetUpApiRoutes(
+	app *fiber.App,
+	authHandler *handler.AuthHandler,
+	accountHandlerAG *handler.AccountHandlerAG,
+	profileManagerClient service.ProfileManagerClient, // Added profileManagerClient
+) error {
+// +++ END OF CHANGE +++
 	if authHandler == nil {
 		utils.Log.Fatal("AuthHandler is nil in SetUpApiRoutes.")
 		// return errors.New("authHandler cannot be nil")
@@ -23,6 +32,15 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 		utils.Log.Fatal("AccountHandlerAG is nil in SetUpApiRoutes.")
 		// return errors.New("accountHandlerAG cannot be nil")
 	}
+	if profileManagerClient == nil { // Added check for profileManagerClient
+		utils.Log.Fatal("ProfileManagerClient is nil in SetUpApiRoutes.")
+		// return errors.New("profileManagerClient cannot be nil")
+	}
+
+	// +++ START OF CHANGE +++
+	// Create a single, configured instance of the auth middleware.
+	authMiddleware := middleware.AuthUser(profileManagerClient)
+	// +++ END OF CHANGE +++
 
 	api := app.Group("/api/v1")
 	utils.Log.Info("Configuring /api/v1 routes")
@@ -34,7 +52,8 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	authGroup := api.Group("/auth")
 	utils.Log.Info("Configuring /api/v1/auth routes")
 	authGroup.Post("/login", authHandler.LoginUser) // Removed AuthUser middleware
-	authGroup.Post("/logout", middleware.AuthUser, authHandler.LogoutUser)
+	// Apply the configured middleware to protected routes.
+	authGroup.Post("/logout", authMiddleware, authHandler.LogoutUser) // Use authMiddleware
 
 	// Add new password reset routes to the existing authGroup
 	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
@@ -45,7 +64,7 @@ func SetUpApiRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	authGroup.Post("/2fa/verify", authHandler.HandleLoginTwoFA)
 	utils.Log.Info("Configuring /api/v1/auth/password and /api/v1/auth/2fa/verify routes")
 
-	accountGroup := api.Group("/account", middleware.AuthUser) // Protected by existing AuthUser middleware
+	accountGroup := api.Group("/account", authMiddleware) // Use authMiddleware
 	utils.Log.Info("Configuring /api/v1/account routes")
 	accountGroup.Post("/change-username", accountHandlerAG.HandleChangeUsername)
 	accountGroup.Post("/change-password", accountHandlerAG.HandleChangePassword)
