@@ -1,7 +1,7 @@
 package handler
 
 import (
-	profilemanager "gold-api/internal/service/profileManger"
+	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"

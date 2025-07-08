@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gold-api/internal/api/server"
+	server "gold-api/internal/api/router"
 	"gold-api/internal/utils"
 
 	"github.com/joho/godotenv"
@@ -10,7 +10,9 @@ import (
 )
 
 func main() {
+
 	if err := godotenv.Load(); err != nil {
+
 		utils.Log.Warn("Error loading .env file (this is fine if env vars are set directly)", zap.Error(err))
 	}
 
@@ -18,5 +20,6 @@ func main() {
 		panic(fmt.Errorf("failed to initialize logger: %w", err))
 	}
 	defer utils.Log.Sync()
+
 	server.StartServer(":8080")
 }

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"gold-api/internal/model"
-	"gold-api/internal/service"
-	profilemanager "gold-api/internal/service/profileManger"
+	service "gold-api/internal/service/common"
+	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
 
 	"go.uber.org/zap"
@@ -43,14 +43,13 @@ func (s *AuthService) LoginUser(username, password string) (*model.User, string,
 }
 
 func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
-	// فراخوانی متد مربوطه در ProfileManagerClient
 	err := s.profileMgrClient.RegisterUser(req)
 	if err != nil {
 		utils.Log.Error("Registration failed in ProfileManagerClient", zap.String("username", req.Username), zap.Error(err))
-		if errors.Is(err, service.ErrUserAlreadyExists) { // استفاده از service.ErrUserAlreadyExists
+		if errors.Is(err, service.ErrUserAlreadyExists) { 
 			return service.ErrUserAlreadyExists
 		}
-		if errors.Is(err, service.ErrProfileManagerDown) { // استفاده از service.ErrProfileManagerDown
+		if errors.Is(err, service.ErrProfileManagerDown) { 
 			return service.ErrProfileManagerDown
 		}
 		return fmt.Errorf("%w: failed to register user with profile manager", service.ErrInternalService)
@@ -117,3 +116,4 @@ func (s *AuthService) LogoutUser(token string) error {
 	utils.Log.Info("User logout successfully by Profile Manager", zap.String("token_prefix", token[:utils.Min(len(token), 10)]))
 	return nil
 }
+

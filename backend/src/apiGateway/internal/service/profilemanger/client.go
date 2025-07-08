@@ -7,9 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"gold-api/internal/model"
-	"gold-api/internal/service" // برای ارورهای مشترک (ErrProfileManagerDown و ...)
-	"gold-api/internal/utils"   // برای لاگینگ
-	"io"                        // برای io.ReadAll
+	service "gold-api/internal/service/common"
+	"gold-api/internal/utils"
+	"io"
 	"net/http"
 	"os"
 	"syscall"
@@ -23,13 +23,13 @@ type profileManagerHTTPClient struct {
 	client  *http.Client
 }
 
-func NewClient(baseURL string) ProfileManagerClient { // اینجا ProfileManagerClient اینترفیس را برمی‌گرداند
+func NewClient(baseURL string) ProfileManagerClient { 
 	if baseURL == "" {
 		utils.Log.Fatal("ProfileManagerClient URL cannot be empty.")
 	}
 	return &profileManagerHTTPClient{
 		baseURL: baseURL,
-		client:  &http.Client{Timeout: 10 * time.Second}, // افزایش Timeout به 30 ثانیه یا بیشتر برای عملیات‌های سنگین‌تر
+		client:  &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -64,17 +64,18 @@ func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		// Try to unmarshal error response from Profile Manager for more details
+
 		var errorResp model.ErrorResponse
+
 		if unmarshalErr := json.Unmarshal(respBody, &errorResp); unmarshalErr == nil && errorResp.Message != "" {
-			// If Profile Manager returns a structured error, use its message
+
 			utils.Log.Error("Profile Manager returned error response", zap.Int("status", resp.StatusCode), zap.String("message", errorResp.Message), zap.String("details", errorResp.Details))
 			if resp.StatusCode == http.StatusUnauthorized {
 				return nil, "", nil, fmt.Errorf("%w: %s", service.ErrInvalidCredentials, errorResp.Message)
 			}
 			return nil, "", nil, fmt.Errorf("profile manager login failed: %s (%d)", errorResp.Message, resp.StatusCode)
 		} else {
-			// Fallback if Profile Manager doesn't return a structured error
+
 			utils.Log.Error("Profile Manager returned unexpected error status", zap.Int("status", resp.StatusCode), zap.ByteString("raw_body", respBody))
 			if resp.StatusCode == http.StatusUnauthorized {
 				return nil, "", nil, fmt.Errorf("%w: invalid credentials", service.ErrInvalidCredentials)
