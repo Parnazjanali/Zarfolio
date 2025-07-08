@@ -3,8 +3,8 @@ package handler
 import (
 	"errors"
 	"gold-api/internal/model"
-	"gold-api/internal/service"
 	"gold-api/internal/service/auth"
+	service "gold-api/internal/service/common"
 	"gold-api/internal/utils"
 	"strings"
 
@@ -16,6 +16,11 @@ type AuthHandler struct {
 	authService *auth.AuthService
 }
 
+func NewAuthHandler(authService *auth.AuthService) *AuthHandler {
+	return &AuthHandler{
+		// ...initialize fields...
+	}
+}
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
 	var req model.RegisterRequest
 
@@ -104,22 +109,20 @@ func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 		})
 	}
 
-	// Store user info and claims in Fiber context for middleware access (e.g., AuthMiddleware)
 	c.Locals("userID", claims.UserID)
 	c.Locals("username", claims.Username)
-	c.Locals("userRoles", claims.Roles) // userRoles is now datatypes.JSON from CustomClaims
-	// Note: AuthMiddleware will later convert userRoles from datatypes.JSON to []string for permission checks.
+	c.Locals("userRoles", claims.Roles) 
 
 	utils.Log.Info("User logged in successfully",
 		zap.String("username", user.Username),
-		zap.Any("roles", user.Roles), // Log user.Roles directly (datatypes.JSON)
+		zap.Any("roles", user.Roles), 
 	)
 
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Login successful",
 		Token:   token,
-		User:    user,                    // User struct should now have Roles (datatypes.JSON)
-		Exp:     claims.ExpiresAt.Unix(), // Use actual expiration from claims
+		User:    user,                    
+		Exp:     claims.ExpiresAt.Unix(), 
 	})
 }
 

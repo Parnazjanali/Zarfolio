@@ -5,26 +5,20 @@ import (
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/model"
-	"gold-api/internal/service" 
 	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"go.uber.org/zap"
 )
 
-func SetUpAccountRoutes(app *fiber.App, accountHandlerAG *handler.AccountHandlerAG, permissionService *service.PermissionService, logger *zap.Logger) error {
-
+func SetUpAccountRoutes(apiGroup fiber.Router, accountHandlerAG *handler.AccountHandlerAG, authMiddleware *middleware.AuthMiddleware) error {
 	if accountHandlerAG == nil {
 		return fmt.Errorf("AccountHandlerAG is nil in SetUpAccountRoutes")
 	}
-	if permissionService == nil {
-		return fmt.Errorf("PermissionService is nil in SetUpAccountRoutes")
+	if authMiddleware == nil {
+		return fmt.Errorf("AuthMiddleware is nil in SetUpAccountRoutes")
 	}
 
-	api := app.Group("/api/v1") 
-	authMiddleware := middleware.NewAuthMiddleware(permissionService, logger)
-
-	accountGroup := api.Group("/account")
+	accountGroup := apiGroup.Group("/account")
 	utils.Log.Info("Configuring /api/v1/account protected routes.")
 
 	accountGroup.Post("/change-username", authMiddleware.AuthorizeMiddleware(model.PermUserUpdate), accountHandlerAG.HandleChangeUsername)
