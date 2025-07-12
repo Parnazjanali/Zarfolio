@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"profile-gold/internal/model"
 	"profile-gold/internal/service"
 	"profile-gold/internal/utils"
@@ -21,17 +20,6 @@ func NewAuthHandler(us service.UserService) *AuthHandler {
 		utils.Log.Fatal("UserService cannot be nil for AuthHandler in Profile Manager.")
 	}
 	return &AuthHandler{userService: us}
-}
-
-type ProfileHandler struct {
-	userService service.UserService
-}
-
-func NewProfileHandler(us service.UserService) *ProfileHandler { 
-	if us == nil {
-		utils.Log.Fatal("UserService cannot be nil for ProfileHandler in Profile Manager.")
-	}
-	return &ProfileHandler{userService: us}
 }
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
@@ -143,22 +131,22 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	}
 	tokenString := tokenParts[1]
 
-	err := h.userService.LogoutUser(tokenString) 
+	err := h.userService.LogoutUser(tokenString)
 	if err != nil {
 		utils.Log.Error("Profile Manager Handler: Logout failed in service layer", zap.Error(err), zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
-		if errors.Is(err, service.ErrInvalidCredentials) { 
+		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Message: "Invalid or expired token.",
 				Code:    "401",
 			})
 		}
-		if errors.Is(err, service.ErrInternalService) { 
+		if errors.Is(err, service.ErrInternalService) {
 			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
 				Message: "Internal server error during logout.",
 				Code:    "500",
 			})
 		}
-		
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
 			Message: "An unexpected error occurred during logout.",
 			Code:    "500",
@@ -166,30 +154,23 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	}
 
 	utils.Log.Info("Profile Manager Handler: User logged out successfully", zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 10)]))
-	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{ 
+	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Logged out successfully!",
 	})
 
 }
-func (h *ProfileHandler) CreateProfile(c *fiber.Ctx) error {
-	utils.Log.Info("CreateProfile endpoint hit. Placeholder.", zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Create Profile endpoint hit (placeholder)"})
+
+func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
+	utils.Log.Info("RequestPasswordReset endpoint hit. Placeholder.", zap.String("ip", c.IP()))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Request Password Reset endpoint hit (placeholder)"})
 }
 
-func (h *ProfileHandler) GetProfile(c *fiber.Ctx) error {
-	profileID := c.Params("id")
-	utils.Log.Info("GetProfile endpoint hit. Placeholder.", zap.String("id", profileID), zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Get Profile %s endpoint hit (placeholder)", profileID)})
+func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
+	utils.Log.Info("ResetPassword endpoint hit. Placeholder.", zap.String("ip", c.IP()))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Reset Password endpoint hit (placeholder)"})
 }
 
-func (h *ProfileHandler) UpdateProfile(c *fiber.Ctx) error {
-	profileID := c.Params("id")
-	utils.Log.Info("UpdateProfile endpoint hit. Placeholder.", zap.String("id", profileID), zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Update Profile %s endpoint hit (placeholder)", profileID)})
-}
-
-func (h *ProfileHandler) DeleteProfile(c *fiber.Ctx) error {
-	profileID := c.Params("id")
-	utils.Log.Info("DeleteProfile endpoint hit. Placeholder.", zap.String("id", profileID), zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusNoContent).SendString("")
+func (h *AuthHandler) VerifyTwoFA(c *fiber.Ctx) error {
+	utils.Log.Info("VerifyTwoFA endpoint hit. Placeholder.", zap.String("ip", c.IP()))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Verify Two-Factor Authentication endpoint hit (placeholder)"})
 }

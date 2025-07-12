@@ -1,9 +1,10 @@
-package utils
+package redisdb 
 
 import (
 	"context"
 	"fmt"
 	"os"
+	utils "profile-gold/internal/utils"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -19,20 +20,19 @@ func InitRedisClient() error {
 	redisDbStr := os.Getenv("REDIS_DB")
 
 	if redisHost == "" || redisPort == "" {
-		Log.Fatal("REDIS_HOST or REDIS_PORT environment variables are not set. Exiting application.",
+		utils.Log.Fatal("REDIS_HOST or REDIS_PORT environment variables are not set. Exiting application.",
 			zap.String("hint", "Please set them in your .env file or environment variables."))
 	}
 
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
-	Log.Info("Initializing Redis client...", zap.String("address", redisAddr), zap.String("db", redisDbStr))
+	utils.Log.Info("Initializing Redis client...", zap.String("address", redisAddr), zap.String("db", redisDbStr))
 
 	dbIndex := 0
 	_, err := fmt.Sscanf(redisDbStr, "%d", &dbIndex)
 	if err != nil {
-		Log.Warn("Failed to parse REDIS_DB, defaulting to 0", zap.String("redis_db_env", redisDbStr), zap.Error(err))
+		utils.Log.Warn("Failed to parse REDIS_DB, defaulting to 0", zap.String("redis_db_env", redisDbStr), zap.Error(err))
 	}
 
-	// --- اصلاح اصلی: فیلد Password را فقط در صورت غیرخالی بودن تنظیم کن ---
 	redisOptions := &redis.Options{
 		Addr:        redisAddr,
 		DB:          dbIndex,
@@ -43,9 +43,9 @@ func InitRedisClient() error {
 
 	if redisPassword != "" { // <-- این شرط اضافه شد!
 		redisOptions.Password = redisPassword // <-- فقط اگر رمز عبور در env خالی نبود، آن را تنظیم کن
-		Log.Debug("Redis password configured, attempting authentication.")
+		utils.Log.Debug("Redis password configured, attempting authentication.")
 	} else {
-		Log.Debug("No Redis password provided in .env, attempting connection without authentication.")
+		utils.Log.Debug("No Redis password provided in .env, attempting connection without authentication.")
 	}
 	// ---------------------------------------------------------------------
 
@@ -56,20 +56,13 @@ func InitRedisClient() error {
 
 	pong, err := RedisClient.Ping(ctx).Result()
 	if err != nil {
-		Log.Error("Failed to connect to Redis during Ping test", zap.Error(err), zap.String("address", redisAddr))
-		Log.Fatal("Critical: Redis connection failed. Exiting Profile Manager.", zap.Error(err))
+		utils.Log.Error("Failed to connect to Redis during Ping test", zap.Error(err), zap.String("address", redisAddr))
+		utils.Log.Fatal("Critical: Redis connection failed. Exiting Profile Manager.", zap.Error(err))
 		return fmt.Errorf("failed to connect to redis: %w", err)
 	}
-	Log.Info("Redis client connected successfully.", zap.String("ping_response", pong))
+	utils.Log.Info("Redis client connected successfully.", zap.String("ping_response", pong))
 
-	Log.Info("Redis client initialized successfully and connected.", zap.String("address", redisAddr), zap.Int("db_index", dbIndex))
+	utils.Log.Info("Redis client initialized successfully and connected.", zap.String("address", redisAddr), zap.Int("db_index", dbIndex))
 	return nil
 
-}
-
-func Min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
