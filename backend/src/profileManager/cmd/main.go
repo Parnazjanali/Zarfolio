@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"profile-gold/internal/api/server"
+	"profile-gold/internal/api/router"
 	"profile-gold/internal/repository/db/postgresDb"
 	"profile-gold/internal/utils"
 
@@ -36,7 +36,7 @@ func main() {
 
 	if os.Getenv("RUN_DB_SEED") == "true" {
 		utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
-		if err := postgresDb.SeedAdminUsers(userRepo); err != nil {
+		if err := postgresDb.SeedInitialData(userRepo); err != nil {
 			utils.Log.Fatal("Database seeding failed: %v", zap.Error(err))
 		}
 		utils.Log.Info("Database seeding completed.")
@@ -44,6 +44,6 @@ func main() {
 		utils.Log.Info("Database seeding skipped. Set RUN_DB_SEED=true to run seed.")
 	}
 
-	server.StartServer(":8081")
+	router.StartServer(":8081")
 
 }
