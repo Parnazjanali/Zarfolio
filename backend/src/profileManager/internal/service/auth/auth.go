@@ -1,4 +1,4 @@
-package authService
+package auth
 
 import (
 	"errors"
@@ -23,9 +23,10 @@ type AuthService interface {
 	VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error)
 }
 
-type userService struct {
+type UserService struct {
 	userRepo  postgresDb.UserRepository
 	tokenRepo redisdb.TokenRepository
+	jwtValidator utils.JWTValidator
 }
 
 func NewAuthService(r postgresDb.UserRepository, t redisdb.TokenRepository, j utils.JWTValidator) AuthService {
@@ -39,16 +40,16 @@ func NewAuthService(r postgresDb.UserRepository, t redisdb.TokenRepository, j ut
 		utils.Log.Fatal("JWTValidator cannot be nil for UserService.")
 	}
 	utils.Log.Info("UserService initialized successfully with UserRepo and tokenRepo.")
-	return &userService{userRepo: r, tokenRepo: t}
+	return &UserService{userRepo: r, tokenRepo: t, jwtValidator: j}
 }
 
-func (s *userService) RegisterUser(req model.RegisterRequest) error {
+func (s *UserService) RegisterUser(req model.RegisterRequest) error {
 
 	_, err := s.userRepo.GetUserByUsername(req.Username)
 	if err == nil {
 		return service.ErrUserAlreadyExists
 	}
-	if !errors.Is(err, postgresDb.ErrUserNotFound) {
+	if !errors.Is(err, service.ErrUserNotFound) {
 		return fmt.Errorf("%w: failed to check existing user during registration", service.ErrInternalService)
 	}
 
@@ -77,11 +78,11 @@ func (s *userService) RegisterUser(req model.RegisterRequest) error {
 	return nil
 }
 
-func (s *userService) AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
+func (s *UserService) AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
 	user, err := s.userRepo.GetUserByUsername(username)
 
 	if err != nil {
-		if errors.Is(err, postgresDb.ErrUserNotFound) {
+		if errors.Is(err, service.ErrUserNotFound) {
 			utils.Log.Warn("UserService: Authentication failed - User not found in repo", zap.String("username", username))
 			return nil, "", nil, service.ErrInvalidCredentials
 		}
@@ -114,10 +115,10 @@ func (s *userService) AuthenticateUser(username, password string) (*model.User, 
 	return user, token, claims, nil
 }
 
-func (s *userService) LogoutUser(tokenString string) error {
+func (s *UserService) LogoutUser(tokenString string) error {
 	utils.Log.Info("UserService: Attempting to logout user by blacklisting token.", zap.String("token_prefix", tokenString[:min(len(tokenString), 10)]))
 
-	claims, err := utils.JWTValidatorImpl(tokenString)
+    claims, err := s.jwtValidator.ValidateToken(tokenString) 
 
 	if err != nil {
 		utils.Log.Error("UserService: Failed to parse or validate token for logout", zap.Error(err),
@@ -154,25 +155,19 @@ func (s *userService) LogoutUser(tokenString string) error {
 	return nil
 }
 
-// RequestPasswordReset implements the profilmanager.UserService interface.
-// You should replace the body with your actual password reset logic.
-func (s *userService) RequestPasswordReset(username string) error {
+func (s *UserService) RequestPasswordReset(username string) error {
 	utils.Log.Info("RequestPasswordReset called", zap.String("username", username))
 	// TODO: Implement password reset logic here.
 	return errors.New("RequestPasswordReset not implemented")
 }
 
-// ResetPassword implements the profilmanager.UserService interface.
-// You should replace the body with your actual reset password logic.
-func (s *userService) ResetPassword(token, newPassword string) error {
+func (s *UserService) ResetPassword(token, newPassword string) error {
 	utils.Log.Info("ResetPassword called", zap.String("token_prefix", token[:min(len(token), 10)]))
 	// TODO: Implement reset password logic here.
 	return errors.New("ResetPassword not implemented")
 }
 
-// VerifyTwoFA implements the profilmanager.UserService interface.
-// You should replace the body with your actual 2FA verification logic.
-func (s *userService) VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error) {
+func (s *UserService) VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error) {
 	utils.Log.Info("VerifyTwoFA called", zap.String("username", username))
 	// TODO: Implement 2FA verification logic here.
 	return model.User{}, model.CustomClaims{}, errors.New("VerifyTwoFA not implemented")

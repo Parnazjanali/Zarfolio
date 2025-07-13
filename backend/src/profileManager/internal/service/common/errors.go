@@ -7,4 +7,8 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserAlreadyExists  = errors.New("user with this username or email already exists")
 	ErrInternalService    = errors.New("internal service error")
+	ErrProfileManagerDown = errors.New("profile manager service is unavailable")
+	ErrInvalidToken       = errors.New("invalid or expired token")
+	ErrInvalidTwoFACode   = errors.New("invalid two-factor authentication code")
+
 )

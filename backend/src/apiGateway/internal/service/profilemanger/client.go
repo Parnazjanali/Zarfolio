@@ -18,19 +18,20 @@ import (
 	"go.uber.org/zap"
 )
 
+
 type profileManagerHTTPClient struct {
-	baseURL string
-	client  *http.Client
+    baseURL string
+    client  *http.Client
 }
 
-func NewClient(baseURL string) ProfileManagerClient { 
-	if baseURL == "" {
-		utils.Log.Fatal("ProfileManagerClient URL cannot be empty.")
-	}
-	return &profileManagerHTTPClient{
-		baseURL: baseURL,
-		client:  &http.Client{Timeout: 10 * time.Second},
-	}
+func NewClient(baseURL string) (ProfileManagerClient, error) {
+    if baseURL == "" {
+        return nil, fmt.Errorf("ProfileManagerClient base URL cannot be empty")
+    }
+    return &profileManagerHTTPClient{
+        baseURL: baseURL,
+        client:  &http.Client{Timeout: 10 * time.Second},
+    }, nil
 }
 
 func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error) {

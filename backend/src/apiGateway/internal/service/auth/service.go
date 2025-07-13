@@ -12,14 +12,15 @@ import (
 )
 
 type AuthService struct {
-	profileMgrClient profilemanager.ProfileManagerClient
+    profileMgrClient profilemanager.ProfileManagerClient
 }
 
-func NewAuthService(client profilemanager.ProfileManagerClient) *AuthService {
-	if client == nil {
-		utils.Log.Fatal("ProfileManagerClient cannot be nil for AuthService.")
-	}
-	return &AuthService{profileMgrClient: client}
+func NewAuthService(client profilemanager.ProfileManagerClient) (*AuthService, error) { 
+    if client == nil {
+        utils.Log.Fatal("ProfileManagerClient cannot be nil for AuthService.")
+    }
+    return &AuthService{profileMgrClient: client}, nil // 👈 Return nil for error on success
+	
 }
 
 func (s *AuthService) LoginUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
