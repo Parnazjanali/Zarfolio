@@ -1,8 +1,8 @@
 package authz
 
 import (
+	"fmt"
 	"profile-gold/internal/model"
-	"strings"
 
 	"go.uber.org/zap"
 )
@@ -66,51 +66,53 @@ var rolePermissionsMap = map[string][]string{
 	},
 }
 
-type PermissionService struct {
+type PermissionService interface {
+	HashPermission(userRoles []string, requiredPermission string) bool
+	IsValidRole(role string) bool
+	
+}
+
+type permissionServiceImpl struct {
 	logger *zap.Logger
+	validRoles      map[string]bool
+	rolePermissions map[string][]string 
 }
 
-func NewPermissionService(logger *zap.Logger) *PermissionService {
+func NewPermissionService(logger *zap.Logger) (PermissionService, error) { 
 	if logger == nil {
-		panic("Logger cannot be nil for PermissionService in API Gateway.")
+		return nil, fmt.Errorf("logger cannot be nil for PermissionService")
 	}
-	return &PermissionService{logger: logger}
+
+	validRoles := map[string]bool{
+		"admin": true,
+		"user":  true,
+		"guest": true,
+	}
+	rolePermissions := map[string][]string{
+		"admin": {"PermUserRead", "PermUserCreate", "PermUserUpdate", "PermUserDelete", "PermUserChangeAnyPassword"},
+		"user":  {"PermUserRead"},
+		"guest": {},
+	}
+
+	return &permissionServiceImpl{
+		logger:          logger,
+		validRoles:      validRoles,
+		rolePermissions: rolePermissions,
+	}, nil
 }
 
-func (s *PermissionService) GetPermissionsForRoles(roles []string) []string {
-	uniquePerms := make(map[string]struct{})
-	for _, role := range roles {
-		if perms, ok := rolePermissionsMap[role]; ok {
+func (s *permissionServiceImpl) IsValidRole(role string) bool {
+	_, ok := s.validRoles[role]
+	return ok
+}
+
+func (s *permissionServiceImpl) HashPermission(userRoles []string, requiredPermission string) bool {
+	for _, userRole := range userRoles {
+		if perms, ok := s.rolePermissions[userRole]; ok {
 			for _, perm := range perms {
-				uniquePerms[perm] = struct{}{}
-			}
-		}
-	}
-
-	var permsList []string
-	for perm := range uniquePerms {
-		permsList = append(permsList, perm)
-	}
-	return permsList
-}
-
-func (s *PermissionService) HasPermission(roles []string, requiredPermission string) bool {
-
-	for _, role := range roles {
-		if role == model.RoleAdmin {
-			return true // Admin has all permissions
-		}
-	}
-
-	userPermissions := s.GetPermissionsForRoles(roles)
-	for _, perm := range userPermissions {
-		if perm == requiredPermission {
-			return true
-		}
-		if strings.HasSuffix(perm, ":*") {
-			resourcePrefix := strings.TrimSuffix(perm, ":*")
-			if strings.HasPrefix(requiredPermission, resourcePrefix+":") {
-				return true
+				if perm == requiredPermission {
+					return true
+				}
 			}
 		}
 	}

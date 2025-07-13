@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"profile-gold/internal/service/user"
 	"profile-gold/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,8 +10,13 @@ import (
 )
 
 type UserHandler struct {
+	userHandler user.UserService
 }
-type NewUserHandler struct {
+func NewUserHandler (us user.UserService) *UserHandler {
+	if us == nil {
+		utils.Log.Fatal("UserService cannot be nil for ProfileHandler in Profile Manager.")
+	}
+	return &UserHandler{userHandler: us}
 }
 
 func (h *UserHandler) GetUsers(c *fiber.Ctx) error {

@@ -31,9 +31,15 @@ func StartServer(port string) {
     if profileManagerBaseURL == "" {
         utils.Log.Fatal("PROFILE_MANAGER_BASE_URL environment variable is not set. Exiting application.")
     }
+
     utils.Log.Info("Initializing ProfileManagerClient", zap.String("url", profileManagerBaseURL))
-    profileManagerClient := profilemanager.NewClient(profileManagerBaseURL)
+    
+    profileManagerClient, err := profilemanager.NewClient(profileManagerBaseURL) 
+    if err != nil { 
+        utils.Log.Fatal("Failed to initialize ProfileManagerClient.", zap.Error(err))
+    }
     utils.Log.Info("ProfileManagerClient initialized successfully.")
+
 
     //  PermissionService (for RBAC middleware)
     permissionService := authz.NewPermissionService(utils.Log) 
@@ -43,9 +49,9 @@ func StartServer(port string) {
     utils.Log.Info("PermissionService initialized successfully.")
 
     // AuthService
-    authService := auth.NewAuthService(profileManagerClient)
-    if authService == nil {
-        utils.Log.Fatal("ERROR: Failed to initialize AuthService. Exiting application.")
+   authService, err := auth.NewAuthService(profileManagerClient) 
+    if err != nil {
+        utils.Log.Fatal("Failed to initialize AuthService.", zap.Error(err))
     }
     utils.Log.Info("AuthService initialized successfully.")
 

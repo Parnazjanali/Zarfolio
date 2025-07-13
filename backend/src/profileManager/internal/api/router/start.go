@@ -10,6 +10,7 @@ import (
 	redisdb "profile-gold/internal/repository/db/redisDb"
 	"profile-gold/internal/service/account"
 	authService "profile-gold/internal/service/auth"
+	"profile-gold/internal/service/twofa"
 	"profile-gold/internal/service/user"
 	"profile-gold/internal/utils"
 
@@ -17,13 +18,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func StartServer(port string) {
+func StartServer(port string) error {
 	utils.Log.Info("Initializing Profile Manager Fiber server...")
 
 	app := fiber.New()
 	utils.Log.Info("Profile Manager Fiber app instance created.")
 
-	app.Use(middleware.CorsMiddleware()) 
+	app.Use(middleware.CorsMiddleware())
 	utils.Log.Info("CORS middleware applied.")
 
 	utils.Log.Info("Initializing Redis client for Profile Manager...")
@@ -33,7 +34,8 @@ func StartServer(port string) {
 	utils.Log.Info("Redis client initialized successfully.")
 
 	utils.Log.Info("Initializing PostgreSQL Database...")
-	if postgresDb.DB == nil { 
+
+	if postgresDb.DB == nil {
 		utils.Log.Fatal("PostgreSQL DB connection is nil. Exiting application.")
 	}
 	utils.Log.Info("PostgreSQL DB connection ready.")
@@ -52,34 +54,38 @@ func StartServer(port string) {
 	utils.Log.Info("TokenRepository initialized successfully.")
 
 	utils.Log.Info("Initializing Services...")
-	permissionService := authz.NewPermissionService(utils.Log) 
-	if permissionService == nil {                              
-		utils.Log.Fatal("Failed to initialize PermissionService. Exiting application.")
+
+	permissionService, err := authz.NewPermissionService(utils.Log)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize PermissionService. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("PermissionService initialized successfully.")
 
-	jwtValidator := utils.NewJWTValidatorImpl() 
+	jwtValidator := utils.NewJWTValidatorImpl()
 	utils.Log.Info("JWTValidator initialized successfully.")
 
-	
-	authSvc := authService.NewAuthService(userRepo, tokenRepo, jwtValidator) // <-- فرضا این متد سازنده AuthService است.
+	twoFAService, err := twofa.NewSimpleTwoFAService(userRepo)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize TwoFAService. Exiting application.", zap.Error(err))
+	}
+	utils.Log.Info("TwoFAService initialized successfully.")
+
+	authSvc := authService.NewAuthService(userRepo, tokenRepo, jwtValidator)
 	if authSvc == nil {
 		utils.Log.Fatal("Failed to initialize AuthService. Exiting application.")
 	}
 	utils.Log.Info("AuthService initialized successfully.")
 
-	accountSvc := account.NewAccountService(userRepo, tokenRepo) // فرضاً این متد سازنده AccountService است.
-	if accountSvc == nil {
-		utils.Log.Fatal("Failed to initialize AccountService. Exiting application.")
+	accountSvc, err := account.NewAccountService(userRepo, twoFAService)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize AccountService. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("AccountService initialized successfully.")
 
-	// --- User Service (برای مدیریت کاربران توسط Admin) ---
-	userSvc := user.NewUserService(userRepo, permissionService) // فرضاً این متد سازنده UserService است.
-	if userSvc == nil {
-		utils.Log.Fatal("Failed to initialize UserService. Exiting application.")
+	userSvc, err := user.NewUserService(userRepo, permissionService)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize UserService. Exiting application.", zap.Error(err))
 	}
-	utils.Log.Info("UserService initialized successfully.")
 
 	utils.Log.Info("Initializing Handlers...")
 	authHandler := handler.NewAuthHandler(authSvc)
@@ -88,27 +94,27 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("AuthHandler initialized.")
 
-	accountHandler := handler.NewAccountHandler(accountSvc) // <-- AccountHandler باید AccountService را بگیرد
+	accountHandler := handler.NewAccountHandler(accountSvc)
 	if accountHandler == nil {
 		utils.Log.Fatal("Failed to initialize AccountHandler. Exiting application.")
 	}
 	utils.Log.Info("AccountHandler initialized.")
 
-	userHandler := handler.NewUserHandler(userSvc) // <-- UserHandler باید UserService را بگیرد
+	userHandler := handler.NewUserHandler(userSvc)
 	if userHandler == nil {
 		utils.Log.Fatal("Failed to initialize UserHandler. Exiting application.")
 	}
 	utils.Log.Info("UserHandler initialized.")
 
-	// --- Initialize AuthZMiddleware ---
-	authZMiddleware := middleware.NewAuthZMiddleware(permissionService, utils.Log, jwtValidator) // <-- تمام وابستگی‌ها به درستی تزریق شده‌اند
-	// NewAuthZMiddleware هم پنیک میکند
+	authZMiddleware, err := middleware.NewAuthZMiddleware(permissionService, utils.Log, jwtValidator)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize AuthZMiddleware. Exiting application.", zap.Error(err))
+	}
+	utils.Log.Info("AuthZMiddleware initialized successfully.")
 
 	utils.Log.Info("All core dependencies initialized successfully.")
 	utils.Log.Info("Setting up Profile Manager API routes...")
 
-	// --- Setup all API routes ---
-	// `SetupAllRoutes` باید تمام هندلرهای لازم و `authZMiddleware` را دریافت کند.
 	if err := SetupAllRoutes(app, authHandler, accountHandler, userHandler, authZMiddleware); err != nil {
 		utils.Log.Fatal("Failed to set up Profile Manager API routes. Exiting application.", zap.Error(err))
 	}
@@ -117,5 +123,7 @@ func StartServer(port string) {
 	fullAddr := fmt.Sprintf("0.0.0.0%s", port)
 	utils.Log.Info("Profile Manager is attempting to listen", zap.String("address", fullAddr))
 
-	log.Fatal(app.Listen(port)) // Start listening for requests
+	log.Fatal(app.Listen(port))
+
+	return app.Listen(port)
 }

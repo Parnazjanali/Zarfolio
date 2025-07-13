@@ -3,7 +3,8 @@ package handler
 import (
 	"errors"
 	"profile-gold/internal/model"
-	"profile-gold/internal/service"
+	authService "profile-gold/internal/service/auth"
+	service "profile-gold/internal/service/common"
 	"profile-gold/internal/utils"
 	"strings"
 
@@ -12,10 +13,10 @@ import (
 )
 
 type AuthHandler struct {
-	userService service.UserService
+	userService authService.AuthService
 }
 
-func NewAuthHandler(us service.UserService) *AuthHandler {
+func NewAuthHandler(us authService.AuthService) *AuthHandler {
 	if us == nil {
 		utils.Log.Fatal("UserService cannot be nil for AuthHandler in Profile Manager.")
 	}
@@ -102,7 +103,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	utils.Log.Info("User logged in successfully in Profile Manager", zap.String("username", user.Username), zap.String("role", user.Role))
+	utils.Log.Info("User logged in successfully in Profile Manager", zap.String("username", user.Username), zap.String("role", string(user.Roles)))
 
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Login successful",
