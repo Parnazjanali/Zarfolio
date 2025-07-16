@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"gold-api/internal/model"
 	"gold-api/internal/service/auth"
 	service "gold-api/internal/service/common"
@@ -13,14 +14,18 @@ import (
 )
 
 type AuthHandler struct {
-	authService *auth.AuthService
+    authService auth.AuthService // اینترفیس AuthService
 }
 
-func NewAuthHandler(authService *auth.AuthService) *AuthHandler {
-	return &AuthHandler{
-		// ...initialize fields...
+func NewAuthHandler(authSvc auth.AuthService) (*AuthHandler, error) { // 👈 تغییر Signature
+	if authSvc == nil { // 👈 این چک باید اینجا برقرار باشه
+		utils.Log.Error("AuthService is nil when passed to NewAuthHandler.", zap.String("reason", "auth_service_nil"))
+		return nil, fmt.Errorf("AuthService cannot be nil for AuthHandler") // 👈 برگرداندن خطا
 	}
+	utils.Log.Info("AuthHandler initialized successfully.")
+	return &AuthHandler{authService: authSvc}, nil // 👈 برگرداندن غیر-nil و nil error
 }
+
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
 	var req model.RegisterRequest
 
@@ -111,18 +116,26 @@ func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 
 	c.Locals("userID", claims.UserID)
 	c.Locals("username", claims.Username)
-	c.Locals("userRoles", claims.Roles) 
+	c.Locals("userRoles", claims.Roles)
 
 	utils.Log.Info("User logged in successfully",
 		zap.String("username", user.Username),
-		zap.Any("roles", user.Roles), 
+		zap.Any("roles", user.Roles),
 	)
+	  var exp int64
+    if claims.ExpiresAt != nil { 
+        exp = claims.ExpiresAt.Unix()
+    } else {
+        
+        exp = 0 
+        utils.Log.Warn("JWT token returned without an 'exp' claim.", zap.String("username", user.Username))
+    }
 
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Login successful",
 		Token:   token,
-		User:    user,                    
-		Exp:     claims.ExpiresAt.Unix(), 
+		User:    user,
+		Exp:    exp,
 	})
 }
 
@@ -148,7 +161,7 @@ func (h *AuthHandler) LogoutUser(c *fiber.Ctx) error {
 	err := h.authService.LogoutUser(tokenString)
 	if err != nil {
 		utils.Log.Error("Logout failed in service layer", zap.String("token", tokenString), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidCredentials) { // Use ErrInvalidCredentials for invalid/expired token
+		if errors.Is(err, service.ErrInvalidCredentials) { 
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Message: "Invalid or expired token",
 				Code:    "401",
@@ -224,10 +237,10 @@ func (h *AuthHandler) HandleResetPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	err := h.authService.ResetPassword(req.Token, req.NewPassword) // Call service layer
+	err := h.authService.ResetPassword(req.Token, req.NewPassword) 
 	if err != nil {
 		utils.Log.Error("Failed to reset password in service layer", zap.String("token_prefix", req.Token[:min(len(req.Token), 10)]), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidToken) { // Assume ErrInvalidToken for invalid/expired reset tokens
+		if errors.Is(err, service.ErrInvalidToken) { 
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Invalid or expired reset token.", Code: "401"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -257,17 +270,12 @@ func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
 		})
 	}
 
-	// You'll need to pass the user's temporary session/userID which should be stored
-	// in c.Locals or a session mechanism after the first login step.
-	// For simplicity here, let's assume `username` is still available or derived from context.
-	// In a real 2FA flow, after successful username/password, the server might return a temporary token,
-	// which the client sends back with the 2FA code.
-	username := c.Locals("username").(string) // Example: getting username from context
+	username := c.Locals("username").(string) 
 
-	user, token, claims, err := h.authService.LoginTwoFA(username, req.Code) // Call service layer for 2FA login
+	user, token, claims, err := h.authService.VerifyTwoFACode(username, req.Code)
 	if err != nil {
 		utils.Log.Error("2FA login failed in service layer", zap.String("username", username), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidTwoFACode) { // Assume ErrInvalidTwoFACode
+		if errors.Is(err, service.ErrInvalidTwoFACode) { 
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Invalid 2FA code.", Code: "401"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -276,7 +284,6 @@ func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Internal server error during 2FA login.", Code: "500"})
 	}
 
-	// Update session/context with full login details after 2FA success
 	c.Locals("userID", claims.UserID)
 	c.Locals("username", claims.Username)
 	c.Locals("userRoles", claims.Roles)

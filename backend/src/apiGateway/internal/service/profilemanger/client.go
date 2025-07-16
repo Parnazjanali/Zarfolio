@@ -24,14 +24,17 @@ type profileManagerHTTPClient struct {
     client  *http.Client
 }
 
-func NewClient(baseURL string) (ProfileManagerClient, error) {
+func NewClient(baseURL string) (ProfileManagerClient, error) { // این تابع باید همیشه یک خطا هم برگردونه
     if baseURL == "" {
         return nil, fmt.Errorf("ProfileManagerClient base URL cannot be empty")
     }
-    return &profileManagerHTTPClient{
+
+    concreteClient := &profileManagerHTTPClient{ 
         baseURL: baseURL,
-        client:  &http.Client{Timeout: 10 * time.Second},
-    }, nil
+        client:  &http.Client{Timeout: 10 * time.Second}, 
+    }
+    
+    return concreteClient, nil 
 }
 
 func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
@@ -52,7 +55,7 @@ func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) { // Changed to os.ErrDeadlineExceeded
 			return nil, "", nil, fmt.Errorf("%w: timeout connecting to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
 		}
-		if errors.Is(err, syscall.ECONNREFUSED) { // Specific error for connection refused
+		if errors.Is(err, syscall.ECONNREFUSED) { 
 			return nil, "", nil, fmt.Errorf("%w: connection refused to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
 		}
 		return nil, "", nil, fmt.Errorf("failed to send request to profile manager: %w", err)

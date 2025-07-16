@@ -34,15 +34,15 @@ func main() {
 		utils.Log.Fatal("Failed to initialize UserRepository for seeding. Exiting application.")
 	}
 
-	/*if os.Getenv("RUN_DB_SEED") == "true" {
-		utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
-		if err := postgresDb.SeedInitialData(userRepo); err != nil {
-			utils.Log.Fatal("Database seeding failed: %v", zap.Error(err))
-		}
-		utils.Log.Info("Database seeding completed.")
-	} else {
-		utils.Log.Info("Database seeding skipped. Set RUN_DB_SEED=true to run seed.")
-	}*/
+	 if os.Getenv("RUN_DB_SEED") == "true" {
+        utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
+        if err := postgresDb.SeedInitialData(postgresDb.DB); err != nil { // 👈 از postgresDb.DB استفاده کنید
+            utils.Log.Fatal("Database seeding failed: %v", zap.Error(err))
+        }
+        utils.Log.Info("Database seeding completed.")
+    } else {
+        utils.Log.Info("Database seeding skipped. Set RUN_DB_SEED=true to run seed.")
+    }
 
 	if err := router.StartServer(":8081"); err != nil { 
 		utils.Log.Fatal("Profile Manager server failed to start or encountered a fatal error.", zap.Error(err)) 
