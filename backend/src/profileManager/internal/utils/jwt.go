@@ -1,90 +1,103 @@
 package utils
 
 import (
-	"errors"
-	"fmt"
-	"os"
-	"profile-gold/internal/model"
-	"time"
+    "errors"
+    "fmt"
+    "os"
+    "profile-gold/internal/model" 
+    "time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid" // Added for JTI
-	"go.uber.org/zap"
+    "github.com/golang-jwt/jwt/v5"
+    "go.uber.org/zap"
 )
 
-type CustomClaims struct {
-	UserID   string `json:"user_id"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
+type JWTValidator interface {
+    ValidateToken(token string) (*model.CustomClaims, error)
 }
 
-func GenerateJWTToken(user *model.User) (string, *CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecret == "" {
-		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot generate JWT.")
-	}
-
-	expirationTime := time.Now().Add(24 * time.Hour)
-	jti := uuid.NewString() // Generate a new UUID for JTI
-
-	claims := &CustomClaims{
-		UserID:   user.ID,
-		Username: user.Username,
-		Role:     user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			ID:        jti, // Set the JTI claim
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(jwtSecret))
-	if err != nil {
-		Log.Error("Failed to sign JWT token", zap.Error(err), zap.String("username", user.Username))
-		return "", nil, fmt.Errorf("failed to sign token: %w", err)
-	}
-
-	Log.Info("JWT token generated successfully",
-		zap.String("username", user.Username),
-		zap.String("role", user.Role),
-		zap.String("jti", jti), // Log JTI
-		zap.Time("expires_at", expirationTime))
-
-	return tokenString, claims, nil
+type JWTValidatorImpl struct {
+    jwtSecret []byte 
 }
-func ValidateJWTToken(tokenString string) (*CustomClaims, error) {
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecret == "" {
-		// This should be a fatal error as the application cannot securely validate tokens.
-		// Ensure Log is initialized before this function could be called in a real scenario,
-		// or use log.Fatalf if Log might not be ready. Given InitLogger is called early in main, Log.Fatal is okay.
-		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot validate JWT.")
-		// Log.Fatal will exit, so the return below is effectively unreachable but good for clarity.
-		return nil, errors.New("critical: jwt secret key not configured")
-	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(jwtSecret), nil
-	})
+func NewJWTValidatorImpl() *JWTValidatorImpl {
+    jwtSecret := os.Getenv("JWT_SECRET_KEY")
+    if jwtSecret == "" {
+        Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot initialize JWTValidator.")
+        
+    }
+    return &JWTValidatorImpl{
+        jwtSecret: []byte(jwtSecret), 
+    }
+}
 
-	if err != nil {
-		return nil, fmt.Errorf("token parsing or validation failed: %w", err)
-	}
+func GenerateJWTToken(user *model.User) (string, *model.CustomClaims, error) {
+   
+    jwtSecret := os.Getenv("JWT_SECRET_KEY")
+    if jwtSecret == "" {
+        Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot generate JWT.")
+    }
 
-	claims, ok := token.Claims.(*CustomClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token claims or token is not valid")
-	}
+    expirationTime := time.Now().Add(24 * time.Hour)
 
-	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
-		return nil, jwt.ErrTokenExpired
-	}
+    claims := &model.CustomClaims{
+        UserID:   user.ID,
+        Username: user.Username,
+        Roles:    user.Roles, 
+        RegisteredClaims: jwt.RegisteredClaims{
+            ExpiresAt: jwt.NewNumericDate(expirationTime),
+            IssuedAt:  jwt.NewNumericDate(time.Now()),
+            NotBefore: jwt.NewNumericDate(time.Now()),
+        },
+    }
 
-	return claims, nil
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+    tokenString, err := token.SignedString([]byte(jwtSecret))
+    if err != nil {
+        Log.Error("Failed to sign JWT token", zap.Error(err), zap.String("username", user.Username))
+        return "", nil, fmt.Errorf("failed to sign token: %w", err)
+    }
+
+    Log.Info("JWT token generated successfully",
+        zap.String("username", user.Username),
+        zap.Any("roles", user.Roles), 
+        zap.Time("expires_at", expirationTime))
+
+    return tokenString, claims, nil
+}
+
+
+func (v *JWTValidatorImpl) ValidateToken(tokenString string) (*model.CustomClaims, error) {
+    if v.jwtSecret == nil || len(v.jwtSecret) == 0 { 
+        Log.Error("JWT Secret Key is not initialized in JWTValidatorImpl. Cannot validate JWT.")
+        return nil, errors.New("jwt secret key not configured in validator")
+    }
+
+    token, err := jwt.ParseWithClaims(tokenString, &model.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+        }
+        return v.jwtSecret, nil 
+    })
+
+    if err != nil {
+        if errors.Is(err, jwt.ErrTokenExpired) {
+            return nil, errors.New("token expired") 
+        }
+        if errors.Is(err, jwt.ErrSignatureInvalid) {
+            return nil, errors.New("invalid token signature")
+        }
+        return nil, fmt.Errorf("token parsing or validation failed: %w", err)
+    }
+
+    claims, ok := token.Claims.(*model.CustomClaims)
+    if !ok || !token.Valid {
+        return nil, errors.New("invalid token claims or token is not valid")
+    }
+
+    // `token.Valid` already checks expiration, but explicit check can be useful for specific error types
+    // if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
+    //     return nil, jwt.ErrTokenExpired
+    // }
+
+    return claims, nil
 }

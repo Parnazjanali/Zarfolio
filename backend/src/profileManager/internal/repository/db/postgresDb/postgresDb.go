@@ -2,9 +2,8 @@ package postgresDb
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"profile-gold/internal/model"
+	"profile-gold/internal/model" // Import your models
 	"profile-gold/internal/utils"
 	"time"
 
@@ -17,57 +16,70 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
+	utils.Log.Info("Initializing database connection for Profile Manager...")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Tehran",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
-	)
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbSSLMode := os.Getenv("DB_SSLMODE")
 
-	if os.Getenv("DB_HOST") == "" || os.Getenv("DB_USER") == "" || os.Getenv("DB_PASSWORD") == "" || os.Getenv("DB_NAME") == "" || os.Getenv("DB_PORT") == "" {
-		utils.Log.Fatal("Missing one or more database environment variables (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT)")
+	if dbHost == "" {
+		dbHost = "localhost"
 	}
-	utils.Log.Info("Database DSN constructed", zap.String("host", os.Getenv("DB_HOST")), zap.String("port", os.Getenv("DB_PORT")))
+	if dbPort == "" {
+		dbPort = "5432"
+	}
+	if dbUser == "" {
+		dbUser = "myuser"
+	}
+	if dbPassword == "" {
+		dbPassword = "mypassword"
+	}
+	if dbName == "" {
+		dbName = "zarfolio_user_db"
+	}
+	if dbSSLMode == "" {
+		dbSSLMode = "disable"
+	}
 
-	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags),
-		logger.Config{
-			LogLevel:                  logger.Silent,
-			IgnoreRecordNotFoundError: true,
-			Colorful:                  true,
-		},
-	)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran",
+		dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
+
+	utils.Log.Info("Database DSN constructed", zap.String("host", dbHost), zap.String("port", dbPort), zap.String("db_name", dbName))
+
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: newLogger,
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 
 	if err != nil {
-		utils.Log.Fatal("Failed to connect to the PostgreSQL database", zap.Error(err))
+		utils.Log.Fatal("Failed to connect to PostgreSQL database", zap.Error(err))
 	}
 
 	sqlDB, err := DB.DB()
 	if err != nil {
-		utils.Log.Fatal("Failed to get underlying SQL DB instance from GORM", zap.Error(err))
+		utils.Log.Fatal("Failed to get underlying SQL DB", zap.Error(err))
 	}
-
-	sqlDB.SetMaxOpenConns(10)
-	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	utils.Log.Info("PostgreSQL database connected successfully. Attempting AutoMigrate...")
 
-	// Add all models that need to be auto-migrated here
 	err = DB.AutoMigrate(
 		&model.User{},
-		&model.PasswordResetToken{}, // Added PasswordResetToken
-		&model.Counterparty{},       // Added Counterparty
+		&model.PasswordResetToken{},
+		&model.Role{},           
+		&model.Permission{},    
+		&model.RolePermission{}, 
 	)
+
 	if err != nil {
 		utils.Log.Fatal("Failed to auto-migrate database schemas", zap.Error(err))
 	}
-	utils.Log.Info("Database auto-migration completed successfully for all registered models.")
+	utils.Log.Info("Database schemas auto-migrated successfully.")
 
+	SeedInitialData(DB) // We'll update this function next
 }
