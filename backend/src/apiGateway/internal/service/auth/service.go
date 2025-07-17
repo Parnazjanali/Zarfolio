@@ -11,20 +11,32 @@ import (
 	"go.uber.org/zap"
 )
 
-type AuthService struct {
-    profileMgrClient profilemanager.ProfileManagerClient
+type AuthService interface {
+	LoginUser(username, password string) (*model.User, string, *model.CustomClaims, error)
+	RegisterUser(req model.RegisterRequest) error
+	LogoutUser(token string) error
+	RequestPasswordReset(email string) error
+	ResetPassword(token, newPassword string) error
+	VerifyTwoFACode(username, code string) (*model.User, string, *model.CustomClaims, error)
+}
+type AuthServiceImpl struct {
+	profileMgrClient profilemanager.ProfileManagerClient
 }
 
-func NewAuthService(client profilemanager.ProfileManagerClient) (*AuthService, error) { 
-    if client == nil {
-        utils.Log.Fatal("ProfileManagerClient cannot be nil for AuthService.")
-    }
-    return &AuthService{profileMgrClient: client}, nil // 👈 Return nil for error on success
-	
+func NewAuthService(client profilemanager.ProfileManagerClient) (AuthService, error) { // 👈 CHANGE RETURN TYPE TO THE INTERFACE
+	if client == nil {
+		utils.Log.Error("ProfileManagerClient passed to NewAuthService is nil.", zap.String("reason", "profile_manager_client_is_nil"))
+		return nil, fmt.Errorf("ProfileManagerClient cannot be nil for AuthService")
+	}
+
+	utils.Log.Info("AuthService initialized successfully.")
+	return &AuthServiceImpl{profileMgrClient: client}, nil // 👈 Return a pointer to the concrete implementation, which satisfies the interface
 }
 
-func (s *AuthService) LoginUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
+func (s *AuthServiceImpl) LoginUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
+
 	user, token, claims, err := s.profileMgrClient.AuthenticateUser(username, password)
+
 	if err != nil {
 		utils.Log.Error("Authentication failed in ProfileManagerClient", zap.String("username", username), zap.Error(err))
 		if errors.Is(err, service.ErrInvalidCredentials) {
@@ -43,14 +55,14 @@ func (s *AuthService) LoginUser(username, password string) (*model.User, string,
 	return user, token, claims, nil
 }
 
-func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
+func (s *AuthServiceImpl) RegisterUser(req model.RegisterRequest) error {
 	err := s.profileMgrClient.RegisterUser(req)
 	if err != nil {
 		utils.Log.Error("Registration failed in ProfileManagerClient", zap.String("username", req.Username), zap.Error(err))
-		if errors.Is(err, service.ErrUserAlreadyExists) { 
+		if errors.Is(err, service.ErrUserAlreadyExists) {
 			return service.ErrUserAlreadyExists
 		}
-		if errors.Is(err, service.ErrProfileManagerDown) { 
+		if errors.Is(err, service.ErrProfileManagerDown) {
 			return service.ErrProfileManagerDown
 		}
 		return fmt.Errorf("%w: failed to register user with profile manager", service.ErrInternalService)
@@ -59,7 +71,7 @@ func (s *AuthService) RegisterUser(req model.RegisterRequest) error {
 	return nil
 }
 
-func (s *AuthService) RequestPasswordReset(email string) error {
+func (s *AuthServiceImpl) RequestPasswordReset(email string) error {
 	err := s.profileMgrClient.RequestPasswordReset(email) // این متد باید در ProfileManagerClient تعریف شود
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
@@ -73,7 +85,7 @@ func (s *AuthService) RequestPasswordReset(email string) error {
 	return nil
 }
 
-func (s *AuthService) ResetPassword(token, newPassword string) error {
+func (s *AuthServiceImpl) ResetPassword(token, newPassword string) error {
 	err := s.profileMgrClient.ResetPassword(token, newPassword) // این متد باید در ProfileManagerClient تعریف شود
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidToken) {
@@ -87,7 +99,7 @@ func (s *AuthService) ResetPassword(token, newPassword string) error {
 	return nil
 }
 
-func (s *AuthService) LoginTwoFA(username, code string) (*model.User, string, *model.CustomClaims, error) {
+func (s *AuthServiceImpl) LoginTwoFA(username, code string) (*model.User, string, *model.CustomClaims, error) {
 	user, token, claims, err := s.profileMgrClient.VerifyTwoFACode(username, code) // این متد باید در ProfileManagerClient تعریف شود
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTwoFACode) {
@@ -101,7 +113,7 @@ func (s *AuthService) LoginTwoFA(username, code string) (*model.User, string, *m
 	return user, token, claims, nil
 }
 
-func (s *AuthService) LogoutUser(token string) error {
+func (s *AuthServiceImpl) LogoutUser(token string) error {
 	// ... (همانند قبل، با استفاده از s.profileMgrClient.LogoutUser)
 	err := s.profileMgrClient.LogoutUser(token)
 	if err != nil {
@@ -118,3 +130,37 @@ func (s *AuthService) LogoutUser(token string) error {
 	return nil
 }
 
+func (s *AuthServiceImpl) VerifyTwoFACode (username, code string)(*model.User, string, *model.CustomClaims, error){
+  // 1. یک مدل درخواست برای تأیید 2FA بسازید
+    req := model.VerifyTwoFARequest{
+        Username: username,
+        Code:     code,
+    }
+
+    // 2. این درخواست را به ProfileManagerClient ارسال کنید
+    // فرض کنید profileMgrClient متد VerifyTwoFACode دارد که کاربر، توکن و کلیم‌ها را برمی‌گرداند.
+    user, token, claims, err := s.profileMgrClient.VerifyTwoFACode(req.Username, req.Code) // 👈 این متد در ProfileManagerClient فراخوانی می‌شود
+
+    // 3. خطاها را بررسی کنید
+    if err != nil {
+        utils.Log.Error("2FA verification failed in ProfileManagerClient",
+            zap.String("username", username),
+            zap.Error(err),
+        )
+        // مدیریت خطاهای خاص از ProfileManagerClient
+        if errors.Is(err, service.ErrInvalidTwoFACode) {
+            return nil, "", nil, service.ErrInvalidTwoFACode
+        }
+        if errors.Is(err, service.ErrProfileManagerDown) {
+            return nil, "", nil, service.ErrProfileManagerDown
+        }
+        // خطای عمومی برای سایر مشکلات
+        return nil, "", nil, fmt.Errorf("%w: failed to verify 2FA code with profile manager", service.ErrInternalService)
+    }
+
+    // 4. لاگ موفقیت و برگرداندن نتایج
+    utils.Log.Info("User 2FA verified successfully by Profile Manager",
+        zap.String("username", user.Username),
+    )
+    return user, token, claims, nil
+}

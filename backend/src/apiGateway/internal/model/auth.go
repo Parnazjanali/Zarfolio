@@ -34,6 +34,7 @@ type AuthResponse struct {
 	Exp     int64  `json:"exp,omitempty"`
 }
 type VerifyTwoFARequest struct {
+	Username string `json:"username"`
 	Code string `json:"code"` // The 2FA code provided by the user
 	// You might also need a session ID or temporary token here if it's a multi-step process
 }
