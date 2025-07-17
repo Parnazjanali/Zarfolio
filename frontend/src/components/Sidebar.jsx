@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
-// motion و AnimatePresence از framer-motion وارد می‌شوند
 import { motion, AnimatePresence } from 'framer-motion'; 
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
@@ -18,8 +17,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
-
-  // ... (تمام منطق دیگر کامپوننت بدون تغییر باقی می‌ماند) ...
   const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
   const getSelectedKeys = () => { const path = location.pathname; if (path.startsWith('/invoices/')) return ['/invoices']; if (path.startsWith('/reports/')) return ['/reports']; return [path]; };
   const onOpenChange = (keys) => { setOpenKeys(keys); };
@@ -68,11 +65,10 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       </div>
 
       <div style={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-        {/* ... بقیه کامپوننت بدون تغییر ... */}
         {!isCollapsed && (
           <div className="user-profile-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #444',}} >
             <Space align="center">
-              <FaUserCircle style={{ fontSize: '22px', color: '#ccc' }} />
+              <FaUserCircle style={{ fontSize: '30px', color: '#ccc' }} />
               <Text strong style={{ color: 'white' }}>{currentUserName}</Text>
             </Space>
             <Link to="/account/settings" title="حساب کاربری">
