@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SeedInitialData(db *gorm.DB) {
+func SeedInitialData(db *gorm.DB) error{
 	utils.Log.Info("Attempting to seed initial data (roles and permissions)...")
 
 	rolesToSeed := []model.Role{
@@ -230,4 +230,6 @@ func SeedInitialData(db *gorm.DB) {
 	} else {
 		utils.Log.Info("Default admin user already exists, skipping seed.")
 	}
+	
+	return  nil
 }

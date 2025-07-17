@@ -1,126 +1,109 @@
 /* src/App.css */
 
-/* تنظیمات کلی برنامه */
-body {
-  margin: 0;
-  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5; /* رنگ پس زمینه اصلی برای صفحات داخلی */
-}
+/* قوانین مربوط به .main-layout و .main-content-area که به صورت دستی حاشیه را تنظیم می‌کردند،
+  حذف شده‌اند. کامپوننت Layout از Ant Design این کار را به صورت خودکار انجام می‌دهد.
+*/
 
-/* پس‌زمینه گرادیانی برای صفحات ورود */
+/* استایل‌های مربوط به پس‌زمینه صفحات احراز هویت */
 .login-page-background {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
+  height: 100vh;
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-/* استایل برای Sidebar و Layout */
-.custom-sidebar {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
-  z-index: 1000;
-}
-
-.site-layout .site-layout-background {
-  background: #fff;
-}
-
-.sidebar-header {
-  height: 64px;
+/* استایل برای کانتینر فرم‌های ورود */
+.login-page-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #001529; /* رنگ هدر سایدبار */
-}
-
-.sidebar-footer-sticky {
-  position: -webkit-sticky;
-  position: sticky;
-  bottom: 0;
-  background-color: #001529;
-}
-
-/* استایل جدید و نهایی برای دکمه باز و بسته کردن سایدبار */
-.neon-effect-dark {
   width: 100%;
-  border-radius: 8px;
-  border: none; /* حذف کامل حاشیه */
-  background-color: transparent; /* پس‌زمینه شفاف */
-  color: #a6a6a6;
-  padding: 10px 0;
-  font-size: 18px; /* بزرگ‌تر کردن آیکون */
-  transition: all 0.2s ease-in-out;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
-.neon-effect-dark:hover {
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* فال‌بک برای صفحات Lazy-loaded */
+/* استایل برای پیام "در حال بارگذاری..." در زمان استفاده از Suspense */
 .page-loading-fallback {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  font-size: 1.2em;
-  color: #555;
+  height: 100vh;
+  width: 100vw;
+  font-size: 1.5rem;
+  color: #888;
 }
 
-/* استایل برای جلوگیری از بهم‌ریختگی در حالت موبایل */
-@media (max-width: 767px) {
-  .custom-sidebar {
-    position: fixed;
-    z-index: 1001; /* بالاتر از محتوا */
-  }
+/* استایل‌های مربوط به منوی سایدبار */
+
+/* حذف خط زیر لینک‌ها در منو */
+.ant-layout-sider .ant-menu-item .ant-menu-title-content a:hover,
+.ant-layout-sider .ant-menu-submenu-title .ant-menu-title-content a:hover,
+.ant-layout-sider .ant-menu-item a:hover,
+.ant-layout-sider .ant-menu-submenu-title:hover {
+  text-decoration: none;
 }
 
-/* استایل برای هدر پروفایل کاربر در سایدبار */
-.user-profile-header {
-  transition: opacity 0.3s ease-in-out;
+/* افزایش اندازه آیکون‌ها در سایدبار */
+.ant-layout-sider .ant-menu .anticon {
+  font-size: 1.25em;
+  vertical-align: middle;
 }
 
-/* استایل‌های کلی برای فرم‌های احراز هویت */
-.auth-page .ant-card {
-  width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  height: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.ant-layout-sider .ant-menu-item svg,
+.ant-layout-sider .ant-menu-submenu-title svg {
+  font-size: 1.25em;
+  vertical-align: middle;
 }
 
-/* استایل‌های سفارشی برای بزرگ‌تر کردن دکمه‌های شناور */
-.custom-fab-group .ant-float-btn {
-  width: 45px; /* افزایش عرض دکمه */
-  height: 45px; /* افزایش ارتفاع دکمه */
+/* استایل آیکون دکمه بستن/باز کردن سایدبار */
+.sidebar-footer-sticky .ant-btn svg {
+  font-size: 1.25em;
+  vertical-align: middle;
+  transition: font-size 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.custom-fab-group .ant-float-btn .ant-float-btn-body {
-  width: 45px;
-  height: 45px;
-  font-size: 24px; /* بزرگ‌تر کردن آیکون */
-  line-height: 45px;
+.ant-layout-sider-collapsed .sidebar-footer-sticky .ant-btn svg {
+  font-size: 20px;
+  vertical-align: middle;
 }
 
-/* افزایش اندازه آیکون‌های سایدبار در حالت بسته */
-.custom-sidebar .ant-menu-inline-collapsed > .ant-menu-item .ant-menu-item-icon,
-.custom-sidebar .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-item-icon {
-  font-size: 22px; /* اندازه جدید آیکون‌ها */
-  line-height: 1; /* تنظیم فاصله عمودی */
-  vertical-align: middle; /* تراز عمودی آیکون */
+/* استایل آیکون‌ها در حالت بسته سایدبار */
+.ant-layout-sider-collapsed .ant-menu .anticon,
+.ant-layout-sider-collapsed .ant-menu-item svg,
+.ant-layout-sider-collapsed .ant-menu-submenu-title svg {
+  font-size: 20px;
+  vertical-align: middle;
+}
+.sidebar-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  /* در حالت باز، محتوا به سمت راست (در چیدمان RTL) چسبانده می‌شود */
+  justify-content: flex-start; 
+  /* فاصله از بالا و راست افزایش یافت */
+  padding: 12px 28px;
+  border-bottom: 1px solid #303030;
+  overflow: hidden; /* مهم برای جلوگیری از پرش محتوا */
+  /* انیمیشن برای تغییر پدینگ، تا جابجایی نرم باشد */
+  transition: padding 0.6s ease-in-out;
+}
+
+/* وقتی سایدبار بسته است، محتوا را در مرکز قرار می‌دهد */
+.ant-layout-sider-collapsed .sidebar-header {
+  justify-content: center;
+  /* در حالت بسته، پدینگ چپ و راست را صفر می‌کنیم تا لوگو دقیقاً در مرکز باشد */
+  padding-left: 0;
+  padding-right: 0;
 }
