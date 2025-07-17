@@ -1,10 +1,6 @@
 /* src/App.css */
 
-/* قوانین مربوط به .main-layout و .main-content-area که به صورت دستی حاشیه را تنظیم می‌کردند،
-  حذف شده‌اند. کامپوننت Layout از Ant Design این کار را به صورت خودکار انجام می‌دهد.
-*/
 
-/* استایل‌های مربوط به پس‌زمینه صفحات احراز هویت */
 .login-page-background {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
@@ -63,19 +59,19 @@
 
 .ant-layout-sider .ant-menu-item svg,
 .ant-layout-sider .ant-menu-submenu-title svg {
-  font-size: 1.25em;
+  font-size: 25px;
   vertical-align: middle;
 }
 
 /* استایل آیکون دکمه بستن/باز کردن سایدبار */
 .sidebar-footer-sticky .ant-btn svg {
-  font-size: 1.25em;
+  font-size: 25px;
   vertical-align: middle;
   transition: font-size 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .ant-layout-sider-collapsed .sidebar-footer-sticky .ant-btn svg {
-  font-size: 20px;
+  font-size: 25px;
   vertical-align: middle;
 }
 
@@ -83,7 +79,7 @@
 .ant-layout-sider-collapsed .ant-menu .anticon,
 .ant-layout-sider-collapsed .ant-menu-item svg,
 .ant-layout-sider-collapsed .ant-menu-submenu-title svg {
-  font-size: 20px;
+  font-size: 30px;
   vertical-align: middle;
 }
 .sidebar-header {
@@ -103,7 +99,6 @@
 /* وقتی سایدبار بسته است، محتوا را در مرکز قرار می‌دهد */
 .ant-layout-sider-collapsed .sidebar-header {
   justify-content: center;
-  /* در حالت بسته، پدینگ چپ و راست را صفر می‌کنیم تا لوگو دقیقاً در مرکز باشد */
   padding-left: 0;
   padding-right: 0;
 }
