@@ -1,481 +1,65 @@
-/* src/pages/DashboardPage.css */
-:root {
-  /* متغیرهای CSS مربوط به خطوط گرید حذف شده‌اند چون دیگر کاربردی ندارند */
+.dashboard-page-optimized {
+  padding: 24px;
+  background-color: #f0f2f5;
 }
 
-.dashboard-page-content {
-  width: 100%;
-  padding-top: 10px;
-  padding-bottom: 20px;
-  padding-left: 0;
-  padding-right: 0;
-  box-sizing: border-box;
-  transition: filter 0.3s ease-in-out;
-}
-
-.dashboard-page-content.content-blurred {
-  filter: blur(4px);
-  pointer-events: none;
-}
-
-.dashboard-main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-sizing: border-box;
-  padding-left: 25px;
-  padding-right: 25px;
-}
-
-.dashboard-sections-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.dashboard-header-actions {
-  display: flex;
-  justify-content: flex-end; /* چینش دکمه‌ها به سمت راست (برای RTL مناسب‌تر است وقتی فقط یک دکمه داریم) */
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-  position: relative;
-  z-index: 102;
-}
-
-.dashboard-customize-button { /* دکمه dashboard-action-toggle-button حذف شده است */
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px; /* گردی دکمه‌ها */
-  font-size: 0.95em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  white-space: nowrap;
-}
-
-.dashboard-customize-button:hover {
-  background-color: #5a6268;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.dashboard-customize-button svg {
-  font-size: 1.1em;
-}
-
-.dashboard-customize-button svg + .button-text {
-    margin-right: 8px;
-}
-
-.summary-cards-grid-layout {
-  direction: ltr !important;
-  position: relative;
-}
-
-/* کلاس .grid-lines-active دیگر استفاده نمی‌شود و حذف شده است. */
-
-.grid-item-card {
-  background-color: rgba(255, 255, 255, 0.8); /* تغییر اصلی: پس‌زمینه با شفافیت 80% */
-  backdrop-filter: blur(5px); /* افزودن افکت بلور برای خوانایی بهتر روی پس‌زمینه‌های شلوغ (اختیاری) */
-  -webkit-backdrop-filter: blur(5px); /* برای سافاری */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* کمی سایه بیشتر برای برجستگی */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden !important; /* overflow: hidden برای گرد شدن گوشه‌های محتوای داخلی */
-  border: 1px solid rgba(200, 200, 200, 0.3); /* بوردر بسیار محو (اختیاری) */
-  width: 100%;
+.widget-card {
+  /* به جای ارتفاع ثابت، یک حداقل ارتفاع تعیین می‌کنیم تا انعطاف‌پذیر باشد */
+  min-height: 280px; 
   height: 100%;
-  box-sizing: border-box;
-  direction: rtl;
-  position: relative;
-  z-index: 2;
-  transition: box-shadow 0.2s ease-in-out, background-color 0.3s ease-in-out; /* افزودن transition برای background-color */
-  border-radius: 12px; /* تغییر اصلی: گرد کردن لبه‌ها */
-}
-
-/* اگر آیتم‌های خاصی نیاز به padding درونی برای محتوا دارند (مثلا ساعت و تقویم) */
-.grid-item-card.digital-clock-grid-item,
-.grid-item-card.jalali-calendar-grid-item,
-.grid-item-card.cheque-alert-grid-item {
-  /* padding-top دیگر برای ItemControls لازم نیست چون ItemControls حذف شده */
-  /* padding داخلی برای این ویجت‌ها توسط خودشان مدیریت شود بهتر است */
-}
-.grid-item-card.digital-clock-grid-item > .digital-clock-widget,
-.grid-item-card.jalali-calendar-grid-item > .jalali-calendar-widget,
-.grid-item-card.cheque-alert-grid-item > .cheque-alert-widget {
-  height: 100%;
-  box-sizing: border-box;
-  width: 100%;
-  border-radius: इन्herit; /* برای اینکه محتوای داخلی هم گوشه‌های گرد بگیرد */
-}
-
-
-.react-grid-placeholder {
-  background-color: rgba(0, 123, 255, 0.08) !important;
-  border-radius: 12px !important; /* هماهنگ با گردی آیتم‌ها */
-  border: 1px dashed rgba(0, 123, 255, 0.4) !important;
-  opacity: 0.6 !important;
-  z-index: 1 !important;
-}
-
-/* استایل‌های مربوط به ItemControls, drag-handle, react-resizable-handle-se حذف شده‌اند */
-
-.summary-card-inner-content {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-  padding: clamp(12px, 2.5vw, 18px); /* کمی افزایش padding برای ظاهر بهتر با گوشه‌های گرد */
-  width: 100%;
-  box-sizing: border-box;
-  /* padding-top دیگر نیاز به فضای اضافی برای کنترل‌های حذف شده ندارد */
-}
-
-.summary-card .card-icon-container {
-  flex-shrink: 0;
-  width: clamp(40px, 7vw, 48px);
-  height: clamp(40px, 7vw, 48px);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  margin-left: clamp(10px, 2.2vw, 15px);
-}
-.summary-card .card-icon-container.gold { background-color: #f1c40f; }
-.summary-card .card-icon-container.value { background-color: #2ecc71; }
-.summary-card .card-icon-container.invoices { background-color: #3498db; }
-.summary-card .card-icon-container.price { background-color: #e67e22; }
-.summary-card .card-icon-container.gold-receivable { background-color: #58b07a; }
-.summary-card .card-icon-container.gold-payable { background-color: #e86a5a; }
-.summary-card .card-icon-container.melted-gold { background-color: #f39c12; }
-.summary-card .card-icon-container.coins { background-color: #f1c40f; }
-.summary-card .card-icon-container.misc { background-color: #95a5a6; }
-
-
-.summary-card .card-icon {
-  font-size: clamp(1.2em, 3.2vw, 1.5em);
-}
-
-.summary-card .card-content {
-  text-align: right;
-  flex-grow: 1;
-  overflow: hidden;
+  border-radius: 12px !important; /* کمی گردتر برای ظاهر دوستانه‌تر */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1); /* سایه ظریف‌تر */
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-}
-.summary-card .card-content h3 {
-  margin: 0;
-  font-size: clamp(0.8em, 2.2vw, 0.9em);
-  font-weight: 600;
-  color: #34495e;
-  white-space: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.35;
-  max-height: 2.7em;
-}
-.summary-card .card-content p {
-  margin: 0;
-  font-size: clamp(1.1em, 3.3vw, 1.4em);
-  font-weight: 700;
-  color: #2c3e50;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  background-color: #ffffff; /* پس زمینه سفید برای کارت‌ها */
 }
 
-.no-cards-placeholder,
-.no-sections-placeholder {
-  text-align: center;
-  padding: 30px 20px;
-  color: #718096;
-  background-color: rgba(248, 249, 250, 0.85); /* کمی شفافیت برای هماهنگی */
-  backdrop-filter: blur(3px);
-  border-radius: 12px; /* گردی هماهنگ */
-  margin-top: 20px;
-  border: 1px dashed #dee2e6;
+.widget-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
 }
-.no-cards-placeholder p,
-.no-sections-placeholder p {
-  font-size: 1em;
-  margin: 0;
+
+.widget-card .ant-card-head {
+  border-bottom: 0;
   font-weight: 500;
+  font-size: 0.9rem; /* کوچک‌تر کردن فونت عنوان کارت */
+  color: #595959; /* رنگ ملایم‌تر برای عنوان */
+  padding: 0 20px; /* تنظیم padding عنوان */
 }
 
-.card-style {
-  background-color: rgba(255, 255, 255, 0.8); /* تغییر اصلی: پس‌زمینه با شفافیت 80% */
-  backdrop-filter: blur(5px); /* افکت بلور (اختیاری) */
-  -webkit-backdrop-filter: blur(5px);
-  border-radius: 12px; /* تغییر اصلی: گرد کردن لبه‌ها */
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* کمی سایه بیشتر */
-  border: 1px solid rgba(200, 200, 200, 0.3); /* بوردر بسیار محو (اختیاری) */
-}
-.card-style h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.3em; 
-  color: #2c3e50; 
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7); /* بوردر پایین کمی محوتر */
-  padding-bottom: 10px;
-  font-weight: 700; 
-}
-
-.quick-actions-section,
-.recent-transactions-section {
-    padding: 15px;
-}
-
-.quick-actions-section {
-    display: grid;
-    grid-template-columns: 1fr; 
-    gap: 10px; 
-}
-
-.quick-actions-section h2,
-.recent-transactions-section h2 { 
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    font-size: 1.2em; 
-}
-
-.quick-actions-placeholder {
+.widget-card .ant-card-body {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; 
-  gap: 8px; 
+  justify-content: center;
+  padding: 20px; /* کمی افزایش padding داخلی */
 }
 
-.quick-actions-section .action-button {
-  padding: 10px 12px;
-  background-color: rgba(233, 245, 255, 0.85); /* کمی شفافیت */
-  border: 1px solid rgba(184, 214, 251, 0.7);
-  border-radius: 6px;
-  color: #004085;
-  font-size: 0.95em; 
-  font-weight: 500; 
-  text-align: right;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-}
-.quick-actions-section .action-button:hover {
-  background-color: rgba(209, 231, 255, 0.9);
-  border-color: rgba(162, 199, 245, 0.8);
-  box-shadow: 0 2px 5px rgba(0, 64, 133, 0.1);
-}
-.action-icon {
-  margin-left: 10px;
-  font-size: 1.2em; 
-}
-.recent-transactions-section table {
+/* استایل خاص برای کامپوننت‌های داخل کارت‌ها */
+.widget-card .digital-clock,
+.widget-card .jalali-calendar-container,
+.widget-card .cheque-alert-widget-optimized {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9em; 
-}
-.recent-transactions-section th,
-.recent-transactions-section td {
-  padding: 12px 10px; 
-  text-align: right;
-  border-bottom: 1px solid rgba(237, 242, 247, 0.7); /* بوردر محوتر */
-}
-.recent-transactions-section th {
-  background-color: rgba(248, 250, 252, 0.8); /* کمی شفافیت */
-  color: #34495e; 
-  font-weight: 600; 
-}
-.recent-transactions-section tbody tr:hover {
-  background-color: rgba(247, 250, 252, 0.85); /* کمی شفافیت */
-}
-.no-data-message {
-  text-align: center;
-  color: #718096;
-  padding: 15px 0;
-  font-size: 0.95em; 
-  font-weight: 500; 
-}
-
-/* استایل‌های عمومی مودال‌ها (بدون تغییر) */
-.modal-overlay.generic-modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.55);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1050; direction: rtl;
-  opacity: 0; animation: fadeInOverlay 0.25s forwards;
-}
-.modal-content.generic-modal-content {
-  background-color: #fff; padding: 20px 25px; border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-  width: 90%; max-width: 400px;
-  transform: translateY(-20px) scale(0.97); opacity: 0;
-  animation: slideDownModal 0.3s 0.05s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-@keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes slideDownModal { 0% { transform: translateY(-20px) scale(0.97); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-
-.generic-modal-content .modal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 12px; border-bottom: 1px solid #e9ecef; margin-bottom: 15px;
-}
-.generic-modal-content .modal-header h3 { margin: 0; font-size: 1.25em; color: #212529; font-weight: 600;}
-.generic-modal-content .modal-close-button {
-  background: none; border: none; font-size: 1.3em; color: #6c757d; cursor: pointer; padding: 5px; line-height: 1;
-  transition: color 0.2s ease;
-}
-.generic-modal-content .modal-close-button:hover { color: #343a40; }
-.generic-modal-content .modal-body { font-size: 0.95em; line-height: 1.6; }
-
-
-@media (max-width: 992px) {
-  .dashboard-sections-container { grid-template-columns: 1fr; }
-  .dashboard-header-actions { flex-direction: column; align-items: stretch; gap: 10px; }
-  .dashboard-customize-button { width: 100%; }
-}
-
-@media (max-width: 520px) {
-  .dashboard-header-actions { gap: 8px; }
-  .dashboard-customize-button { padding: 8px 10px; font-size: 0.85em; } 
-  .dashboard-customize-button .button-text { display: none; }
-  .dashboard-customize-button svg { margin-left: 0; margin-right: 0; }
-}
-
-@media (max-width: 480px) {
-  .card-style h2, 
-  .quick-actions-section h2, 
-  .recent-transactions-section h2 { font-size: 1.15em; } 
-  .quick-actions-section .action-button, .recent-transactions-section th, .recent-transactions-section td { font-size: 0.8em; padding: 8px 10px; } 
-  .summary-card .card-icon-container { width: 32px; height: 32px; margin-left: 8px;} 
-  .summary-card .card-icon { font-size: 1em; } 
-}
-
-.dashboard-page-container {
-  width: 100%;
-  padding-top: 10px;
-  padding-bottom: 20px;
-  padding-left: 0; 
-  padding-right: 0;
-  box-sizing: border-box;
-  transition: filter 0.3s ease-in-out, background-image 0.5s ease-in-out; 
-  min-height: 100vh; 
-  background-size: cover; 
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.dashboard-page-container.content-blurred { 
-  filter: blur(4px);
-  pointer-events: none;
-}
-
-/* استایل‌های شرطی برای زمانی که پس‌زمینه تصویر دارد (بدون تغییر، اما مهم هستند) */
-.dashboard-page-content.has-background-image .grid-item-card {
-  /* Opacity و backdrop-filter در .grid-item-card اصلی اعمال شده */
-}
-.dashboard-page-content.has-background-image .card-style {
-  /* Opacity و backdrop-filter در .card-style اصلی اعمال شده */
-}
-.dashboard-page-content.has-background-image .summary-card .card-content h3,
-.dashboard-page-content.has-background-image .summary-card .card-content p,
-.dashboard-page-content.has-background-image .quick-actions-section h2, 
-.dashboard-page-content.has-background-image .recent-transactions-section h2 {
-  /* در صورت نیاز به تغییر رنگ متن روی پس‌زمینه، اینجا اعمال شود */
-}
-.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button {
-  background-color: rgba(240, 240, 240, 0.25); 
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  color: #fff; 
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-.dashboard-page-content.has-background-image .dashboard-header-actions .dashboard-customize-button:hover {
-  background-color: rgba(255, 255, 255, 0.35);
-  border-color: rgba(255, 255, 255, 0.7);
-}
-/* پایان استایل‌های شرطی پس‌زمینه */
-
-
-.cheque-alert-widget {
-  padding: 10px;
-  font-size: 0.9em;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: इन्herit; /* برای گرد شدن گوشه‌ها هماهنگ با والد */
 }
-.cheque-alert-widget h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: 1em;
+
+.widget-card .digital-clock {
+  font-size: 2.2rem; /* کوچک کردن فونت ساعت */
   font-weight: 600;
   color: #333;
-  border-bottom: 1px solid rgba(238, 238, 238, 0.7);
-  padding-bottom: 6px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
 }
-.cheque-alert-widget h4 svg {
-  margin-left: 8px; 
-  color: #e67e22;
+
+/* بهینه‌سازی اندازه تقویم */
+.widget-card .jalali-calendar-container .calendar {
+  height: 100%;
+  font-size: 0.85rem; /* کوچک کردن فونت کلی تقویم */
+  box-shadow: none !important;
+  background-color: transparent !important;
 }
-.cheque-alert-widget ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-  flex-grow: 1;
-  font-size: 0.95em;
-}
-.cheque-alert-widget li {
-  padding: 5px 2px;
-  border-bottom: 1px solid rgba(245, 245, 245, 0.7);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 5px;
-}
-.cheque-alert-widget li:last-child {
-  border-bottom: none;
-}
-.cheque-alert-widget .cheque-amount {
-  font-weight: 500;
-  color: #2c3e50;
-  white-space: nowrap;
-}
-.cheque-alert-widget .cheque-party {
-  color: #3498db;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-shrink: 1;
-  text-align: right;
-}
-.cheque-alert-widget .cheque-due-date {
-  font-size: 0.9em;
-  color: #7f8c8d;
-  white-space: nowrap;
-  margin-right: auto;
-}
-.cheque-alert-widget p {
-  text-align: center;
-  color: #7f8c8d;
-  margin-top: 15px;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+.widget-card .jalali-calendar-container .calendar .month-container .month-title {
+    font-size: 1.1rem; /* تنظیم اندازه عنوان ماه */
 }
