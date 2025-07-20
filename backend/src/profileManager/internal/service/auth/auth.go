@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
+
 type AuthService interface {
 	RegisterUser(req model.RegisterRequest) error
 	AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error)
@@ -24,8 +25,8 @@ type AuthService interface {
 }
 
 type UserService struct {
-	userRepo  postgresDb.UserRepository
-	tokenRepo redisdb.TokenRepository
+	userRepo     postgresDb.UserRepository
+	tokenRepo    redisdb.TokenRepository
 	jwtValidator utils.JWTValidator
 }
 
@@ -118,7 +119,7 @@ func (s *UserService) AuthenticateUser(username, password string) (*model.User, 
 func (s *UserService) LogoutUser(tokenString string) error {
 	utils.Log.Info("UserService: Attempting to logout user by blacklisting token.", zap.String("token_prefix", tokenString[:min(len(tokenString), 10)]))
 
-    claims, err := s.jwtValidator.ValidateToken(tokenString) 
+	claims, err := s.jwtValidator.ValidateToken(tokenString)
 
 	if err != nil {
 		utils.Log.Error("UserService: Failed to parse or validate token for logout", zap.Error(err),
@@ -143,6 +144,10 @@ func (s *UserService) LogoutUser(tokenString string) error {
 			zap.String("username", claims.Username), zap.Time("expires_at", expirationTime))
 		return nil
 	}
+	utils.Log.Info("UserService: Calculated TTL for token",
+		zap.String("username", claims.Username),
+		zap.Duration("ttl", ttl),
+		zap.Time("expires_at", expirationTime)) 
 	err = s.tokenRepo.AddTokenToBlacklist(tokenString, ttl)
 	if err != nil {
 		utils.Log.Error("UserService: Failed to add token to blacklist", zap.String("username", claims.Username), zap.Error(err))

@@ -30,7 +30,7 @@ func SetuUpAuthRoutes(app *fiber.App, authHandler *handler.AuthHandler, authZMid
     authGroup.Post("/2fa/verify", authHandler.VerifyTwoFA)
 
 
-    authGroup.Post("/logout", authZMiddleware.VerifyInternalToken(), authHandler.Logout) 
+    authGroup.Post("/logout", authHandler.Logout) 
 
     utils.Log.Info("Profile Manager: Authentication routes configured.")
 
