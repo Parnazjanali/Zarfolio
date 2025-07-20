@@ -1,8 +1,8 @@
 // src/components/Sidebar.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // مطمئن شو useState و useEffect و useRef ایمپورت شدن
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
-import Portal from './Portal'; // اطمینان از وجود Portal.jsx
+import Portal from './Portal';
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar, FaCog,
   FaBell, FaUserCircle, FaSignOutAlt, FaSearch,
@@ -20,13 +20,37 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
-  const newEntryButtonRef = useRef(null);
-  const profileButtonRef = useRef(null);
+  const newEntryButtonRef = useRef(null); 
+  const profileButtonRef = useRef(null); 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
       console.log("خروج کاربر تایید شد...");
+
+      const authToken = localStorage.getItem('authToken');
+      if (authToken) {
+        try {
+          // --- این خط رو تغییر بده ---
+          const response = await fetch('http://localhost:8080/api/v1/auth/logout', { // **آدرس صحیح API Gateway شما**
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+            },
+          });
+
+          if (response.ok) {
+            console.log("توکن با موفقیت در سمت سرور بلک‌لیست شد.");
+          } else {
+            const errorData = await response.json();
+            console.error("خطا در بلک‌لیست کردن توکن در سرور:", errorData.Message || "خطای ناشناخته");
+          }
+        } catch (error) {
+          console.error("خطا در ارسال درخواست لاگ‌اوت به سرور:", error);
+        }
+      }
+
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
       navigate('/login');
@@ -34,6 +58,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       console.log("خروج کاربر لغو شد.");
     }
   };
+
 
   const toggleDropdown = (setter, otherSetterForPortal, otherSetterForSubmenu, e) => {
     e.stopPropagation();

@@ -16,7 +16,7 @@ var RedisClient *redis.Client
 func InitRedisClient() error {
 	redisHost := os.Getenv("REDIS_HOST")
 	redisPort := os.Getenv("REDIS_PORT")
-	redisPassword := os.Getenv("REDIS_PASSWORD") // <-- این مقدار "" خواهد بود اگر در .env خالی باشد
+	redisPassword := os.Getenv("REDIS_PASSWORD")
 	redisDbStr := os.Getenv("REDIS_DB")
 
 	if redisHost == "" || redisPort == "" {
@@ -37,21 +37,20 @@ func InitRedisClient() error {
 		Addr:        redisAddr,
 		DB:          dbIndex,
 		PoolSize:    10,
-		PoolTimeout: 30 * time.Second, // Timeout برای عملیات‌های پول
+		PoolTimeout: 30 * time.Second, 
 		IdleTimeout: 5 * time.Minute,
 	}
 
-	if redisPassword != "" { // <-- این شرط اضافه شد!
-		redisOptions.Password = redisPassword // <-- فقط اگر رمز عبور در env خالی نبود، آن را تنظیم کن
+	if redisPassword != "" { 
+		redisOptions.Password = redisPassword 
 		utils.Log.Debug("Redis password configured, attempting authentication.")
 	} else {
 		utils.Log.Debug("No Redis password provided in .env, attempting connection without authentication.")
 	}
-	// ---------------------------------------------------------------------
 
-	RedisClient = redis.NewClient(redisOptions) // <-- از redisOptions جدید استفاده کن
+	RedisClient = redis.NewClient(redisOptions) 
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // Timeout برای Ping
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) 
 	defer cancel()
 
 	pong, err := RedisClient.Ping(ctx).Result()

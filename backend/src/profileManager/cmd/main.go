@@ -36,7 +36,7 @@ func main() {
 
 	 if os.Getenv("RUN_DB_SEED") == "true" {
         utils.Log.Info("RUN_DB_SEED is true. Running database seed...")
-        if err := postgresDb.SeedInitialData(postgresDb.DB); err != nil { // 👈 از postgresDb.DB استفاده کنید
+        if err := postgresDb.SeedInitialData(postgresDb.DB); err != nil { 
             utils.Log.Fatal("Database seeding failed: %v", zap.Error(err))
         }
         utils.Log.Info("Database seeding completed.")
