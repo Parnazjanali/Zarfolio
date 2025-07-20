@@ -106,6 +106,13 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    proxy: { // Add this proxy configuration
+      '/api': {
+        target: 'http://localhost:8080', // Target the API Gateway
+        changeOrigin: true,
+        // No rewrite needed if the API gateway expects paths like /api/v1/profilemanager/...
+      }
+    }
   },
   // ... سایر تنظیمات build
 });

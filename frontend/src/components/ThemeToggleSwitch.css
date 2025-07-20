@@ -1,0 +1,81 @@
+/* frontend/src/components/ThemeToggleSwitch.css */
+.theme-toggle-switch {
+  --toggle-width: 3.125rem; /* 50px */
+  --toggle-height: 1.625rem; /* 26px */
+  --thumb-size: 1.375rem; /* 22px */
+  --track-padding: 0.125rem; /* 2px - Padding inside the track, around the thumb */
+
+  background-color: transparent;
+  border: none;
+  padding: 0; /* Minimal padding, adjust if focus outline needs space */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  position: relative;
+  /* overflow: hidden; Might clip focus outlines if not handled carefully */
+  border-radius: var(--toggle-height); /* Makes the button itself pill-shaped for focus outline */
+}
+
+/* Optional: Add a visible focus style if browser default is not enough */
+.theme-toggle-switch:focus-visible {
+  outline: 2px solid var(--accent-color, #007bff); /* Use global accent color */
+  outline-offset: 2px;
+}
+body.dark-mode .theme-toggle-switch:focus-visible {
+  outline-color: var(--accent-color, #bb86fc); /* Use dark mode accent color */
+}
+
+
+.toggle-track {
+  width: 100%;
+  height: 100%;
+  background-color: #ccc; /* Default light mode track color */
+  /* Consider using a CSS variable like --toggle-track-bg-light if available */
+  border-radius: var(--toggle-height); /* Pill-shape */
+  position: relative; /* Changed from absolute to relative, or could be static. */
+  transition: background-color 0.3s ease;
+  display: flex; /* To help center thumb if needed, though absolute positioning of thumb is primary */
+  align-items: center; /* Vertical centering for thumb if it were a direct child and not absolute */
+}
+
+.theme-toggle-switch.dark .toggle-track {
+  background-color: var(--toggle-dark-track-bg-color); /* Changed from var(--accent-color) */
+}
+
+.toggle-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background-color: white; /* Thumb color - usually light */
+  border-radius: 50%; /* Circular */
+  position: absolute;
+  top: var(--track-padding);
+  left: var(--track-padding); /* Initial position for LTR light mode */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.25s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-switch.dark .toggle-thumb {
+  /* Calculates position for the thumb to move to the right end */
+  transform: translateX(calc(var(--toggle-width) - var(--thumb-size) - (2 * var(--track-padding))));
+}
+
+.toggle-thumb .icon {
+  font-size: 0.8rem; /* 12.8px - adjusted for better fit in a 22px thumb */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-thumb .sun-icon {
+  color: #f39c12; /* Sun color - bright yellow/orange */
+}
+
+.toggle-thumb .moon-icon {
+  color: #8e44ad; /* Moon color - deep purple */
+}

@@ -6,12 +6,15 @@ import loginPageImage from '../assets/login.jpg';
 import {
   FaInstagram, FaTelegramPlane, FaWhatsapp, FaHeart,
   FaUserPlus, FaSignInAlt, FaUserCircle, FaEnvelope, FaLock, FaEye, FaEyeSlash,
-  FaKey, FaShieldAlt, FaTimes, FaCheckCircle // <<<< FaTimes و FaCheckCircle اضافه شدند >>>>
+  FaKey, FaShieldAlt, FaTimes, FaCheckCircle
 } from 'react-icons/fa';
 import Portal from '../components/Portal';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
-const APP_VERSION = "0.0.4 beta"; 
+import { useAuth } from '../context/AuthContext'; // ایمپورت کردن useAuth
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const APP_VERSION = "0.0.4 beta";
+
+// کامپوننت‌های generateStrongPassword و PasswordStrengthModal بدون تغییر باقی می‌مانند
 const generateStrongPassword = (length = 16) => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:',.<>/?";
   let password = "";
@@ -58,10 +61,11 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // این state برای مودال باقی می‌ماند
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [hoveredSocial, setHoveredSocial] = useState(null);
 
   const navigate = useNavigate();
+  const { login } = useAuth(); // استفاده از تابع login از AuthContext
 
   useEffect(() => {
     const authToken = localStorage.getItem('authToken');
@@ -84,41 +88,21 @@ function LoginPage() {
     setSuccessMessage('');
   };
 
+  // ***** START: تابع اصلاح شده handleSubmit *****
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     clearMessages();
 
-    if (isLogin) {
-      // ... (منطق ورود بدون تغییر)
-      try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
-        });
-        const data = await response.json();
-        if (response.ok && data.token) {
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('userData', JSON.stringify(data.user)); 
-          setSuccessMessage('ورود با موفقیت انجام شد. در حال انتقال به داشبورد...');
-          setTimeout(() => navigate('/dashboard'), 1500);
-        } else {
-          setError(data.message || 'نام کاربری یا رمز عبور نامعتبر است.');
-        }
-      } catch (err) {
-        setError('خطا در برقراری ارتباط با سرور. لطفاً اتصال اینترنت خود را بررسی کنید.');
-        console.error('Login error:', err);
-      }
-    } else {
-      // ... (منطق ثبت‌نام بدون تغییر)
+    if (!isLogin) {
+      // منطق ثبت نام
       if (password !== confirmPassword) {
         setError('رمز عبور و تکرار آن یکسان نیستند.');
         setIsLoading(false);
         return;
       }
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        const response = await fetch(`${API_BASE_URL}/register/user`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password }),
@@ -126,8 +110,8 @@ function LoginPage() {
         const data = await response.json();
         if (response.ok || response.status === 201) {
           setSuccessMessage(data.message || 'ثبت نام با موفقیت انجام شد. اکنون می‌توانید وارد شوید.');
-          setIsLogin(true); 
-          setUsername(''); 
+          setIsLogin(true); // تغییر حالت به فرم لاگین
+          setUsername('');
           setEmail('');
           setPassword('');
           setConfirmPassword('');
@@ -137,10 +121,51 @@ function LoginPage() {
       } catch (err) {
         setError('خطا در برقراری ارتباط با سرور.');
         console.error('Registration error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // منطق لاگین
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Login failed. Please check your credentials.');
+        }
+
+        // بررسی پاسخ سرور برای نیاز به 2FA
+        if (data.two_fa_required) {
+          // سرور درخواست کد 2FA دارد
+          setSuccessMessage('رمز عبور صحیح است. کد تایید دو مرحله‌ای خود را وارد کنید.');
+          // شناسه کاربر را برای استفاده در مرحله بعد ذخیره می‌کنیم
+          localStorage.setItem('2fa_user_id', data.user_id);
+          // کاربر را به صفحه ورود کد 2FA هدایت می‌کنیم
+          navigate('/2fa-verify');
+        } else if (data.token && data.user) {
+          // لاگین موفق برای کاربری که 2FA ندارد یا آن را غیرفعال کرده
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          login(); // به‌روزرسانی AuthContext
+          setSuccessMessage('ورود با موفقیت انجام شد. در حال انتقال به داشبورد...');
+          setTimeout(() => navigate('/dashboard'), 1500);
+        } else {
+          // پاسخ سرور 200 OK بود اما فرمت مورد انتظار را نداشت
+          throw new Error('Received an unexpected response from the server.');
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Login error:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
-    setIsLoading(false);
   };
+  // ***** END: تابع اصلاح شده handleSubmit *****
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -152,7 +177,7 @@ function LoginPage() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setRememberMe(false);
-    setIsPasswordModalOpen(false); // بستن مودال هنگام تغییر فرم
+    setIsPasswordModalOpen(false);
   };
 
   const handleGeneratePassword = () => {
@@ -160,17 +185,15 @@ function LoginPage() {
     setPassword(newPassword);
     setConfirmPassword(newPassword);
     setShowPassword(true);
-    setIsPasswordModalOpen(true); // <<<< تغییر: مودال راهنما با کلیک روی دکمه پیشنهاد باز می‌شود >>>>
+    setIsPasswordModalOpen(true);
   };
 
-  // onFocus و onBlur از فیلد رمز حذف می‌شوند اگر فقط با دکمه "پیشنهاد" مودال باز شود.
-  // const handlePasswordFocus = () => setIsPasswordModalOpen(true); 
-  // const handlePasswordBlur = () => setIsPasswordModalOpen(false);
   const handleClosePasswordModal = () => setIsPasswordModalOpen(false);
 
 
   const renderAuthForm = () => (
     <form onSubmit={handleSubmit} className="auth-form">
+      {/* این بخش JSX دیگر نیازی به loginStep ندارد چون منطق به تابع handleSubmit منتقل شده */}
       <div className="form-group">
         <label htmlFor={isLogin ? "login-username" : "register-username"}>
           <FaUserCircle /> {isLogin ? "نام کاربری یا ایمیل" : "نام کاربری"}
@@ -188,9 +211,7 @@ function LoginPage() {
 
       {!isLogin && (
         <div className="form-group">
-          <label htmlFor="register-email">
-            <FaEnvelope /> ایمیل
-          </label>
+          <label htmlFor="register-email"><FaEnvelope /> ایمیل</label>
           <input
             type="email"
             id="register-email"
@@ -207,7 +228,7 @@ function LoginPage() {
         <label htmlFor={isLogin ? "login-password" : "register-password"}>
           <FaLock /> {isLogin ? "رمز عبور" : "ایجاد رمز عبور"}
         </label>
-        <div className="password-field-container"> 
+        <div className="password-field-container">
           <div className="password-input-wrapper">
             <input
               type={showPassword ? "text" : "password"}
@@ -216,8 +237,6 @@ function LoginPage() {
               placeholder={isLogin ? "رمز عبور خود را وارد کنید" : "رمز عبور قدرتمندی انتخاب کنید"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              // onFocus={!isLogin ? handlePasswordFocus : undefined} // حذف شد
-              // onBlur={!isLogin ? handlePasswordBlur : undefined}   // حذف شد
               required
             />
             <button
@@ -233,20 +252,18 @@ function LoginPage() {
             <button
               type="button"
               className="generate-password-button"
-              onClick={handleGeneratePassword} // این تابع حالا مودال را هم باز می‌کند
-              title="پیشنهاد رمز عبور قوی و مشاهده راهنما" // title به‌روز شد
+              onClick={handleGeneratePassword}
+              title="پیشنهاد رمز عبور قوی و مشاهده راهنما"
             >
               <FaKey /> پیشنهاد
             </button>
           )}
         </div>
       </div>
-      
+
       {!isLogin && (
         <div className="form-group">
-          <label htmlFor="register-confirm-password">
-            <FaLock /> تکرار رمز عبور
-          </label>
+          <label htmlFor="register-confirm-password"><FaLock /> تکرار رمز عبور</label>
           <div className="password-input-wrapper">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -257,7 +274,7 @@ function LoginPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
-             <button
+            <button
               type="button"
               className="toggle-password-visibility"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -272,36 +289,20 @@ function LoginPage() {
       {isLogin && (
         <div className="password-options">
           <label htmlFor="remember-me" className="remember-me-label">
-            <input 
-              type="checkbox" 
-              id="remember-me" 
-              checked={rememberMe} 
-              onChange={(e) => setRememberMe(e.target.checked)} 
+            <input
+              type="checkbox"
+              id="remember-me"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
             />
             مرا به خاطر بسپار
           </label>
-          {/* <Link to="/forgot-password" className="forgot-password-link">فراموشی رمز عبور؟</Link> */}
+          <Link to="/request-password-reset" className="forgot-password-link">فراموشی رمز عبور؟</Link>
         </div>
       )}
-      {/* <<<< حذف چک‌باکس راهنمای رمز قوی از اینجا >>>> */}
-      {/* {!isLogin && ( 
-        <div className="password-options">
-            <label htmlFor="show-password-modal-checkbox" className="password-guide-label">
-            <input
-                type="checkbox"
-                id="show-password-modal-checkbox"
-                checked={isPasswordModalOpen}
-                onChange={() => setIsPasswordModalOpen(!isPasswordModalOpen)} 
-            />
-            راهنمای انتخاب رمز قوی
-            </label>
-        </div>
-        )}
-      */}
 
-
-      {error && <div className="message-banner error visible"><FaTimes style={{marginLeft: '7px'}}/>{error}</div>}
-      {successMessage && <div className="message-banner success visible"><FaCheckCircle style={{marginLeft: '7px'}}/>{successMessage}</div>}
+      {error && <div className="message-banner error visible"><FaTimes style={{ marginLeft: '7px' }} />{error}</div>}
+      {successMessage && <div className="message-banner success visible"><FaCheckCircle style={{ marginLeft: '7px' }} />{successMessage}</div>}
 
       <button type="submit" className="auth-button" disabled={isLoading}>
         {isLoading ? <span className="spinner-sm"></span> : (isLogin ? <FaSignInAlt /> : <FaUserPlus />)}
@@ -319,10 +320,12 @@ function LoginPage() {
               <span className="auth-header-icon">
                 {isLogin ? <FaSignInAlt /> : <FaUserPlus />}
               </span>
-              <h2>{isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری جدید'}</h2>
+              <h2>
+                {isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری جدید'}
+              </h2>
             </header>
             <p className="auth-subtitle">
-              {isLogin 
+              {isLogin
                 ? 'خوش آمدید! لطفاً اطلاعات ورود خود را برای دسترسی به پنل کاربری وارد نمایید.'
                 : 'با ایجاد حساب کاربری جدید، به تمامی امکانات پیشرفته زرفولیو دسترسی خواهید داشت.'
               }

@@ -1,0 +1,241 @@
+/* AccountManagementPage.css */
+
+.account-management-container {
+    padding: 20px;
+    max-width: 1200px; /* */
+    margin: 40px auto; /* */
+    background-color: #fff; /* */
+    border-radius: 8px; /* */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* */
+}
+
+.page-title {
+    text-align: center; /* */
+    margin-bottom: 30px; /* */
+    color: #333; /* */
+    font-size: 2em; /* */
+}
+
+.account-section {
+    margin-bottom: 40px; /* */
+    padding-bottom: 30px; /* */
+    border-bottom: 1px solid #eee; /* */
+}
+.account-section.last-section {
+    border-bottom: none; /* */
+    margin-bottom: 0; /* */
+    padding-bottom: 10px; /* */
+}
+
+.section-title {
+    margin-bottom: 25px; /* */
+    color: #333; /* */
+    display: flex; /* */
+    align-items: center; /* */
+    font-size: 1.6em; /* */
+    padding-bottom: 10px; /* */
+    border-bottom: 1px solid #eee; /* */
+}
+
+.section-icon {
+    margin-left: 12px; /* */
+    color: var(--primary-color); /* */
+    font-size: 1.5em; /* */
+}
+
+.profile-content-wrapper {
+    max-width: 500px; /* */
+}
+
+.auth-form.no-shadow {
+    padding: 0; /* */
+    box-shadow: none; /* */
+}
+
+/* --- NEW STYLES --- */
+/* Styles for the side-by-side security forms row */
+.security-forms-row {
+  display: grid; /* */
+  /* Two equal columns on larger screens */
+  grid-template-columns: 1fr 1fr; /* */
+  gap: 30px; /* Space between the two cards */ /* */
+  margin-bottom: 40px; /* Space before the 2FA section */ /* */
+}
+
+/* Make forms stack on smaller screens */
+@media (max-width: 1100px) {
+  .security-forms-row {
+    grid-template-columns: 1fr; /* */
+  }
+}
+
+/* Override default section styles to create a "card" look inside the grid */
+.security-forms-row .account-section {
+  margin-bottom: 0; /* */
+  padding: 25px; /* */
+  border: 1px solid #e9ecef; /* Lighter border for the card */ /* */
+  border-radius: 8px; /* */
+  background-color: #fff; /* */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04); /* */
+}
+
+/* The titles inside the cards don't need the long bottom border */
+.security-forms-row .account-section .section-title {
+  border-bottom: none; /* */
+  padding-bottom: 0; /* */
+  margin-bottom: 20px; /* */
+  font-size: 1.3em; /* Slightly smaller title for the cards */ /* */
+}
+/* --- END NEW STYLES --- */
+
+
+.form-group {
+    margin-bottom: 20px; /* */
+}
+
+.form-group label {
+    display: flex; /* */
+    align-items: center; /* */
+    margin-bottom: 8px; /* */
+    color: #555; /* */
+    font-size: 1em; /* */
+    font-weight: 500; /* */
+}
+
+.form-icon {
+    margin-left: 8px; /* */
+}
+
+.form-control {
+    width: 100%; /* */
+    padding: 10px 12px; /* */
+    border: 1px solid #ccc; /* */
+    border-radius: 4px; /* */
+    font-size: 1em; /* */
+    box-sizing: border-box; /* */
+}
+
+.form-control[readOnly] {
+  background-color: #e9ecef; /* */
+  color: #6c757d; /* */
+  cursor: default; /* */
+  border-color: #ced4da; /* */
+}
+
+.form-control:not([readOnly]):focus {
+  border-color: #007bff; /* */
+  outline: none; /* */
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2); /* */
+}
+
+.auth-button {
+    padding: 10px 15px; /* */
+    font-size: 1em; /* */
+}
+
+/* Styles for profile picture and 2FA sections remain unchanged */
+.profile-picture-section {
+  text-align: center; /* */
+  margin-bottom: 30px; /* */
+  padding: 20px; /* */
+  background-color: #f9f9f9; /* */
+  border-radius: 8px; /* */
+}
+.profile-picture-preview-container {
+  width: 120px; /* */
+  height: 120px; /* */
+  border-radius: 50%; /* */
+  overflow: hidden; /* */
+  margin: 0 auto 15px auto; /* */
+  border: 3px solid #eee; /* */
+  background-color: #f0f0f0; /* */
+  display: flex; /* */
+  align-items: center; /* */
+  justify-content: center; /* */
+}
+.profile-picture-preview {
+  width: 100%; /* */
+  height: 100%; /* */
+  object-fit: cover; /* */
+}
+.default-avatar-icon {
+  color: #ccc; /* */
+}
+.two-fa-setup {
+    text-align: center; /* */
+    margin: 20px 0; /* */
+}
+.two-fa-setup {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.two-fa-setup p {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.totp-form {
+    max-width: 300px;
+    margin: 10px auto;
+}
+
+.totp-form input {
+    text-align: center;
+    letter-spacing: 0.2em;
+}
+
+.two-fa-enabled-message {
+    color: green;
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+}
+
+.enabled-icon {
+    margin-left: 8px; /* For RTL */
+}
+
+.recovery-codes-section {
+    border: 1px solid orange;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff9e6;
+    margin-bottom: 20px;
+}
+
+.recovery-codes-section h3 {
+    display: flex;
+    align-items: center;
+    color: #c67800;
+    font-size: 1.2em;
+}
+
+.recovery-codes-section p {
+    color: #c67800;
+    font-size: 0.9em;
+}
+
+.recovery-icon {
+    margin-left: 8px; /* For RTL */
+}
+
+.auth-button.minimal {
+    margin-top: 10px;
+    background-color: transparent;
+    color: var(--primary-color);
+}
+
+.auth-button.danger {
+    background-color: #dc3545;
+    color: white;
+}
+.auth-button.danger:hover {
+    background-color: #c82333;
+}
+
+.button-icon {
+    margin-left: 5px; /* For RTL */
+}
