@@ -163,8 +163,34 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
-	utils.Log.Info("RequestPasswordReset endpoint hit. Placeholder.", zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Request Password Reset endpoint hit (placeholder)"})
+    var req model.RequestPasswordReset
+    if err := c.BodyParser(&req); err != nil {
+        utils.Log.Error("Profile Manager Handler: Failed to parse request password reset body", zap.Error(err))
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+            Message: "Invalid request body format.",
+            Code:    "400",
+        })
+    }
+    if req.Email == "" {
+        utils.Log.Warn("Profile Manager Handler: Password reset request: Missing email.")
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+            Message: "Email is required for password reset.",
+            Code:    "400",
+        })
+    }
+
+    err := h.userService.RequestPasswordReset(req.Email) 
+    if err != nil {
+        utils.Log.Error("Profile Manager Handler: Failed to request password reset in service layer", zap.String("email", req.Email), zap.Error(err))
+        if errors.Is(err, service.ErrUserNotFound) {
+            utils.Log.Warn("Profile Manager Handler: Password reset requested for non-existent user, but returning success for security.", zap.String("email", req.Email))
+            return c.Status(fiber.StatusOK).JSON(model.AuthResponse{Message: "اگر ایمیل شما در سیستم ثبت شده باشد، دستورالعمل بازنشانی رمز عبور برای شما ارسال خواهد شد."})
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Internal server error during password reset request.", Code: "500"})
+    }
+
+    utils.Log.Info("Profile Manager Handler: Password reset request successfully initiated", zap.String("email", req.Email))
+    return c.Status(fiber.StatusOK).JSON(model.AuthResponse{Message: "اگر ایمیل شما در سیستم ثبت شده باشد، دستورالعمل بازنشانی رمز عبور برای شما ارسال خواهد شد."})
 }
 
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {

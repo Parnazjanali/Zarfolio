@@ -265,8 +265,9 @@ func (c *profileManagerHTTPClient) RequestPasswordReset(email string) error {
 }
 
 func (c *profileManagerHTTPClient) ResetPassword(token, newPassword string) error {
-	// Implement HTTP request to Profile Manager's /auth/password/reset endpoint
+
 	reqBody := model.ResetPasswordRequest{Token: token, NewPassword: newPassword}
+	
 	body, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal reset password body: %w", err)

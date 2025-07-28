@@ -25,6 +25,7 @@ type UserRepository interface {
 	GetUser2FASecret(userID string) (string, error)
 SetUser2FAStatus(userID string, enabled bool) error
 	RemoveUser2FASecret(userID string) error
+	 GetUserByEmail(email string) (*model.User, error)
 }
 
 type inMemoryUserRepository struct {
@@ -37,6 +38,20 @@ func NewInMemoryUserRepository() UserRepository {
 	return &inMemoryUserRepository{
 		users: make(map[string]*model.User),
 	}
+}
+
+// GetUserByEmail returns a user by email from the in-memory repository.
+func (r *inMemoryUserRepository) GetUserByEmail(email string) (*model.User, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, user := range r.users {
+		if user.Email == email {
+			utils.Log.Info("User found in in-memory repo by email", zap.String("email", user.Email))
+			return user, nil
+		}
+	}
+	return nil, service.ErrUserNotFound
 }
 
 // GetAllUsers returns a slice of all users in the in-memory repository.
@@ -335,4 +350,18 @@ func (r *postgresUserRepository) UploadProfilePicture(userID string, pictureData
 		return service.ErrUserNotFound
 	}
 	return nil
+}
+
+// GetUserByEmail returns a user by email from the PostgreSQL database.
+func (r *postgresUserRepository) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	result := r.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, service.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to get user by email from DB: %w", result.Error)
+	}
+	utils.Log.Info("User found in PostgreSQL by email", zap.String("email", user.Email))
+	return &user, nil
 }

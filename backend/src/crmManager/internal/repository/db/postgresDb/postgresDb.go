@@ -3,8 +3,8 @@ package postgresDb
 import (
 	"fmt"
 	"os"
-	"profile-gold/internal/model" 
-	"profile-gold/internal/utils"
+	"crm-gold/internal/utils"
+	"crm-gold/internal/model"
 	"time"
 
 	"go.uber.org/zap"
@@ -16,7 +16,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	utils.Log.Info("Initializing database connection for Profile Manager...")
+	utils.Log.Info("Initializing database connection for Crm Manager...")
 
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
@@ -32,13 +32,13 @@ func InitDB() {
 		dbPort = "5432"
 	}
 	if dbUser == "" {
-		dbUser = "myuser"
+		dbUser = "crm_user"
 	}
 	if dbPassword == "" {
 		dbPassword = "mypassword"
 	}
 	if dbName == "" {
-		dbName = "zarfolio_user_db"
+		dbName = "zarfolio"
 	}
 	if dbSSLMode == "" {
 		dbSSLMode = "disable"
@@ -69,10 +69,9 @@ func InitDB() {
 	utils.Log.Info("PostgreSQL database connected successfully. Attempting AutoMigrate...")
 
 	err = DB.AutoMigrate(
-		&model.User{},
-		&model.PasswordResetToken{},
-		&model.Permission{},    
-		&model.RolePermission{}, 
+		&model.Customer{},
+		&model.CusCard{},
+		&model.CusType{},
 	)
 
 	if err != nil {
@@ -80,5 +79,4 @@ func InitDB() {
 	}
 	utils.Log.Info("Database schemas auto-migrated successfully.")
 
-	SeedInitialData(DB) // We'll update this function next
 }

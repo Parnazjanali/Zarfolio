@@ -24,7 +24,7 @@ func SetUpAuthRoutes(apiGroup fiber.Router, authHandler *handler.AuthHandler, au
 	authGroup.Post("/login", authHandler.LoginUser)
 	authGroup.Post("/password/request-reset", authHandler.HandleRequestPasswordReset)
 	authGroup.Post("/password/reset", authHandler.HandleResetPassword)
-	authGroup.Post("/2fa/verify", authHandler.HandleLoginTwoFA) // For second step of 2FA login
+	authGroup.Post("/2fa/verify", authHandler.HandleLoginTwoFA) 
 
 	authGroup.Post("/logout", authHandler.LogoutUser)
 

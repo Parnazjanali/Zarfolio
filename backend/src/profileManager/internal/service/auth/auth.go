@@ -23,11 +23,15 @@ type AuthService interface {
 	ResetPassword(token, newPassword string) error
 	VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error)
 }
+type EmailService interface {
+	SendPasswordResetEmail(toEmail, resetToken string) error
+}
 
 type UserService struct {
 	userRepo     postgresDb.UserRepository
 	tokenRepo    redisdb.TokenRepository
 	jwtValidator utils.JWTValidator
+	emailService EmailService
 }
 
 func NewAuthService(r postgresDb.UserRepository, t redisdb.TokenRepository, j utils.JWTValidator) AuthService {
@@ -147,7 +151,7 @@ func (s *UserService) LogoutUser(tokenString string) error {
 	utils.Log.Info("UserService: Calculated TTL for token",
 		zap.String("username", claims.Username),
 		zap.Duration("ttl", ttl),
-		zap.Time("expires_at", expirationTime)) 
+		zap.Time("expires_at", expirationTime))
 	err = s.tokenRepo.AddTokenToBlacklist(tokenString, ttl)
 	if err != nil {
 		utils.Log.Error("UserService: Failed to add token to blacklist", zap.String("username", claims.Username), zap.Error(err))
@@ -160,16 +164,17 @@ func (s *UserService) LogoutUser(tokenString string) error {
 	return nil
 }
 
-func (s *UserService) RequestPasswordReset(username string) error {
-	utils.Log.Info("RequestPasswordReset called", zap.String("username", username))
-	// TODO: Implement password reset logic here.
-	return errors.New("RequestPasswordReset not implemented")
-}
-
 func (s *UserService) ResetPassword(token, newPassword string) error {
 	utils.Log.Info("ResetPassword called", zap.String("token_prefix", token[:min(len(token), 10)]))
 	// TODO: Implement reset password logic here.
 	return errors.New("ResetPassword not implemented")
+}
+
+// RequestPasswordReset implements the AuthService interface.
+func (s *UserService) RequestPasswordReset(email string) error {
+	utils.Log.Info("RequestPasswordReset called", zap.String("email", email))
+	// TODO: Implement password reset request logic here.
+	return errors.New("RequestPasswordReset not implemented")
 }
 
 func (s *UserService) VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error) {
