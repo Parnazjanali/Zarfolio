@@ -1,52 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Skeleton } from 'antd';
-import DigitalClock from '../components/DigitalClock';
-import JalaliCalendar from '../components/JalaliCalendar';
-import ChequeAlertWidget from '../components/ChequeAlertWidget';
-import './DashboardPage.css';
+// frontend/src/pages/DashboardPage.jsx
+
+import React from 'react';
+import { Row, Col, Card, Statistic } from 'antd';
+import { ArrowUpOutlined, UserOutlined, ShoppingCartOutlined, DollarCircleOutlined } from '@ant-design/icons';
+
+// 1. وارد کردن کامپوننت‌های جدید
+import SalesChart from '../components/SalesChart.jsx';
+import ActivityFeed from '../components/ActivityFeed.jsx';
+import CustomerList from '../components/CustomerList.jsx';
+
+import './DashboardPage.css'; // اطمینان حاصل کنید که این فایل استایل وجود دارد
 
 const DashboardPage = () => {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500); // 1.5 ثانیه تاخیر برای نمایش حالت لودینگ
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div className="dashboard-page-optimized">
-      <Row gutter={[24, 24]}>
-        {/* ستون تقویم */}
-        <Col xs={24} md={12} lg={8}>
-          {/* 'bordered={false}' با 'variant="borderless"' جایگزین شد */}
-          <Card variant="borderless" className="widget-card">
-            <Skeleton loading={loading} active>
-              <JalaliCalendar />
-            </Skeleton>
+    <div>
+      {/* بخش کارت‌های آمار */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} sm={12} md={12} lg={6}>
+          <Card className="stat-card stat-card-primary">
+            <Statistic
+              title="فروش امروز"
+              value={112893}
+              precision={0}
+              valueStyle={{ color: '#fff', fontSize: '2rem' }}
+              prefix={<DollarCircleOutlined />}
+              suffix="تومان"
+            />
+            <div className="stat-card-footer">
+              <ArrowUpOutlined />
+              <span style={{ margin: '0 5px' }}>3.5%</span>
+              <span>نسبت به دیروز</span>
+            </div>
           </Card>
         </Col>
 
-        {/* ستون ساعت دیجیتال */}
-        <Col xs={24} md={12} lg={8}>
-          {/* 'bordered={false}' با 'variant="borderless"' جایگزین شد 
-            'bodyStyle={{ padding: 0 }}' با 'styles={{ body: { padding: 0 } }}' جایگزین شد 
-          */}
-          <Card variant="borderless" className="widget-card" styles={{ body: { padding: 0 } }}>
-            <Skeleton loading={loading} active>
-              <DigitalClock />
-            </Skeleton>
+        <Col xs={24} sm={12} md={12} lg={6}>
+          <Card className="stat-card stat-card-success">
+            <Statistic
+              title="مشتریان جدید"
+              value={45}
+              valueStyle={{ color: '#fff', fontSize: '2rem' }}
+              prefix={<UserOutlined />}
+            />
+            <div className="stat-card-footer">
+              <ArrowUpOutlined />
+              <span style={{ margin: '0 5px' }}>10%</span>
+              <span>در این ماه</span>
+            </div>
           </Card>
         </Col>
-        
-        {/* ستون یادآوری چک */}
-        <Col xs={24} md={24} lg={8}>
-          {/* 'bordered={false}' با 'variant="borderless"' جایگزین شد */}
-          <Card variant="borderless" className="widget-card" title="یادآوری چک‌ها">
-            {/* کامپوننت چک خودش حالت لودینگ و خالی را مدیریت می‌کند */}
-            <ChequeAlertWidget loading={loading} />
+
+        <Col xs={24} sm={12} md={12} lg={6}>
+          <Card className="stat-card stat-card-warning">
+            <Statistic
+              title="سفارشات جدید"
+              value={12}
+              valueStyle={{ color: '#fff', fontSize: '2rem' }}
+              prefix={<ShoppingCartOutlined />}
+            />
+             <div className="stat-card-footer">
+               <span>امروز</span>
+            </div>
           </Card>
+        </Col>
+      </Row>
+
+      {/* بخش نمودار */}
+      <Row style={{ marginBottom: '24px' }}>
+        <Col span={24}>
+          <SalesChart />
+        </Col>
+      </Row>
+
+      {/* 2. بخش جدید برای فید فعالیت‌ها و لیست مشتریان */}
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={12}>
+          {/* نمایش کامپوننت فید فعالیت‌ها */}
+          <ActivityFeed />
+        </Col>
+        <Col xs={24} lg={12}>
+          {/* نمایش کامپوننت لیست مشتریان */}
+          <CustomerList />
         </Col>
       </Row>
     </div>
