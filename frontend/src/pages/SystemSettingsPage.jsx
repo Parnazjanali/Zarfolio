@@ -1,166 +1,176 @@
-// frontend/src/pages/SettingsPage.jsx
 import React, { useState, useEffect } from 'react';
-import './SettingsPage.css';
 import {
-  FaUserCog, FaCoins, FaGem, FaFileInvoice, FaPrint, FaUsers,
-  FaLink, FaShieldAlt, FaTools, FaBuilding, FaSave, FaTimes, FaCheckCircle, FaExclamationTriangle
+  Card, Form, Input, Button, Row, Col, Select,
+  Typography, Divider, Spin, message
+} from 'antd';
+import {
+  FaBuilding, FaCoins, FaSms, FaSave
 } from 'react-icons/fa';
+import { SaveOutlined, SignalFilled } from '@ant-design/icons';
+import axios from 'axios';
+import './SettingsPage.css'; // اطمینان حاصل کنید که این فایل استایل وجود دارد
 
-// آدرس API مشابه LoginPage
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const { Title, Paragraph } = Typography;
+const { Option } = Select;
 
-const settingsTabs = [
-  // ... (محتوای settingsTabs بدون تغییر باقی می‌ماند)
-  // مثال:
-  { id: 'basicInfo', label: 'اطلاعات پایه', icon: <FaBuilding />, fields: [ /* ... */ ] },
-  { id: 'financial', label: 'تنظیمات مالی', icon: <FaCoins />, fields: [ /* ... */ ] },
-  // ... سایر تب ها
-];
+// کامپوننت فرم تنظیمات پیامک (منتقل شده به اینجا)
+const SmsSettingsForm = () => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(true);
 
-
-function SettingsPage() {
-  const [activeTab, setActiveTab] = useState(settingsTabs[0].id);
-  const [settingsData, setSettingsData] = useState({}); // برای نگهداری داده های فرم
-  const [feedbackMessage, setFeedbackMessage] = useState({ text: '', type: '' }); // type: 'success' or 'error'
-  const [isLoading, setIsLoading] = useState(false);
-
-  // خواندن تنظیمات اولیه از بک‌اند (اختیاری)
   useEffect(() => {
-    const fetchSettings = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return; // یا مدیریت خطای عدم وجود توکن
-
+    const loadData = async () => {
+      setLoading(true);
       try {
-        // setIsLoading(true); // اگر می‌خواهید لودینگ برای خواندن هم داشته باشید
-        // const response = await fetch(`${API_BASE_URL}/settings`, { // فرض بر اینکه endpoint خواندن تنظیمات این است
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   setSettingsData(data); // داده‌های خوانده شده را در state قرار دهید
-        // } else {
-        //   console.error("Failed to fetch settings:", response.statusText);
-        //   // مدیریت خطا در خواندن تنظیمات
-        // }
+        const response = await axios.post('/api/admin/sms/plan/info');
+        if (response.data) {
+          form.setFieldsValue(response.data);
+        }
       } catch (error) {
-        console.error("Error fetching settings:", error);
+        message.error('خطا در دریافت تنظیمات قبلی پیامک!');
       } finally {
-        // setIsLoading(false);
+        setLoading(false);
       }
     };
-    // fetchSettings(); // این تابع را در صورت نیاز فعال کنید
-  }, []);
+    loadData();
+  }, [form]);
 
-
-  const handleInputChange = (tabId, fieldId, value) => {
-    setSettingsData(prev => ({
-      ...prev,
-      [tabId]: {
-        ...prev[tabId],
-        [fieldId]: value
-      }
-    }));
-  };
-
-  const handleSaveSettings = async (tabId) => {
-    setIsLoading(true);
-    setFeedbackMessage({ text: '', type: '' });
-    const token = localStorage.getItem('authToken');
-
-    if (!token) {
-      setFeedbackMessage({ text: 'خطا: شما وارد نشده‌اید یا نشست شما منقضی شده است.', type: 'error' });
-      setIsLoading(false);
-      return;
-    }
-
-    const currentTabData = settingsData[tabId] || {};
-    // console.log(`Saving settings for tab: ${tabId}`, currentTabData);
-
+  const onFinish = async (values) => {
+    setLoading(true);
     try {
-      // فرض می‌کنیم یک endpoint عمومی برای ذخیره تنظیمات بر اساس tabId یا یک endpoint اختصاصی برای هر تب دارید
-      // مثال: POST /api/v1/settings/{tabId} یا POST /api/v1/settings با بدنه‌ای شامل tabId و داده‌ها
-      const response = await fetch(`${API_BASE_URL}/settings`, { // یا `${API_BASE_URL}/settings/${tabId}`
-        method: 'POST', // or 'PUT'
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          tab: tabId, // ارسال شناسه تب
-          data: currentTabData, // داده‌های مربوط به آن تب
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        setFeedbackMessage({ text: responseData.message || `تنظیمات "${settingsTabs.find(t => t.id === tabId)?.label}" با موفقیت ذخیره شد.`, type: 'success' });
+      const response = await axios.post('/api/admin/sms/plan/info/save', values);
+      if (response.data.error === 0) {
+        message.success('تنظیمات پیامک با موفقیت ذخیره شد.');
       } else {
-        setFeedbackMessage({ text: responseData.message || 'خطا در ذخیره تنظیمات.', type: 'error' });
+        message.error(response.data.message || 'خطایی در ذخیره‌سازی رخ داد.');
       }
     } catch (error) {
-      console.error("Error saving settings:", error);
-      setFeedbackMessage({ text: 'خطای شبکه در هنگام ذخیره تنظیمات. لطفاً اتصال خود را بررسی کنید.', type: 'error' });
+      message.error('خطای ارتباط با سرور!');
     } finally {
-      setIsLoading(false);
-      setTimeout(() => setFeedbackMessage({ text: '', type: '' }), 7000); // پاک کردن پیام پس از چند ثانیه
+      setLoading(false);
     }
   };
 
-  const renderFormElement = (element, tabId) => {
-    // ... (بخش renderFormElement بدون تغییر زیاد باقی می‌ماند، فقط مقدار value و onChange اصلاح می‌شود)
-    const value = settingsData[tabId]?.[element.id] ?? element.defaultValue ?? '';
-    // ...
-    // onChange={(e) => handleInputChange(tabId, element.id, e.target.type === 'checkbox' ? e.target.checked : e.target.value)}
-    // ...
-    // برای سادگی، من کد کامل renderFormElement را اینجا تکرار نمی‌کنم، اما باید value و onChange را مطابق بالا تنظیم کنید
-    // و برای radio button ها و checkbox ها به درستی مقدار value/checked را مدیریت کنید.
-    // مثال برای input:
-    if (element.type === 'text' || element.type === 'email' || element.type === 'number' || element.type === 'tel' || element.type === 'url' || element.type === 'password' || element.type === 'date' || element.type === 'color') {
-        return (
-          <input
-            type={element.type}
-            id={`${tabId}-${element.id}`}
-            name={element.id}
-            placeholder={element.placeholder}
-            value={settingsData[tabId]?.[element.id] ?? element.defaultValue ?? ''}
-            onChange={(e) => handleInputChange(tabId, element.id, e.target.value)}
-            className="form-control"
-            disabled={element.disabled}
-          />
-        );
-    }
-    // ... (سایر element type ها را مشابه تکمیل کنید) ...
-    // این یک پیاده‌سازی ناقص برای renderFormElement است، باید آن را کامل کنید.
-    // شما کد قبلی renderFormElement را دارید، فقط value و onChange را با handleInputChange و settingsData هماهنگ کنید.
-    return <p>Element type "{element.type}" not fully implemented in this example.</p>;
-  };
+  const renderTextField = (name, label) => (
+    <Col xs={24} sm={12} md={8} lg={6} key={Array.isArray(name) ? name.join('.') : name}>
+      <Form.Item name={name} label={label} rules={[{ required: true, message: 'این فیلد الزامی است' }]}>
+        <Input placeholder={`شناسه الگوی ${label}`} />
+      </Form.Item>
+    </Col>
+  );
 
+  const smsProviders = [
+    { label: 'ملی پیامک', value: 'melipayamak' },
+    { label: 'ایده پیام', value: 'idepayam' },
+    { label: 'IPPanel فراز اس ام اس', value: 'ippanel' }
+  ];
 
+  return (
+    <Spin spinning={loading}>
+      <Form layout="vertical" form={form} onFinish={onFinish}>
+        <Title level={4} style={{ color: '#1890ff' }}>اطلاعات اپراتور پیامک</Title>
+        <Row gutter={[16, 0]}>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item name="plan" label="اپراتور پیامک" rules={[{ required: true }]}>
+              <Select placeholder="انتخاب کنید" suffixIcon={<SignalFilled />}>
+                {smsProviders.map(p => (
+                  <Option key={p.value} value={p.value}>{p.label}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item name="username" label="نام کاربری" rules={[{ required: true }]}>
+              <Input placeholder="نام کاربری پنل پیامک" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item name="password" label="کلمه عبور" rules={[{ required: true }]}>
+              <Input.Password placeholder="کلمه عبور پنل پیامک" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item name="token" label="توکن (در صورت وجود)">
+              <Input placeholder="توکن API" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item name="fromNum" label="شماره خط ارسال کننده" rules={[{ required: true }]}>
+              <Input placeholder="مثال: 300012345" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Divider />
+        <Title level={4} style={{ color: '#1890ff' }}>شناسه الگوهای پیامک</Title>
+        <Row gutter={[16, 0]}>
+            {renderTextField('f2a', 'کد تایید دو مرحله‌ای')}
+            {renderTextField('recPassword', 'بازیابی رمز عبور')}
+            {/* ... سایر فیلدهای الگو ... */}
+        </Row>
+        <Divider />
+        <Title level={4} style={{color: '#1890ff'}}>افزونه حسابداری پیشرفته</Title>
+        <Row gutter={[16, 0]}>
+            {renderTextField(['plugAccpro', 'sharefaktor'], 'اشتراک‌گذاری فاکتور (حسابداری)')}
+            {/* ... سایر فیلدهای حسابداری ... */}
+        </Row>
+        <Divider />
+        <Title level={4} style={{color: '#1890ff'}}>افزونه تعمیرکاران</Title>
+        <Row gutter={[16, 0]}>
+            {renderTextField(['plugRepservice', 'get'], 'دریافت کالا برای تعمیر')}
+            {/* ... سایر فیلدهای تعمیرکاران ... */}
+        </Row>
+        <Form.Item style={{ marginTop: '24px' }}>
+          <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+            ذخیره تنظیمات پیامک
+          </Button>
+        </Form.Item>
+      </Form>
+    </Spin>
+  );
+};
+
+// کامپوننت اصلی تنظیمات سیستم
+const SystemSettingsPage = () => {
+  // تعریف تب‌ها. هر تب می‌تواند یک کامپوننت برای رندر شدن داشته باشد
+  const settingsTabs = [
+    {
+      id: 'basicInfo',
+      label: 'اطلاعات پایه',
+      icon: <FaBuilding />,
+      description: 'مدیریت اطلاعات پایه کسب‌وکار مانند نام، آدرس و لوگو.',
+      component: <p>فرم تنظیمات پایه در اینجا قرار خواهد گرفت.</p> // یک کامپوننت مشابه SmsSettingsForm بسازید
+    },
+    {
+      id: 'sms',
+      label: 'تنظیمات پیامک',
+      icon: <FaSms />,
+      description: 'پیکربندی پنل پیامک، شناسه‌های الگو و سایر موارد مربوط به ارسال پیامک.',
+      component: <SmsSettingsForm /> // کامپوننت فرم پیامک را اینجا قرار می‌دهیم
+    },
+    {
+      id: 'financial',
+      label: 'تنظیمات مالی',
+      icon: <FaCoins />,
+      description: 'تنظیمات مربوط به امور مالی، مالیات و واحدهای پولی.',
+      component: <p>فرم تنظیمات مالی در اینجا قرار خواهد گرفت.</p>
+    },
+  ];
+
+  const [activeTab, setActiveTab] = useState(settingsTabs[0].id);
   const currentTabConfig = settingsTabs.find(tab => tab.id === activeTab);
 
   return (
     <div className="settings-page-container">
       <div className="settings-page-header">
-        <h1>تنظیمات سیستم زرفولیو</h1>
+        <Title level={2}>تنظیمات سیستم</Title>
       </div>
-
-      {feedbackMessage.text && (
-        <div className={`settings-feedback-banner ${feedbackMessage.type === 'success' ? 'feedback-success' : 'feedback-error'}`}>
-          {feedbackMessage.type === 'success' ? <FaCheckCircle /> : <FaExclamationTriangle />}
-          {feedbackMessage.text}
-        </div>
-      )}
-
       <div className="settings-layout">
         <aside className="settings-tabs-menu">
           {settingsTabs.map(tab => (
             <button
               key={tab.id}
               className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => { setActiveTab(tab.id); setFeedbackMessage({ text: '', type: '' }); }}
+              onClick={() => setActiveTab(tab.id)}
             >
               <span className="tab-icon">{tab.icon}</span>
               {tab.label}
@@ -169,58 +179,19 @@ function SettingsPage() {
         </aside>
 
         <main className="settings-content-area">
-          {currentTabConfig ? (
-            <section className="settings-section">
-              <div className="settings-section-header">
-                <h2 className="settings-section-title">{currentTabConfig.label}</h2>
-                <p className="settings-section-description">
-                  {currentTabConfig.description || `تنظیمات مربوط به ${currentTabConfig.label} را در اینجا مدیریت کنید.`}
-                </p>
-              </div>
-
-              <form onSubmit={(e) => { e.preventDefault(); handleSaveSettings(currentTabConfig.id); }}>
-                {currentTabConfig.fields.map(group => (
-                  <div key={group.groupId || group.title} className="form-group-container">
-                    {group.title && <h3 className="form-group-title">{group.title}</h3>}
-                    {group.elements.map(element => (
-                      <div key={element.id} className={`form-row ${element.rowClass || ''}`}>
-                        {element.label && (
-                          <label htmlFor={`${currentTabConfig.id}-${element.id}`} className="form-label">
-                            {element.label}
-                            {element.required && <span className="required-star">*</span>}
-                          </label>
-                        )}
-                        <div className={`form-input-control ${element.inlineElements ? 'inline-elements' : ''} ${element.controlClass || ''}`}>
-                          {renderFormElement(element, currentTabConfig.id)}
-                          {element.helpText && <small className="form-help-text">{element.helpText}</small>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-                <div className="settings-section-actions">
-                  <button type="submit" className="save-button" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <span className="spinner-sm" role="status" aria-hidden="true"></span>
-                        درحال ذخیره...
-                      </>
-                    ) : (
-                      <>
-                        <FaSave style={{ marginLeft: '8px' }} /> ذخیره تغییرات این بخش
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </section>
-          ) : (
-            <p>لطفاً یک تب را از منوی سمت راست انتخاب کنید.</p>
-          )}
+          <section className="settings-section">
+            <div className="settings-section-header">
+              <h2 className="settings-section-title">{currentTabConfig.label}</h2>
+              <p className="settings-section-description">{currentTabConfig.description}</p>
+            </div>
+            <Divider />
+            {/* رندر کردن کامپوننت مربوط به تب فعال */}
+            {currentTabConfig.component}
+          </section>
         </main>
       </div>
     </div>
   );
-}
+};
 
-export default SettingsPage;
+export default SystemSettingsPage;
