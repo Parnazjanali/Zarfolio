@@ -1,0 +1,99 @@
+.detail-page-container {
+  padding: 2rem;
+  direction: rtl;
+}
+
+/* استایل‌های زیر برای هماهنگی با کلاس‌های عمومی شما اضافه شده است */
+.btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0 0.5rem;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+/* ============================================================== */
+
+.account-details-card, .transactions-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.account-details-card h2, .transactions-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+
+.details-grid p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.details-grid p strong {
+    margin-left: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.btn-default {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    margin-right: 1rem; /* برای فاصله از دکمه ویرایش */
+}
+
+/* استایل‌های جدول تراکنش‌ها */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 1rem;
+  text-align: right;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #555;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+
+.deposit {
+    color: #28a745; /* green */
+    font-weight: bold;
+}
+
+.withdrawal {
+    color: #dc3545; /* red */
+    font-weight: bold;
+}
