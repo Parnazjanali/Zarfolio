@@ -1,0 +1,140 @@
+/* frontend/src/components/ItemSettingsModal.css */
+:root {
+  /* Specific variables for ItemSettingsModal */
+  --isms-label-text-color: var(--secondary-text-color, #333333); /* Label text */
+  --isms-input-border-color: var(--border-color, #ced4da); /* For specific inputs if not covered by global */
+  --isms-input-bg-color: var(--secondary-bg-color, #ffffff);
+  --isms-input-text-color: var(--primary-text-color, #212529);
+
+  --isms-feedback-success-bg: rgba(40, 167, 69, 0.1);  /* Light green */
+  --isms-feedback-success-text: #155724; /* Dark green */
+  --isms-feedback-success-border: rgba(40, 167, 69, 0.2);
+
+  --isms-feedback-error-bg: rgba(220, 53, 69, 0.1); /* Light red */
+  --isms-feedback-error-text: #721c24; /* Dark red */
+  --isms-feedback-error-border: rgba(220, 53, 69, 0.2);
+
+  --isms-no-settings-text-color: var(--secondary-text-color, #6c757d);
+  --isms-setting-not-supported-text-color: var(--danger-color, #dc3545); /* Using a hypothetical global danger color */
+}
+
+body.dark-mode {
+  --isms-label-text-color: var(--secondary-text-color, #adb5bd);
+  --isms-input-border-color: var(--border-color, #444444);
+  --isms-input-bg-color: var(--secondary-bg-color, #2b2b2b);
+  --isms-input-text-color: var(--primary-text-color, #e0e0e0);
+
+  --isms-feedback-success-bg: rgba(40, 167, 69, 0.2);  /* Darker shade of light green */
+  --isms-feedback-success-text: #a3d9a5; /* Lighter green text */
+  --isms-feedback-success-border: rgba(40, 167, 69, 0.3);
+
+  --isms-feedback-error-bg: rgba(220, 53, 69, 0.2); /* Darker shade of light red */
+  --isms-feedback-error-text: #f5c6cb; /* Lighter red text */
+  --isms-feedback-error-border: rgba(220, 53, 69, 0.3);
+
+  --isms-no-settings-text-color: var(--secondary-text-color, #868e96);
+  --isms-setting-not-supported-text-color: var(--danger-hover-color, #f06270); /* Lighter danger color */
+}
+
+/* Generic modal structure styling is assumed to come from a shared CSS (e.g., DashboardPage.css or a generic modal CSS) */
+/* Styles below are specific to ItemSettingsModal content */
+
+.item-settings-modal-content .modal-body {
+  /* Styles for the body of this specific modal if needed */
+}
+
+.item-settings-modal-content .setting-field-wrapper {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color); /* Use global border color */
+}
+.item-settings-modal-content .setting-field-wrapper:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.item-settings-modal-content .item-setting-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.item-settings-modal-content .setting-label-text {
+  color: var(--isms-label-text-color);
+  font-weight: 500;
+  margin-bottom: 0.25rem; /* Add some space below label if it's above input */
+  flex-basis: 150px; /* Give labels a consistent width */
+  flex-shrink: 0;
+}
+
+/* Checkbox specific layout */
+.item-settings-modal-content .checkbox-setting {
+  flex-wrap: nowrap; /* Keep checkbox and label on one line */
+  align-items: center;
+}
+.item-settings-modal-content .checkbox-setting input[type="checkbox"] {
+  margin-left: 0.5rem; /* Space between checkbox and label text (RTL) */
+  accent-color: var(--accent-color); /* Theme the checkbox color */
+}
+.item-settings-modal-content .checkbox-setting .setting-label-text {
+  margin-bottom: 0; /* No margin needed as it's side-by-side */
+  flex-basis: auto;
+}
+
+
+/* Input, select, color input styling will mostly come from global index.css */
+.item-settings-modal-content .setting-input,
+.item-settings-modal-content .setting-select,
+.item-settings-modal-content .setting-input-color {
+  flex-grow: 1;
+  min-width: 150px; /* Ensure inputs have some minimum width */
+  /* Rely on global .form-control, input, select styles from index.css for theming */
+}
+
+.item-settings-modal-content .form-control-color {
+  height: 2.5rem; /* Standard height for color inputs */
+  padding: 0.25rem; /* Minimal padding for color type */
+  background-color: var(--isms-input-bg-color); /* Ensure bg is themed */
+  border: 1px solid var(--isms-input-border-color); /* Ensure border is themed */
+}
+.item-settings-modal-content .form-control-color:focus {
+   /* Focus style from global index.css should apply */
+}
+
+
+.item-settings-modal-content .feedback-message {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  border: 1px solid transparent;
+}
+
+.item-settings-modal-content .feedback-message.success {
+  background-color: var(--isms-feedback-success-bg);
+  color: var(--isms-feedback-success-text);
+  border-color: var(--isms-feedback-success-border);
+}
+
+.item-settings-modal-content .feedback-message.error { /* Assuming error class might be used */
+  background-color: var(--isms-feedback-error-bg);
+  color: var(--isms-feedback-error-text);
+  border-color: var(--isms-feedback-error-border);
+}
+
+.item-settings-modal-content .no-settings-message,
+.item-settings-modal-content .setting-not-supported {
+  color: var(--isms-no-settings-text-color);
+  font-style: italic;
+  padding: 1rem 0;
+}
+.item-settings-modal-content .setting-not-supported {
+    color: var(--isms-setting-not-supported-text-color);
+    font-style: normal;
+    font-weight: bold;
+}
+
+/* Footer buttons should inherit global styles from index.css via .action-button .primary/secondary */
+/* .item-settings-modal-content .modal-footer .action-button {} */

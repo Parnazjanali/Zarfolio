@@ -1,0 +1,104 @@
+/* src/App.css */
+
+
+.login-page-background {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  height: 100vh;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* استایل برای کانتینر فرم‌های ورود */
+.login-page-wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* استایل برای پیام "در حال بارگذاری..." در زمان استفاده از Suspense */
+.page-loading-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  font-size: 1.5rem;
+  color: #888;
+}
+
+/* استایل‌های مربوط به منوی سایدبار */
+
+/* حذف خط زیر لینک‌ها در منو */
+.ant-layout-sider .ant-menu-item .ant-menu-title-content a:hover,
+.ant-layout-sider .ant-menu-submenu-title .ant-menu-title-content a:hover,
+.ant-layout-sider .ant-menu-item a:hover,
+.ant-layout-sider .ant-menu-submenu-title:hover {
+  text-decoration: none;
+}
+
+/* افزایش اندازه آیکون‌ها در سایدبار */
+.ant-layout-sider .ant-menu .anticon {
+  font-size: 1.25em;
+  vertical-align: middle;
+}
+
+.ant-layout-sider .ant-menu-item svg,
+.ant-layout-sider .ant-menu-submenu-title svg {
+  font-size: 25px;
+  vertical-align: middle;
+}
+
+/* استایل آیکون دکمه بستن/باز کردن سایدبار */
+.sidebar-footer-sticky .ant-btn svg {
+  font-size: 25px;
+  vertical-align: middle;
+  transition: font-size 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.ant-layout-sider-collapsed .sidebar-footer-sticky .ant-btn svg {
+  font-size: 25px;
+  vertical-align: middle;
+}
+
+/* استایل آیکون‌ها در حالت بسته سایدبار */
+.ant-layout-sider-collapsed .ant-menu .anticon,
+.ant-layout-sider-collapsed .ant-menu-item svg,
+.ant-layout-sider-collapsed .ant-menu-submenu-title svg {
+  font-size: 30px;
+  vertical-align: middle;
+}
+.sidebar-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  /* در حالت باز، محتوا به سمت راست (در چیدمان RTL) چسبانده می‌شود */
+  justify-content: flex-start; 
+  /* فاصله از بالا و راست افزایش یافت */
+  padding: 12px 28px;
+  border-bottom: 1px solid #303030;
+  overflow: hidden; /* مهم برای جلوگیری از پرش محتوا */
+  /* انیمیشن برای تغییر پدینگ، تا جابجایی نرم باشد */
+  transition: padding 0.6s ease-in-out;
+}
+
+/* وقتی سایدبار بسته است، محتوا را در مرکز قرار می‌دهد */
+.ant-layout-sider-collapsed .sidebar-header {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}

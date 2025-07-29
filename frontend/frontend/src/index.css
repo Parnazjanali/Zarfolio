@@ -1,0 +1,102 @@
+/* src/index.css */
+:root {
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.7;
+  font-weight: 400;
+  color: #2c3e50;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #FAF8F3; /* Creamy white background for general pages */
+}
+
+.login-page-background {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  /* Ensure body takes full height for login page background */
+  min-height: 100vh; /* Or height: 100% if html, #root also have height 100% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+a {
+  font-weight: 500;
+  color: #2980b9;
+  text-decoration: none;
+}
+a:hover {
+  color: #1f618d;
+  text-decoration: underline;
+}
+
+button {
+  border-radius: 6px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 0.95em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #e0e0e0;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
+}
+
+button:hover {
+  border-color: #bdc3c7;
+  background-color: #d5d9dc;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px auto -webkit-focus-ring-color;
+  outline-offset: 1px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #1f2c38;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 2.2em;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.8em;
+}
+h3 {
+  font-size: 1.4em;
+}
+
+/* Portal root styling (optional, usually for absolute positioning context if needed) */
+#portal-root {
+  position: relative;
+  z-index: 1050; /* Ensure portals are above most content */
+}

@@ -1,0 +1,187 @@
+/* frontend/src/components/LabelPreview.css */
+
+.label-preview-wrapper {
+  background-color: #e9eef2;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dde4ec;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  background-image:
+    linear-gradient(to right, rgba(0, 123, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 123, 255, 0.08) 1px, transparent 1px);
+  background-size: 15px 15px;
+  position: relative;
+  min-height: 250px;
+  transition: padding 0.3s ease, background-color 0.3s ease;
+}
+
+.label-preview-wrapper.fullscreen-active-content {
+  width: 100%;
+  height: 100%;
+  padding: 20px; /* حفظ پدینگ برای فاصله از لبه‌ها حتی در تمام صفحه */
+  background-color: #dde4ea;
+  background-size: 25px 25px;
+  border-radius: 0;
+  border: none;
+  box-sizing: border-box; /* برای محاسبه صحیح پدینگ */
+}
+
+/* نوار ابزار کناری (فقط در حالت عادی نمایش داده می‌شود) */
+.preview-controls-top-left {
+  position: absolute;
+  top: 20px;   /* افزایش فاصله */
+  left: 20px;  /* افزایش فاصله */
+  z-index: 25; /* بالاتر از نوار بالا */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: rgba(44, 62, 80, 0.75);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.preview-action-button {
+  background-color: rgba(0, 86, 179, 0.85);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px; /* کمی بزرگتر برای تاچ بهتر */
+  height: 36px;
+  padding: 0;
+  font-size: 16px; /* کمی بزرگتر */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: background-color 0.2s, transform 0.2s;
+}
+.preview-action-button:hover {
+  background-color: rgba(0, 69, 143, 1);
+  transform: scale(1.1);
+}
+
+
+/* نوار ابزار بالا (فقط در حالت تمام صفحه) */
+.preview-controls-top-center {
+  position: absolute;
+  top: 15px; /* فاصله از بالای صفحه */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background-color: rgba(44, 62, 80, 0.75);
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px; /* فاصله بین گروه‌های مختلف کنترل‌ها */
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* جداکننده بین گروه‌های کنترل */
+.control-group:not(:last-child)::after {
+  content: '';
+  width: 1px;
+  height: 25px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin-left: 12px;
+  margin-right: 4px; /* برای ایجاد فاصله اضافی */
+}
+
+
+.zoom-level-indicator-inline {
+  color: #ecf0f1;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.dimension-inputs-top-bar .dimension-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dimension-inputs-top-bar label {
+  color: #ecf0f1;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dimension-inputs-top-bar input {
+  width: 55px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 4px;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 13px;
+  -moz-appearance: textfield;
+}
+.dimension-inputs-top-bar input::-webkit-outer-spin-button,
+.dimension-inputs-top-bar input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+.label-render-area {
+  position: relative; /* برای position:absolute فرزندان */
+  /* width, height, transform و ... از استایل JSX می‌آید */
+  /* overflow: hidden از استایل JSX می‌آید */
+  /* background-color از استایل JSX می‌آید */
+}
+
+.label-render-area.editable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 5mm 5mm;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.draggable-field {
+  /* ... (بدون تغییر) ... */
+}
+.draggable-field.editable:hover {
+  /* ... (بدون تغییر) ... */
+}
+.draggable-field.editable:active {
+  /* ... (بدون تغییر) ... */
+}
+.field-edit-toolbar {
+  /* ... (بدون تغییر) ... */
+}
+.field-edit-toolbar button {
+  /* ... (بدون تغییر) ... */
+}
+
+/* ... (بقیه استایل‌ها مثل stone-info-preview و ...) ... */
+
+@media print {
+  .label-preview-wrapper { padding: 0; background-image: none; border: none; }
+  .preview-controls-top-left, .preview-controls-top-center { display: none !important; }
+  .draggable-field.editable { border: none !important; background-color: transparent !important; }
+  .field-edit-toolbar { display: none !important; }
+}

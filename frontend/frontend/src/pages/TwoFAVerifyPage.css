@@ -1,0 +1,195 @@
+/* frontend/src/pages/TwoFAVerifyPage.css */
+
+/* متغیرهای رنگی اصلی برای هماهنگی با طرح کلی */
+:root {
+  --primary-color: #673ab7;
+  --primary-color-dark: #512da8;
+  --primary-color-light: #ede7f6;
+  --text-color: #212529;
+  --label-color: #495057;
+  --input-border-color: #ced4da;
+  --input-focus-border-color: var(--primary-color);
+  --input-focus-shadow-color: rgba(103, 58, 183, 0.2);
+  --placeholder-text-color: #6c757d;
+  --base-font-size: 13.5px;
+  --spacing-unit: 7px;
+  --error-bg: #fdecea;
+  --error-text: #c9302c;
+  --error-border: #f5c6cb;
+  --success-bg: #e9f5e9;
+  --success-text: #1e7e34;
+  --success-border: #c3e6cb;
+}
+
+/* این کلاس‌ها از AuthForms.css کپی شده‌اند تا ساختار کلی صفحه
+  (پس‌زمینه گرادیانی و قرارگیری در مرکز) را حفظ کنند.
+  این کلاس‌ها توسط کامپوننت App.jsx به body اضافه می‌شوند.
+*/
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl; 
+  padding: calc(var(--spacing-unit) * 2);
+  box-sizing: border-box;
+}
+
+/* کادر اصلی سفید با لبه‌های گرد */
+.login-container {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2.75) rgba(0, 0, 0, 0.065);
+  width: 100%;
+  max-width: 720px;
+  overflow: hidden;
+}
+
+/* بخش فرم در سمت راست */
+.login-form-section {
+  flex: 1 1 55%;
+  position: relative; /* برای جای‌گذاری دکمه بازگشت */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; 
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3.5); 
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.form-title {
+  font-size: 1.35em;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: calc(var(--spacing-unit) * 1.5); 
+}
+
+.form-subtitle {
+  font-size: 0.8em;
+  color: #555;
+  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  text-align: center; 
+  line-height: 1.5;
+}
+
+.auth-form {
+  width: 100%;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--spacing-unit) * 1.4);
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  opacity: 0.7;
+}
+
+.auth-input {
+  padding: calc(var(--spacing-unit) * 1.1) calc(var(--spacing-unit) * 1.4); 
+  padding-right: calc(var(--spacing-unit) * 4.5); /* فضای کافی برای آیکون */
+  font-size: calc(var(--base-font-size) - 0.5px);
+  width: 100%; 
+  border: 1px solid var(--input-border-color);
+  border-radius: calc(var(--spacing-unit) * 0.65); 
+  box-sizing: border-box; 
+  color: var(--text-color);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-input:focus {
+  border-color: var(--input-focus-border-color);
+  box-shadow: 0 0 0 2.5px var(--input-focus-shadow-color); 
+  outline: none;
+}
+
+.error-message, .success-message {
+  padding: calc(var(--spacing-unit) * 1.125);
+  margin-bottom: calc(var(--spacing-unit) * 1.875); 
+  border-radius: calc(var(--spacing-unit) * 0.75); 
+  font-size: calc(var(--base-font-size) - 0.75px); 
+  text-align: center;
+}
+
+.error-message {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+
+.success-message {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.auth-button {
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 2);
+  font-size: calc(var(--base-font-size) - 0.5px);
+  width: 100%;
+  font-weight: 500;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: calc(var(--spacing-unit) * 0.75); 
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.auth-button:disabled {
+  background-color: #e0e0e0 !important;
+  color: #9e9e9e !important;
+  cursor: not-allowed !important;
+}
+
+/* بخش تصویر در سمت چپ */
+.login-image-section {
+  flex: 1 1 calc(45% * 0.95);
+  background: var(--primary-color-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-image-section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* استایل‌های ریسپانسیو برای موبایل و تبلت */
+@media (max-width: 768px) {
+  .auth-page { padding: 0; }
+  .login-container { flex-direction: column; border-radius: 0; box-shadow: none; min-height: 100vh; }
+  .login-form-section { order: 2; padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 2); }
+  .login-image-section { order: 1; flex-basis: auto; min-height: 160px; max-height: 30vh; }
+}
+
+/* استایل دکمه بازگشت با Ant Design */
+.back-button {
+  position: absolute;
+  top: calc(var(--spacing-unit) * 2.5);
+  right: calc(var(--spacing-unit) * 3.5);
+}

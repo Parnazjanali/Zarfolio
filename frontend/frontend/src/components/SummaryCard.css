@@ -1,0 +1,87 @@
+/* src/components/SummaryCard.css */
+.summary-card-inner-content {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  /* کاهش padding برای کوچکتر شدن و جلوگیری از فاصله زیاد از بالا */
+  padding: clamp(10px, 1.2vw, 14px); /* کاهش مقدار بیشینه clamp */
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.summary-card .card-icon-container {
+  flex-shrink: 0;
+  /* کوچک‌تر کردن اندازه کانتینر آیکون */
+  width: clamp(34px, 5.5vw, 40px); /* کاهش مقدار بیشینه و پایه clamp */
+  height: clamp(34px, 5.5vw, 40px);/* کاهش مقدار بیشینه و پایه clamp */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff; /* <<<< تضمین می‌کند که آیکون‌های داخل کانتینر سفید هستند >>>> */
+  margin-left: clamp(8px, 1.8vw, 12px); /* فاصله آیکون از متن */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* افزودن یک سایه ملایم به کانتینر آیکون */
+}
+
+/* رنگ‌بندی پس‌زمینه آیکون‌ها (بدون تغییر از کد قبلی شما) */
+.summary-card .card-icon-container.gold { background-color: #f1c40f; }
+.summary-card .card-icon-container.value { background-color: #2ecc71; }
+.summary-card .card-icon-container.invoices { background-color: #3498db; }
+.summary-card .card-icon-container.price { background-color: #e67e22; }
+.summary-card .card-icon-container.gold-receivable { background-color: #58b07a; }
+.summary-card .card-icon-container.gold-payable { background-color: #e86a5a; }
+.summary-card .card-icon-container.melted-gold { background-color: #f39c12; }
+.summary-card .card-icon-container.coins { background-color: #f1c40f; }
+.summary-card .card-icon-container.misc { background-color: #95a5a6; }
+
+/* استایل برای خود آیکون (اگر SVG یا فونت-آیکون است) */
+.summary-card .card-icon-container svg,
+.summary-card .card-icon-container .card-icon { /* .card-icon اگر به خود آیکون کلاس داده‌اید */
+  /* کوچک‌تر کردن اندازه خود آیکون */
+  font-size: clamp(1em, 2.2vw, 1.15em); /* کاهش اندازه فونت آیکون */
+  /* color: #ffffff; /* این توسط color در .card-icon-container پوشش داده می‌شود */
+}
+
+.summary-card .card-content {
+  text-align: right;
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0px; /* به حداقل رساندن فاصله بین عنوان و مقدار */
+}
+
+.summary-card .card-content h3 {
+  margin: 0;
+  /* کوچک‌تر و سبک‌تر کردن فونت عنوان کارت */
+  font-size: clamp(0.7em, 1.8vw, 0.8em);
+  font-weight: 500;
+  color: #4a5568; /* کمی تیره‌تر کردن رنگ عنوان برای خوانایی بهتر */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  margin-bottom: 2px; /* فاصله بسیار کم زیر عنوان */
+}
+
+.summary-card .card-content p {
+  margin: 0;
+  /* تنظیم دقیق‌تر اندازه فونت مقدار کارت */
+  font-size: clamp(0.9em, 2.5vw, 1.05em);
+  font-weight: 600; /* کمی کاهش وزن فونت برای جلوگیری از ضخامت بیش از حد */
+  color: #1a202c; /* رنگ تیره‌تر برای مقدار */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* استایل برای حالت placeholder اگر داده‌ای وجود ندارد */
+.summary-card-inner-content.placeholder-content p {
+  font-size: 0.8em;
+  color: #718096;
+  width: 100%;
+  text-align: center;
+}

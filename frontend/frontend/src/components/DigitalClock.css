@@ -1,0 +1,134 @@
+/* src/components/DigitalClock.css */
+.digital-clock-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px; /* تنظیم padding برای اندازه جدید (بلندتر) */
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 10px;
+  font-family: 'Vazirmatn', sans-serif;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.digital-clock-widget:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.time-display {
+  font-size: 2.4em; /* تنظیم برای ارتفاع بیشتر ویجت (125px) */
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  direction: ltr;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  z-index: 1;
+}
+
+.date-display { /* این برای استایل style1 کاربرد دارد */
+  font-size: 0.9em; /* تنظیم برای ارتفاع بیشتر */
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  margin-bottom: 7px;
+  z-index: 1;
+}
+
+.day-night-icon {
+  font-size: 1.5em; /* تنظیم برای ارتفاع بیشتر */
+  margin-top: 6px;
+  line-height: 1;
+  z-index: 1;
+}
+
+/* --- Theme Day --- */
+.digital-clock-widget.day-theme {
+  background: linear-gradient(135deg, #87CEFA 0%, #B0E0E6 100%);
+  color: #003366;
+}
+.digital-clock-widget.day-theme .time-display,
+.digital-clock-widget.day-theme .date-display {
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+.digital-clock-widget.day-theme .day-night-icon .sun-icon {
+  color: #FFD700;
+}
+
+/* --- Theme Night --- */
+.digital-clock-widget.night-theme {
+  background-color: #0c0c27; /* رنگ پایه شب */
+  color: #e0e0e0;
+  /* ستاره‌های ثابت از اینجا حذف شده‌اند، همه ستاره‌ها توسط شبه‌المان‌ها مدیریت می‌شوند */
+}
+
+.digital-clock-widget.night-theme .time-display,
+.digital-clock-widget.night-theme .date-display {
+  text-shadow: 0 0 5px rgba(200, 200, 255, 0.5), 0 0 10px rgba(200, 200, 255, 0.3);
+}
+
+.digital-clock-widget.night-theme .day-night-icon .moon-icon {
+  color: #f0f8ff;
+  text-shadow: 0 0 8px #add8e6;
+}
+
+/* استایل‌های مشترک برای لایه‌های ستاره چشمک‌زن */
+.digital-clock-widget.night-theme::before,
+.digital-clock-widget.night-theme::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0; /* پشت محتوای اصلی، روی رنگ پس‌زمینه */
+}
+
+/* لایه اول ستاره‌ها */
+.digital-clock-widget.night-theme::before {
+  background-image:
+    /* نوع اول: ستاره‌های کوچک و روشن سفید */
+    radial-gradient(circle, white 0.4px, transparent 1.2px),
+    /* نوع دوم: ستاره‌های متوسط، کمی آبی/سفید */
+    radial-gradient(circle, #f0f8ff 0.7px, transparent 1.8px),
+    /* نوع سوم: ستاره‌های بسیار ریز، خاکستری روشن برای عمق */
+    radial-gradient(circle, #d0d0d0 0.3px, transparent 1.0px);
+  /* موقعیت ستاره‌ها در داخل کاشی تکرارشونده */
+  background-position: 0 0, 25px 35px, 10px 60px;
+  background-size: 90px 90px; /* اندازه کاشی تکرارشونده */
+  background-repeat: repeat;
+  animation: twinkleTypeA 7s infinite alternate;
+}
+
+/* لایه دوم ستاره‌ها */
+.digital-clock-widget.night-theme::after {
+  background-image:
+    /* نوع چهارم: ستاره‌های متوسط، سفید درخشان */
+    radial-gradient(circle, white 0.5px, transparent 1.5px),
+    /* نوع پنجم: ستاره‌های بزرگتر اما بسیار کم‌نور و دور */
+    radial-gradient(circle, #b0c4de 0.9px, transparent 2.5px),
+    /* نوع ششم: ستاره‌های ریز و تیز، سفید */
+    radial-gradient(circle, #f5f5f5 0.3px, transparent 1.1px);
+  background-position: 40px 40px, 5px 70px, 70px 15px;
+  background-size: 110px 110px; /* اندازه متفاوت کاشی برای تنوع بیشتر */
+  background-repeat: repeat;
+  animation: twinkleTypeB 5s infinite alternate;
+  animation-delay: -2s; /* شروع با تاخیر برای عدم هماهنگی با لایه اول */
+}
+
+@keyframes twinkleTypeA {
+  0% { opacity: 0.2; }   /* شروع با شفافیت کم */
+  30% { opacity: 0.6; }
+  70% { opacity: 0.5; }
+  100% { opacity: 0.2; } /* بازگشت به شفافیت کم */
+}
+
+@keyframes twinkleTypeB {
+  0% { opacity: 0.3; }
+  40% { opacity: 0.9; }  /* روشن‌تر شدن بیشتر */
+  60% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
