@@ -2,12 +2,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
-import { motion, AnimatePresence } from 'framer-motion'; 
+import { motion, AnimatePresence } from 'framer-motion';
+
+// ======================= بخش ویرایش شده =======================
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
-  FaCube, FaUserCog, FaAngleLeft, FaAngleRight, FaUserCircle
+  FaCube, FaUserCog, FaAngleLeft, FaAngleRight, FaUserCircle,
+  FaStore, FaUsersCog, FaPrint, FaFileContract, FaIdBadge, FaHistory, FaMoneyBillWave,
+  // آیکون جدید برای تنظیمات سیستم
+  FaCogs 
 } from 'react-icons/fa';
+// =============================================================
+
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -18,11 +25,59 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
   const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
-  const getSelectedKeys = () => { const path = location.pathname; if (path.startsWith('/invoices/')) return ['/invoices']; if (path.startsWith('/reports/')) return ['/reports']; return [path]; };
+  
+  const getSelectedKeys = () => {
+    const path = location.pathname; 
+    if (path.startsWith('/invoices/')) return ['/invoices']; 
+    if (path.startsWith('/reports/')) return ['/reports'];
+    if (path.startsWith('/settings/')) return ['settingsSubmenu'];
+    return [path]; 
+  };
+
   const onOpenChange = (keys) => { setOpenKeys(keys); };
-  useEffect(() => { const path = location.pathname; if (path.startsWith('/invoices/')) { setOpenKeys(['invoicesSubmenu']); } else if (path.startsWith('/reports/')) { setOpenKeys(['reportsSubmenu']); } }, [location.pathname, isCollapsed]);
-  const menuItems = [ { key: '/dashboard', icon: <FaTachometerAlt />, label: <Link to="/dashboard">داشبورد</Link> }, { key: 'invoicesSubmenu', icon: <FaFileInvoice />, label: 'فاکتورها', children: [ { key: '/invoices/new', icon: <FaPlusSquare />, label: <Link to="/invoices/new">فاکتور جدید</Link> }, { key: '/invoices', icon: <FaFileInvoiceDollar />, label: <Link to="/invoices">لیست فاکتورها</Link> }, ] }, { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> }, { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> }, { key: '/customers/new', icon: <FaUserPlus />, label: <Link to="/customers/new">مشتری جدید</Link> }, { key: '/etiket', icon: <FaTags />, label: <Link to="/etiket">اتیکت <Text type="warning" style={{ fontSize: '0.8em' }}>(beta)</Text></Link> }, { key: 'reportsSubmenu', icon: <FaChartBar />, label: 'گزارشات', children: [ { key: '/reports/sales', icon: <FaChartBar />, label: <Link to="/reports/sales">گزارش فروش</Link> }, { key: '/reports/inventory', icon: <FaBoxes />, label: <Link to="/reports/inventory">گزارش موجودی</Link> }, ] }, ];
-  const footerMenuItems = [ { key: '/settings/system', icon: <SettingOutlined style={{ fontSize: isCollapsed ? '20px' : '1.25em' }} />, label: <Link to="/settings/system">تنظیمات سیستم</Link>, }, { key: 'logout', icon: <LogoutOutlined style={{ color: '#ff4d4f', fontSize: isCollapsed ? '20px' : '1.25em' }} />, label: <span style={{ color: '#ff4d4f' }}>خروج از حساب</span>, onClick: handleLogout, } ];
+
+  useEffect(() => {
+    const path = location.pathname; 
+    if (path.startsWith('/invoices/')) { setOpenKeys(['invoicesSubmenu']); } 
+    else if (path.startsWith('/reports/')) { setOpenKeys(['reportsSubmenu']); } 
+    else if (path.startsWith('/settings/')) { setOpenKeys(['settingsSubmenu']); } 
+  }, [location.pathname, isCollapsed]);
+
+  const menuItems = [ 
+    { key: '/dashboard', icon: <FaTachometerAlt />, label: <Link to="/dashboard">داشبورد</Link> }, 
+    { key: 'invoicesSubmenu', icon: <FaFileInvoice />, label: 'فاکتورها', children: [ { key: '/invoices/new', icon: <FaPlusSquare />, label: <Link to="/invoices/new">فاکتور جدید</Link> }, { key: '/invoices', icon: <FaFileInvoiceDollar />, label: <Link to="/invoices">لیست فاکتورها</Link> }, ] }, 
+    { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> }, 
+    { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> }, 
+    { key: '/customers/new', icon: <FaUserPlus />, label: <Link to="/customers/new">مشتری جدید</Link> }, 
+    { key: '/etiket', icon: <FaTags />, label: <Link to="/etiket">اتیکت <Text type="warning" style={{ fontSize: '0.8em' }}>(beta)</Text></Link> }, 
+    { key: 'reportsSubmenu', icon: <FaChartBar />, label: 'گزارشات', children: [ { key: '/reports/sales', icon: <FaChartBar />, label: <Link to="/reports/sales">گزارش فروش</Link> }, { key: '/reports/inventory', icon: <FaBoxes />, label: <Link to="/reports/inventory">گزارش موجودی</Link> }, ] },
+    // ======================= بخش ویرایش شده =======================
+    { 
+      key: 'settingsSubmenu', 
+      icon: <SettingOutlined />, 
+      label: 'تنظیمات کلی',  // <--- نام تغییر کرد
+      children: [
+        { key: '/settings/business', icon: <FaStore />, label: <Link to="/settings/business">اطلاعات کسب و کار</Link> },
+        { key: '/settings/users', icon: <FaUsersCog />, label: <Link to="/settings/users">کاربران و دسترسی‌ها</Link> },
+        { key: '/settings/print', icon: <FaPrint />, label: <Link to="/settings/print">تنظیمات چاپ</Link> },
+        { key: '/settings/tax', icon: <FaFileContract />, label: <Link to="/settings/tax">تنظیمات مالیاتی</Link> },
+        { key: '/settings/avatar', icon: <FaIdBadge />, label: <Link to="/settings/avatar">نمایه و مهر</Link> },
+        { key: '/settings/logs', icon: <FaHistory />, label: <Link to="/settings/logs">تاریخچه رویدادها</Link> },
+        { key: '/settings/currencies', icon: <FaMoneyBillWave />, label: <Link to="/settings/currencies">مدیریت ارزها</Link> },
+        // ***** آیتم زیر از فوتر به اینجا منتقل شد *****
+        { key: '/settings/system', icon: <FaCogs />, label: <Link to="/settings/system">تنظیمات سیستم</Link> },
+      ]
+    },
+    // =============================================================
+  ];
+  
+  // ======================= بخش ویرایش شده =======================
+  // آیتم "تنظیمات سیستم" از اینجا حذف شد
+  const footerMenuItems = [ 
+    { key: 'logout', icon: <LogoutOutlined style={{ color: '#ff4d4f', fontSize: isCollapsed ? '20px' : '1.25em' }} />, label: <span style={{ color: '#ff4d4f' }}>خروج از حساب</span>, onClick: handleLogout, } 
+  ];
+  // =============================================================
+
   let currentUserName = "کاربر"; try { const userDataString = localStorage.getItem('userData'); if (userDataString) { const userData = JSON.parse(userDataString); currentUserName = userData.fullName || "کاربر"; } } catch (error) { console.error("Sidebar: Error parsing user data", error); }
 
   const animationVariants = {
@@ -50,7 +105,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
             initial="initial"
             animate="animate"
             exit="exit"
-
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             {isCollapsed ? (
