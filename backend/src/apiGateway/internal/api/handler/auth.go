@@ -14,16 +14,16 @@ import (
 )
 
 type AuthHandler struct {
-	authService auth.AuthService // اینترفیس AuthService
+	authService auth.AuthService 
 }
 
-func NewAuthHandler(authSvc auth.AuthService) (*AuthHandler, error) { // 👈 تغییر Signature
-	if authSvc == nil { // 👈 این چک باید اینجا برقرار باشه
+func NewAuthHandler(authSvc auth.AuthService) (*AuthHandler, error) { 
+	if authSvc == nil { 
 		utils.Log.Error("AuthService is nil when passed to NewAuthHandler.", zap.String("reason", "auth_service_nil"))
-		return nil, fmt.Errorf("AuthService cannot be nil for AuthHandler") // 👈 برگرداندن خطا
+		return nil, fmt.Errorf("AuthService cannot be nil for AuthHandler") 
 	}
 	utils.Log.Info("AuthHandler initialized successfully.")
-	return &AuthHandler{authService: authSvc}, nil // 👈 برگرداندن غیر-nil و nil error
+	return &AuthHandler{authService: authSvc}, nil 
 }
 
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
@@ -301,7 +301,6 @@ func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
 	})
 }
 
-// ... (min func)
 
 func min(a, b int) int {
 	if a < b {

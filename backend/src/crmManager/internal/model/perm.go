@@ -6,7 +6,6 @@ const (
 	RoleSalesperson = "salesperson"
 	RoleAccountant  = "accountant"
 )
-
 const (
 	PermInventoryReadItem        = "inventory:read_item"
 	PermInventoryCreateItem      = "inventory:create_item"
@@ -47,7 +46,6 @@ const (
 	PermReportViewProfitLoss       = "report:view_profit_loss"
 	PermReportViewBalances         = "report:view_balances"
 	PermReportExportData           = "report:export_data"
-	PermReportImportData		   = "report:import_data"
 
 	PermUserRead              = "user:read"
 	PermUserCreate            = "user:create"

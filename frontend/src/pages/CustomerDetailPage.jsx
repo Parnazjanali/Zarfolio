@@ -7,7 +7,7 @@ import ActivityFeed from '../components/ActivityFeed'; // از کامپوننت 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
-// داده‌های نمونه برای فاکتورهای این مشتری
+
 const customerInvoices = [
     { key: '1', invoiceNumber: 'INV-002', status: 'pending', date: '1403-05-03', amount: '850,000' },
     { key: '2', invoiceNumber: 'INV-005', status: 'paid', date: '1403-03-20', amount: '1,200,000' },
@@ -19,7 +19,7 @@ const invoiceColumns = [
 ];
 
 const CustomerDetailPage = () => {
-  // در آینده، اطلاعات مشتری از طریق URL parameter و API دریافت می‌شود
+
   const customer = {
     name: 'مشتری ویژه',
     email: 'vip.customer@example.com',

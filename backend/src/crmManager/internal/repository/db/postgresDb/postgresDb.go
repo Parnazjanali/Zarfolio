@@ -1,10 +1,10 @@
 package postgresDb
 
 import (
+	"crm-gold/internal/model"
+	"crm-gold/internal/utils"
 	"fmt"
 	"os"
-	"crm-gold/internal/utils"
-	"crm-gold/internal/model"
 	"time"
 
 	"go.uber.org/zap"
@@ -47,13 +47,13 @@ func InitDB() {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran",
 		dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
 
-	utils.Log.Info("Database DSN constructed", zap.String("host", dbHost), zap.String("port", dbPort), zap.String("db_name", dbName))
+	utils.Log.Info("Attempting to connect to DB with DSN (excluding password)",
+		zap.String("dsn_prefix", fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s", dbHost, dbPort, dbUser, dbName, dbSSLMode)))
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
-
 	if err != nil {
 		utils.Log.Fatal("Failed to connect to PostgreSQL database", zap.Error(err))
 	}
@@ -72,6 +72,10 @@ func InitDB() {
 		&model.Customer{},
 		&model.CusCard{},
 		&model.CusType{},
+		&model.Currency{},
+		&model.PaymentTerm{},
+		&model.Employee{},
+		&model.PersonPrelabel{},
 	)
 
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"gold-api/internal/authz"
+	"gold-api/internal/api/authz"
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
 
@@ -14,17 +14,16 @@ import (
 )
 
 type AuthMiddleware struct {
-	permissionService *authz.PermissionService 
+	permissionService *authz.PermissionService
 	logger            *zap.Logger
 }
-
 
 func NewAuthMiddleware(ps *authz.PermissionService, logger *zap.Logger) *AuthMiddleware {
 	if ps == nil {
 		logger.Fatal("PermissionService cannot be nil for AuthMiddleware.")
 	}
 	if logger == nil {
-		log.Fatal("Logger cannot be nil for AuthMiddleware.") 
+		log.Fatal("Logger cannot be nil for AuthMiddleware.")
 	}
 	return &AuthMiddleware{
 		permissionService: ps,
@@ -48,7 +47,7 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Ha
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Bearer token missing."})
 		}
 
-		claims, err := utils.ValidateToken(tokenString) 
+		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
 			m.logger.Error("Invalid or expired token for protected route",
 				zap.Error(err), zap.String("path", c.OriginalURL()), zap.String("required_perm", requiredPermission))
@@ -64,12 +63,12 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Ha
 				zap.String("userID", claims.UserID), zap.Error(err))
 			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Internal server error: role parsing failed."})
 		}
-		c.Locals("userRoles", userRoles) 
+		c.Locals("userRoles", userRoles)
 
 		if !m.permissionService.HasPermission(userRoles, requiredPermission) {
 			m.logger.Warn("Access denied: User does not have required permission",
 				zap.String("userID", claims.UserID),
-				zap.Strings("user_roles", userRoles), 
+				zap.Strings("user_roles", userRoles),
 				zap.String("required_permission", requiredPermission),
 				zap.String("path", c.OriginalURL()))
 			return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{Message: "Access denied: Insufficient permissions."})

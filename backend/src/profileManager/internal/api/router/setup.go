@@ -29,7 +29,7 @@ func SetupAllRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 
     utils.Log.Info("Profile Manager: Setting up all routes.")
 	// --- Set up Auth Routes ---
-	if err := SetuUpAuthRoutes(app, authHandler, authZMiddleware); err != nil { // Auth routes don't need authZMiddleware
+	if err := SetuUpAuthRoutes(app, authHandler); err != nil { 
 		return fmt.Errorf("failed to set up auth routes: %w", err)
 	}
 
@@ -46,7 +46,7 @@ func SetupAllRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	// ... Fallback 404 handler (if needed in Profile Manager)
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("Profile Manager: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))
-		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "Profile Manager: The requested resource was not found."}) // Assuming service.ErrorResponse
+		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "Profile Manager: The requested resource was not found."}) 
 	})
 
 	return nil

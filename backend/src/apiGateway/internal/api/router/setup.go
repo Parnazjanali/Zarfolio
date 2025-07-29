@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
+	"gold-api/internal/api/authz"
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/api/proxy"
-	"gold-api/internal/authz"
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
 	"os"
@@ -46,7 +46,7 @@ func SetupAllRoutes(
 
 	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
 
-	if err := SetUpAuthRoutes(apiV1, authHandler, authMiddleware); err != nil {
+	if err := SetUpAuthRoutes(apiV1, authHandler); err != nil {
 		return fmt.Errorf("failed to set up auth routes: %w", err)
 	}
 
@@ -58,16 +58,15 @@ func SetupAllRoutes(
 		return fmt.Errorf("failed to set up user management routes: %w", err)
 	}
 
-	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL") 
+	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerServiceURL != "" {
-		
-		apiV1.Get("/uploads/*", proxyHandler.HandleStaticFileProxy(profileManagerServiceURL)) 
+
+		apiV1.Get("/uploads/*", proxyHandler.HandleStaticFileProxy(profileManagerServiceURL))
 		utils.Log.Info("Configured GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
 	} else {
 		utils.Log.Warn("PROFILE_MANAGER_BASE_URL not set in env. Cannot configure proxy for profile pictures/uploads.")
 	}
 
-	
 	app.Use(func(c *fiber.Ctx) error {
 		utils.Log.Warn("API Gateway: 404 Not Found", zap.String("method", c.Method()), zap.String("path", c.OriginalURL()))
 		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "API Gateway: The requested resource was not found."})

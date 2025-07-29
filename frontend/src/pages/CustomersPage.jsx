@@ -3,8 +3,6 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query'; // ۱. هوک useQuery وارد می‌شود
 import './CustomersPage.css';
 
-// ۲. تابع دریافت داده‌ها را تعریف می‌کنیم
-// این تابع وظیفه ارسال درخواست به API و برگرداندن داده‌ها را دارد
 const fetchCustomers = async () => {
   const authToken = localStorage.getItem('authToken');
   if (!authToken) {

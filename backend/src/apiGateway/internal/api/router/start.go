@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
+	"gold-api/internal/api/authz"
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/api/proxy"
-	"gold-api/internal/authz"
 	"gold-api/internal/service/auth"
 	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
