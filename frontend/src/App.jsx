@@ -15,33 +15,33 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
 
 // بارگذاری تنبل (Lazy Loading) برای صفحات اصلی
-const DashboardPage = lazy(() => import('/src/pages/DashboardPage.jsx'));
-const InvoicesPage = lazy(() => import('/src/pages/InvoicesPage.jsx'));
-const NewInvoicePage = lazy(() => import('/src/pages/NewInvoicePage.jsx'));
-const InventoryPage = lazy(() => import('/src/pages/InventoryPage.jsx'));
-const CustomersPage = lazy(() => import('/src/pages/CustomersPage.jsx'));
-const NewCustomerPage = lazy(() => import('/src/pages/NewCustomerPage.jsx'));
-const CustomerDetailPage = lazy(() => import('/src/pages/CustomerDetailPage.jsx'));
-const ReportsPage = lazy(() => import('/src/pages/ReportsPage.jsx'));
-const SystemSettingsPage = lazy(() => import('/src/pages/SystemSettingsPage.jsx'));
-const AccountManagementPage = lazy(() => import('/src/pages/AccountManagementPage.jsx'));
-const EtiketPage = lazy(() => import('/src/pages/EtiketPage.jsx'));
-const TasksBoardPage = lazy(() => import('/src/pages/TasksBoardPage.jsx'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
+const InvoicesPage = lazy(() => import('./pages/InvoicesPage.jsx'));
+const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage.jsx'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage.jsx'));
+const CustomersPage = lazy(() => import('./pages/CustomersPage.jsx'));
+const NewCustomerPage = lazy(() => import('./pages/NewCustomerPage.jsx'));
+const CustomerDetailPage = lazy(() => import('./pages/CustomerDetailPage.jsx'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
+const SystemSettingsPage = lazy(() => import('./pages/SystemSettingsPage.jsx'));
+const AccountManagementPage = lazy(() => import('./pages/AccountManagementPage.jsx'));
+const EtiketPage = lazy(() => import('./pages/EtiketPage.jsx'));
+const TasksBoardPage = lazy(() => import('./pages/TasksBoardPage.jsx'));
 
 // وارد کردن کامپوننت‌های بخش تنظیمات
-const BusinessSettings = lazy(() => import('/src/pages/settings/BusinessSettings.jsx'));
-const UserRolls = lazy(() => import('/src/pages/settings/UserRolls.jsx'));
-const UserPermissions = lazy(() => import('/src/pages/settings/UserPermissions.jsx'));
-const PrintSettings = lazy(() => import('/src/pages/settings/PrintSettings.jsx'));
-const TaxSettings = lazy(() => import('/src/pages/settings/TaxSettings.jsx'));
-const AvatarSettings = lazy(() => import('/src/pages/settings/AvatarSettings.jsx'));
-const LogsViewer = lazy(() => import('/src/pages/settings/LogsViewer.jsx'));
-const ExtraCurrencies = lazy(() => import('/src/pages/settings/ExtraCurrencies.jsx'));
+const BusinessSettings = lazy(() => import('./pages/settings/BusinessSettings.jsx'));
+const UserRolls = lazy(() => import('./pages/settings/UserRolls.jsx'));
+const UserPermissions = lazy(() => import('./pages/settings/UserPermissions.jsx'));
+const PrintSettings = lazy(() => import('./pages/settings/PrintSettings.jsx'));
+const TaxSettings = lazy(() => import('./pages/settings/TaxSettings.jsx'));
+const AvatarSettings = lazy(() => import('./pages/settings/AvatarSettings.jsx'));
+const LogsViewer = lazy(() => import('./pages/settings/LogsViewer.jsx'));
+const ExtraCurrencies = lazy(() => import('./pages/settings/ExtraCurrencies.jsx'));
 
-// وارد کردن صفحات جدید حساب بانکی با آدرس‌دهی مطلق
-const BankAccountsPage = lazy(() => import('/src/pages/BankAccountsPage.jsx'));
-const NewBankAccountPage = lazy(() => import('/src/pages/NewBankAccountPage.jsx'));
-const BankAccountDetailPage = lazy(() => import('/src/pages/BankAccountDetailPage.jsx'));
+// وارد کردن صفحات جدید حساب بانکی با آدرس‌دهی مطلق از ریشه src
+const BankAccountsPage = lazy(() => import('./pages/BankAccountsPage.jsx'));
+const NewBankAccountPage = lazy(() => import('./pages/NewBankAccountPage.jsx'));
+const BankAccountDetailPage = lazy(() => import('./pages/BankAccountDetailPage.jsx'));
 
 
 // کامپوننت برای مدیریت پس‌زمینه صفحات لاگین
