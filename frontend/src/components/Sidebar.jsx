@@ -9,7 +9,7 @@ import {
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
   FaCube, FaUserCog, FaAngleLeft, FaAngleRight, FaUserCircle,
   FaStore, FaUsersCog, FaPrint, FaFileContract, FaIdBadge, FaHistory, FaMoneyBillWave,
-  FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank
+  FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList
 } from 'react-icons/fa';
 
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -72,6 +72,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       label: 'تنظیمات کلی',
       children: [
         { key: '/settings/business', icon: <FaStore />, label: <Link to="/settings/business">اطلاعات کسب و کار</Link> },
+        { key: '/settings/price-board', icon: <FaClipboardList />, label: <Link to="/settings/price-board">تابلوی قیمت</Link> },
         { key: '/settings/users', icon: <FaUsersCog />, label: <Link to="/settings/users">کاربران و دسترسی‌ها</Link> },
         { key: '/settings/print', icon: <FaPrint />, label: <Link to="/settings/print">تنظیمات چاپ</Link> },
         { key: '/settings/tax', icon: <FaFileContract />, label: <Link to="/settings/tax">تنظیمات مالیاتی</Link> },
