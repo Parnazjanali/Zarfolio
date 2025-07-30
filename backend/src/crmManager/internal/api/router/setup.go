@@ -37,6 +37,5 @@ func SetUpAllRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMiddlew
 	})
 	return nil
 
-	// Set up all routes for the application
-	// Add other route setups here as needed
+	
 }

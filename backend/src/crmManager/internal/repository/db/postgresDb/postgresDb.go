@@ -15,7 +15,7 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() {
+func InitDB() error {
 	utils.Log.Info("Initializing database connection for Crm Manager...")
 
 	dbHost := os.Getenv("DB_HOST")
@@ -55,12 +55,12 @@ func InitDB() {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		utils.Log.Fatal("Failed to connect to PostgreSQL database", zap.Error(err))
+		return fmt.Errorf("failed to connect to PostgreSQL database: %w", err)
 	}
 
 	sqlDB, err := DB.DB()
 	if err != nil {
-		utils.Log.Fatal("Failed to get underlying SQL DB", zap.Error(err))
+		return fmt.Errorf("failed to get SQL DB instance: %w", err)
 	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
@@ -79,8 +79,10 @@ func InitDB() {
 	)
 
 	if err != nil {
-		utils.Log.Fatal("Failed to auto-migrate database schemas", zap.Error(err))
+		return fmt.Errorf("failed to auto-migrate database schemas: %w", err)
 	}
 	utils.Log.Info("Database schemas auto-migrated successfully.")
+
+	return nil
 
 }

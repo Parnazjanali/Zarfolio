@@ -7,6 +7,7 @@ import (
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/api/proxy"
 	"gold-api/internal/service/auth"
+	"gold-api/internal/service/crm"
 	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
 	"log"
@@ -29,11 +30,17 @@ func StartServer(port string) {
 	if profileManagerBaseURL == "" {
 		utils.Log.Fatal("PROFILE_MANAGER_BASE_URL environment variable is not set. Exiting application.")
 	}
+	crmManagerBaseURL := os.Getenv("CRM_MANAGER_BASE_URL")
+	if crmManagerBaseURL == "" {
+		utils.Log.Fatal("CRM_MANAGER_BASE_URL environment variable is not set. Exiting application.")
+	}
+	utils.Log.Info("ProfileManagerBaseURL from env", zap.String("url", profileManagerBaseURL))
+	utils.Log.Info("CRMManagerBaseURL from env", zap.String("url", crmManagerBaseURL))
 
 	utils.Log.Info("Initializing ProfileManagerClient", zap.String("url", profileManagerBaseURL))
 
-	profileManagerClient, err := profilemanager.NewClient(profileManagerBaseURL) 
-	if err != nil {                                                            
+	profileManagerClient, err := profilemanager.NewClient(profileManagerBaseURL)
+	if err != nil {
 		utils.Log.Fatal("Failed to initialize ProfileManagerClient.", zap.Error(err))
 	}
 
@@ -43,15 +50,14 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("PermissionService initialized successfully.")
 
-	
-	authSvc, err := auth.NewAuthService(profileManagerClient) 
-	if err != nil {                                          
+	authSvc, err := auth.NewAuthService(profileManagerClient)
+	if err != nil {
 		utils.Log.Fatal("Failed to initialize AuthService. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("AuthService initialized successfully.")
 
-	authHandler, err := handler.NewAuthHandler(authSvc) 
-	if err != nil {                                     
+	authHandler, err := handler.NewAuthHandler(authSvc)
+	if err != nil {
 		utils.Log.Fatal("Failed to initialize AuthHandler. Exiting application.", zap.Error(err))
 	}
 	utils.Log.Info("AuthHandler initialized successfully.")
@@ -68,16 +74,25 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("ProfileHandlerAG initialized successfully.")
 
+	var crmService crm.CrmService 
+
+	crmHandlerAG, err := handler.NewCrmHandler(crmService)
+	if err != nil {
+		utils.Log.Fatal("ERROR: Failed to initialize CrmHandlerAG. Exiting application.", zap.Error(err))
+	}
+	utils.Log.Info("CrmHandlerAG initialized successfully.")
+
 	proxyHandler := proxy.NewProxyHandler(utils.Log)
 	utils.Log.Info("ProxyHandler initialized successfully.")
 
 	utils.Log.Info("All core dependencies initialized successfully.")
 	utils.Log.Info("Setting up API routes for API Gateway...")
 
-	if err := SetupAllRoutes( 
+	if err := SetupAllRoutes(
 		app,
 		authHandler,
 		accountHandlerAG,
+		crmHandlerAG,
 		permissionService,
 		profileHandlerAG,
 		proxyHandler,

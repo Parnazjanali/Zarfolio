@@ -11,15 +11,12 @@ const initialGroupOptions = [
 const countryOptions = ["ایران"];
 const provinceOptions = {
   "ایران": ["-- بدون انتخاب --", "تهران", "اصفهان", "فارس", "خراسان رضوی", "آذربایجان شرقی", "البرز", "سایر"],
-  // سایر کشورها و استان‌هایشان
 };
-const cityOptionsInitial = { // شهرهای نمونه برای هر استان
+const cityOptionsInitial = {
   "تهران": ["-- بدون انتخاب --", "تهران", "شهریار", "قدس", "اسلامشهر"],
   "اصفهان": ["-- بدون انتخاب --", "اصفهان", "کاشان", "خمینی شهر", "نجف آباد"],
   "البرز": ["-- بدون انتخاب --", "کرج", "فردیس", "نظرآباد", "هشتگرد"],
-  // ... سایر استان‌ها و شهرهایشان
 };
-
 const commonCurrencyTypes = ["دلار USD", "یورو EUR", "درهم AED", "لیر TRY", "سایر"];
 
 const formatIntegerWithCommas = (value) => {
@@ -66,18 +63,37 @@ function NewCustomerPage() {
   const defaultProvincesForDefaultCountry = provinceOptions[defaultCountry] || [];
   const defaultProvince = defaultProvincesForDefaultCountry.includes("تهران") ? "تهران" : defaultProvincesForDefaultCountry[0] || '';
 
-
   const [formData, setFormData] = useState({
-    accountCode: '', name: '', lastName: '', idNumber: '', // Added idNumber
+    accountCode: '', name: '', lastName: '', idNumber: '', 
     customerGroup: groupOptions[0], 
     country: defaultCountry, 
     province: defaultProvince, 
     city: (cityOptionsInitial[defaultProvince] && cityOptionsInitial[defaultProvince][0]) || cityOptionsInitial["-- بدون انتخاب --"]?.[0] || '', 
-    birthDate: '',
-    phones: [''], address: '',
+    birthDate: '', // تاریخ تولد (فارسی)
+    phones: [''], // آرایه شماره تلفن‌ها
+    address: '',
     goldBalance: '', goldBalanceType: 'debtor', 
     financialBalance: '', financialBalanceType: 'debtor',
-    currencyBalances: [],
+    currencyBalances: [], // آرایه مانده‌های ارزی
+    // فیلدهای جدید دیگر که ممکن است در فرم باشند:
+    // emailField: '',
+    // websiteField: '',
+    // telField: '',
+    // faxField: '',
+    // companyField: '',
+    // codeeghtesadiField: '',
+    // sabtField: '',
+    // taxIdField: '',
+    // goldRateTypeField: '',
+    // defaultGoldUnitField: '',
+    // defaultGoldUnitRateField: '',
+    // preferredCommunicationField: '',
+    // receiveEmailPromosField: false,
+    // receiveSMSPromosField: false,
+    // statusField: '', // این معمولاً در بک‌اند پیش‌فرض است
+    // lastActivityDateField: '',
+    // assignedEmployeeIdField: '',
+    // internalNotesField: '',
   });
 
   const [displayFinancialBalance, setDisplayFinancialBalance] = useState('');
@@ -85,7 +101,6 @@ function NewCustomerPage() {
   const [financialBalanceText, setFinancialBalanceText] = useState('');
   const [currentProvinces, setCurrentProvinces] = useState(provinceOptions[formData.country] || []);
   const [currentCities, setCurrentCities] = useState(cityOptionsInitial[formData.province] || []);
-
 
   const navigate = useNavigate();
 
@@ -100,12 +115,10 @@ function NewCustomerPage() {
 
   useEffect(() => {
     setDisplayFinancialBalance(formatIntegerWithCommas(formData.financialBalance));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
   useEffect(() => {
     setDisplayGoldBalance(formatDecimalWithCommas(formData.goldBalance));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -119,7 +132,6 @@ function NewCustomerPage() {
         city: (cityOptionsInitial[newDefaultProvince] && cityOptionsInitial[newDefaultProvince][0]) || ''
       }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.country]);
 
   useEffect(() => {
@@ -131,14 +143,11 @@ function NewCustomerPage() {
             city: cities[0] || ''
         }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.province]);
-
 
   const handleBalanceInputChange = (e) => {
     const { name, value } = e.target;
     let rawValueToStore = value; 
-
     if (name === 'financialBalance') {
       if (rawValueToStore !== "" && rawValueToStore !== "-" && !/^-?\d*$/.test(rawValueToStore)) {
         setDisplayFinancialBalance(formData.financialBalance === '' ? '' : formatIntegerWithCommas(formData.financialBalance));
@@ -346,14 +355,14 @@ function NewCustomerPage() {
     // console.log('Data being sent to backend:', payload);
 
     try {
-      const response = await fetch('/api/v1/profile-manager/counterparties', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+       const response = await fetch('/api/v1/crm/customers', { 
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, 
+          },
+          body: JSON.stringify(payload),
+        });
 
       if (response.ok) {
         const result = await response.json();

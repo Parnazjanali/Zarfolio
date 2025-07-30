@@ -1,4 +1,3 @@
-// internal/utils/logger.go
 package utils
 
 import (
@@ -8,24 +7,25 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var Log *zap.Logger // این الان nil است تا زمانی که مقداردهی اولیه شود
+var Log *zap.Logger 
 
-func InitLogger() {
-	// این تابع برای مقداردهی اولیه Log استفاده می شود
+func InitLogger() error{
+
 	config := zap.NewProductionConfig()
-	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder // فرمت زمان استاندارد ISO 8601
-	config.EncoderConfig.TimeKey = "ts"                          // نام فیلد زمان
-	config.EncoderConfig.LevelKey = "level"                      // نام فیلد سطح لاگ
-	config.EncoderConfig.CallerKey = "caller"                    // نام فیلد کالر
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder 
+	config.EncoderConfig.TimeKey = "ts"                         
+	config.EncoderConfig.LevelKey = "level"                     
+	config.EncoderConfig.CallerKey = "caller"                   
 
-	// اگر در محیط توسعه هستید و می خواهید لاگ های قابل خواندن تری داشته باشید:
-	// config = zap.NewDevelopmentConfig()
-	// config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	config = zap.NewDevelopmentConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
 	var err error
 	Log, err = config.Build()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to initialize logger: %v", err)) // اگر لاگر نتواند ساخته شود، panic کند
+		panic(fmt.Sprintf("Failed to initialize logger: %v", err)) 
 	}
 	Log.Info("Logger initialized successfully!")
+
+	return nil
 }

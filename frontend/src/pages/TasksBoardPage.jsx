@@ -1,6 +1,6 @@
 // frontend/src/pages/TasksBoardPage.jsx
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+//import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card, Typography } from 'antd';
 import './TasksBoardPage.css'; // فایل استایل سفارشی
 

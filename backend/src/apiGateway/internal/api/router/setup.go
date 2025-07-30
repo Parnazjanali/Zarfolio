@@ -18,6 +18,7 @@ func SetupAllRoutes(
 	app *fiber.App,
 	authHandler *handler.AuthHandler,
 	accountHandlerAG *handler.AccountHandlerAG,
+	crmHandlerAG *handler.CrmHandler,
 	permissionService *authz.PermissionService,
 	profileHandlerAG *handler.ProfileHandler,
 	proxyHandler *proxy.ProxyHandler,
@@ -30,6 +31,9 @@ func SetupAllRoutes(
 	}
 	if accountHandlerAG == nil {
 		return fmt.Errorf("AccountHandlerAG is nil in SetupAllRoutes")
+	}
+	if crmHandlerAG == nil {
+		return fmt.Errorf("CrmHandlerAG is nil in SetupAllRoutes")
 	}
 	if permissionService == nil {
 		return fmt.Errorf("PermissionService is nil in SetupAllRoutes")
@@ -46,7 +50,7 @@ func SetupAllRoutes(
 
 	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
 
-	if err := SetUpAuthRoutes(apiV1, authHandler); err != nil {
+	if err := SetUpAuthRoutes(apiV1, authHandler, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up auth routes: %w", err)
 	}
 
@@ -57,6 +61,9 @@ func SetupAllRoutes(
 	if err := SetUpUserManagementRoutes(apiV1, profileHandlerAG, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up user management routes: %w", err)
 	}
+	if err := SetUpCrmRoutes(apiV1, crmHandlerAG, authMiddleware); err != nil {
+		return fmt.Errorf("failed to set up CRM routes: %w", err)
+	}
 
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerServiceURL != "" {
@@ -65,6 +72,14 @@ func SetupAllRoutes(
 		utils.Log.Info("Configured GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
 	} else {
 		utils.Log.Warn("PROFILE_MANAGER_BASE_URL not set in env. Cannot configure proxy for profile pictures/uploads.")
+	}
+
+	crmManagerServiceURL := os.Getenv("CRM_MANAGER_BASE_URL")
+	if crmManagerServiceURL != "" {
+		apiV1.Get("/crm/uploads/*", proxyHandler.HandleStaticFileProxy(crmManagerServiceURL))
+		utils.Log.Info("Configured GET proxy for /api/v1/crm/uploads/* to CRM Manager", zap.String("crm_manager_url", crmManagerServiceURL))
+	} else {
+		utils.Log.Warn("CRM_MANAGER_BASE_URL not set in env. Cannot configure proxy for CRM uploads.")
 	}
 
 	app.Use(func(c *fiber.Ctx) error {

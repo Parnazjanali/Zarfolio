@@ -207,7 +207,7 @@ type postgresUserRepository struct {
 	db *gorm.DB 
 }
 
-func NewPostgresUserRepository(db *gorm.DB) UserRepository {
+func 	NewPostgresUserRepository(db *gorm.DB) UserRepository {
 	if db == nil {
 		utils.Log.Fatal("GORM DB instance is nil for PostgresUserRepository.")
 	}
