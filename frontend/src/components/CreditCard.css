@@ -1,0 +1,111 @@
+/* frontend/src/components/CreditCard.css */
+
+.card-container {
+  width: 320px;
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+  margin: 15px;
+  direction: ltr; /* برای نمایش صحیح اطلاعات کارت */
+}
+
+.card-flipper {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card-container.flipped .card-flipper {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background: linear-gradient(45deg, #2a2a2a, #4a4a4a);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-chip {
+  width: 50px;
+  height: 40px;
+  background: #ffdf99;
+  border-radius: 5px;
+}
+
+.card-logo {
+  font-size: 24px;
+  text-align: right;
+  margin-top: -30px;
+}
+
+.card-number {
+  font-size: 1.5em;
+  letter-spacing: 2px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.card-expiry {
+  text-align: right;
+}
+
+.card-expiry span {
+  display: block;
+}
+
+.card-mag-stripe {
+  width: 100%;
+  height: 40px;
+  background: black;
+  margin: 0 -20px; /* برای پوشش کامل عرض */
+}
+
+.card-cvv-band {
+  background: #fff;
+  color: #333;
+  padding: 5px 10px;
+  margin-top: 20px;
+  text-align: right;
+  border-radius: 3px;
+}
+
+.cvv-code {
+  font-style: italic;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-right: 15px;
+}
+
+.card-back-text {
+  font-size: 0.7em;
+  color: #ccc;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 10px;
+  direction: rtl; /* برای نمایش صحیح متن فارسی */
+}
