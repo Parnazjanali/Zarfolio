@@ -31,8 +31,14 @@ const NewBankAccountPage = lazy(() => import('./pages/NewBankAccountPage.jsx'));
 const BankAccountDetailPage = lazy(() => import('./pages/BankAccountDetailPage.jsx'));
 
 const FundsPage = lazy(() => import('./pages/FundsPage.jsx'));
+const NewFundPage = lazy(() => import('./pages/NewFundPage.jsx'));
+const FundStatementPage = lazy(() => import('./pages/FundStatementPage.jsx'));
+
 const ChequesPage = lazy(() => import('./pages/ChequesPage.jsx'));
+// +++ کدهای جدید برای وارد کردن صفحات انتقال‌ها اینجا اضافه شد +++
 const TransfersPage = lazy(() => import('./pages/TransfersPage.jsx'));
+const NewTransferPage = lazy(() => import('./pages/NewTransferPage.jsx'));
+
 const BankAccountStatementPage = lazy(() => import('./pages/BankAccountStatementPage.jsx'));
 
 
@@ -124,12 +130,19 @@ function App() {
                   <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
                   <Route path="bank-accounts/detail/:id" element={<BankAccountDetailPage />} />
                   <Route path="bank-cards" element={<BankCardsPage />} />
-
-                  {/* مسیرهای تنخواه گردان از اینجا حذف شد */}
                   
                   <Route path="funds" element={<FundsPage />} />
+                  <Route path="funds/new" element={<NewFundPage />} />
+                  <Route path="funds/edit/:id" element={<NewFundPage />} />
+                  <Route path="funds/statement/:code" element={<FundStatementPage />} />
+                  
                   <Route path="cheques" element={<ChequesPage />} />
+
+                  {/* +++ کدهای جدید برای مسیرهای انتقال‌ها اینجا اضافه شد +++ */}
                   <Route path="transfers" element={<TransfersPage />} />
+                  <Route path="transfers/new" element={<NewTransferPage />} />
+                  <Route path="transfers/edit/:id" element={<NewTransferPage />} />
+
                   <Route path="reports/bank-statement" element={<BankAccountStatementPage />} />
                   <Route path="reports/bank-statement/:code" element={<BankAccountStatementPage />} />
                   
