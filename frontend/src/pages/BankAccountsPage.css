@@ -1,74 +1,162 @@
-.page-container {
-  padding: 2rem;
-  direction: rtl; /* راست به چپ */
+/* frontend/src/components/CreditCard.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
+
+.card-container {
+  width: 320px;
+  height: 200px;
+  perspective: 1000px;
+  margin: 20px;
+  direction: ltr; /* برای نمایش صحیح اطلاعات کارت */
 }
 
-.page-header {
+.card-flipper {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s, box-shadow 0.3s;
+  transform-style: preserve-3d;
+  position: relative;
+  border-radius: 18px; /* گردی گوشه‌ها را به والد منتقل کردیم */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-container:hover .card-flipper {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.card-container.flipped .card-flipper {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 18px;
+  color: #ffffff;
+  font-family: 'Roboto Mono', monospace; /* فونت جدید و حرفه‌ای */
+  box-sizing: border-box;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden; /* برای کنترل کردن افکت‌های پس‌زمینه */
+  background: #1e1e1e; /* رنگ پایه */
+}
+
+.card-front::before {
+  content: '';
+  position: absolute;
+  top: -150px;
+  left: -150px;
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(45deg, rgba(98, 0, 234, 0.3), rgba(236, 64, 122, 0.3)); /* گرادینت بنفش-صورتی */
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.5;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+.card-chip {
+  width: 50px;
+  height: 40px;
+  background-image: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.card-logo {
+  font-size: 24px;
+  align-self: flex-end;
+  margin-top: -50px; /* تنظیم موقعیت لوگو */
+  opacity: 0.8;
+}
+
+.card-number {
+  font-size: 1.6em;
+  letter-spacing: 3px;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  font-weight: 500;
+}
+
+.card-footer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  color: #333;
-  font-size: 1.8rem;
-}
-
-.btn {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 1rem;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.table-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-.data-table {
+  align-items: flex-end;
   width: 100%;
-  border-collapse: collapse;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  font-weight: 400;
 }
 
-.data-table th, .data-table td {
-  padding: 1rem;
+.card-holder-name {
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-expiry {
   text-align: right;
-  border-bottom: 1px solid #f0f0f0;
 }
 
-.data-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #555;
+.card-expiry span:first-child {
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.data-table tbody tr {
-  cursor: pointer;
-  transition: background-color 0.2s;
+.card-mag-stripe {
+  width: 120%; /* کمی بزرگتر برای پوشش کامل */
+  height: 50px;
+  background: #000;
+  position: absolute;
+  top: 30px;
+  left: -10%;
 }
 
-.data-table tbody tr:hover {
-  background-color: #f1f1f1;
+.card-cvv-band {
+  background: #fff;
+  width: 100%;
+  height: 40px;
+  margin-top: 100px; /* فاصله از بالای پشت کارت */
+  color: #333;
+  padding: 10px;
+  text-align: right;
+  box-sizing: border-box;
 }
 
-.data-table tbody tr:last-child td {
-  border-bottom: none;
+.cvv-code {
+  font-style: italic;
+  font-weight: bold;
+  letter-spacing: 5px;
+  margin-right: 20px;
+  background-color: #ccc; /* پس‌زمینه برای کد امنیتی */
+  padding: 0 5px;
+}
+
+.card-actions {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2; /* برای قرار گرفتن روی سایر عناصر */
+}
+
+.card-back-text {
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  width: 100%;
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  direction: rtl; /* برای نمایش صحیح متن فارسی */
 }

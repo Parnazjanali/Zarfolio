@@ -1,0 +1,101 @@
+/* frontend/src/pages/ReportsPage.css */
+
+.reports-page-container {
+  padding: 32px;
+  background: #f8f9fa; /* یک پس‌زمینه خنثی و روشن */
+  min-height: 100%;
+}
+
+.reports-page-container .page-title {
+  margin-bottom: 32px !important;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.report-category-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: none; /* حذف بوردر برای ظاهر یکپارچه‌تر */
+  height: 100%;
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden; /* برای گرد شدن گوشه عنوان */
+}
+
+.report-category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.report-category-card .ant-card-head {
+  border-bottom: none; /* حذف خط زیرین عنوان */
+  font-weight: 500; /* کمی نازک‌تر برای خوانایی بهتر */
+  font-size: 1.1em;
+  color: #fff; /* رنگ متن پیش‌فرض برای عنوان‌ها سفید است */
+  padding: 0 24px;
+  min-height: 56px;
+}
+
+.report-category-card .ant-card-head .ant-space {
+  align-items: center;
+}
+
+.report-category-card .ant-card-body {
+  padding: 8px 0;
+}
+
+.report-category-card .ant-list-item.report-link-item {
+  padding: 14px 24px;
+  border-bottom: 1px solid #f5f5f5 !important;
+  transition: background-color 0.2s ease;
+}
+
+.report-category-card .ant-list-item.report-link-item:last-child {
+  border-bottom: none !important;
+}
+
+.report-category-card .ant-list-item.report-link-item a {
+  color: #595959;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+  text-decoration: none !important;
+}
+
+.report-item-label {
+  gap: 12px !important;
+}
+
+.report-item-arrow {
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.report-category-card .ant-list-item.report-link-item a:hover .report-item-arrow {
+  opacity: 1;
+  transform: translateX(-4px);
+}
+
+/* --- تعریف پالت رنگی گوگل --- */
+
+/* آبی گوگل */
+.google-blue .ant-card-head { background-color: #4285F4; }
+.google-blue .ant-list-item.report-link-item a:hover { color: #4285F4; }
+
+/* قرمز گوگل */
+.google-red .ant-card-head { background-color: #DB4437; }
+.google-red .ant-list-item.report-link-item a:hover { color: #DB4437; }
+
+/* زرد گوگل */
+.google-yellow .ant-card-head {
+  background-color: #F4B400;
+  color: #2c3e50; /* رنگ متن تیره برای خوانایی روی پس‌زمینه زرد */
+}
+.google-yellow .ant-list-item.report-link-item a:hover { color: #F4B400; }
+
+/* سبز گوگل */
+.google-green .ant-card-head { background-color: #0F9D58; }
+.google-green .ant-list-item.report-link-item a:hover { color: #0F9D58; }
