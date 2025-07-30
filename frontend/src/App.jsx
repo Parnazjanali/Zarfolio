@@ -54,6 +54,8 @@ const TaxSettings = lazy(() => import('./pages/settings/TaxSettings.jsx'));
 const AvatarSettings = lazy(() => import('./pages/settings/AvatarSettings.jsx'));
 const LogsViewer = lazy(() => import('./pages/settings/LogsViewer.jsx'));
 const ExtraCurrencies = lazy(() => import('./pages/settings/ExtraCurrencies.jsx'));
+const PriceBoardPage = lazy(() => import('./pages/settings/PriceBoardPage.jsx'));
+const PublicPriceBoard = lazy(() => import('./pages/public/PublicPriceBoard.jsx')); // ++ اضافه شد
 
 function BackgroundManager() {
   const location = useLocation();
@@ -138,6 +140,8 @@ function App() {
             <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
             <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            {/* ++ مسیر جدید برای تابلوی قیمت عمومی ++ */}
+            <Route path="/b/:vanityUrl/prices" element={<PublicPriceBoard />} />
             <Route path="/*" element={
               <ProtectedRoute>
                 <MainLayout isSidebarCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} onThemeChange={setCurrentTheme} currentTheme={currentTheme} >
@@ -162,6 +166,7 @@ function App() {
                     <Route path="settings/avatar" element={<AvatarSettings />} />
                     <Route path="settings/logs" element={<LogsViewer />} />
                     <Route path="settings/currencies" element={<ExtraCurrencies />} />
+                    <Route path="settings/price-board" element={<PriceBoardPage />} />
                     <Route path="bank-accounts" element={<BankAccountsPage />} />
                     <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
                     <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
