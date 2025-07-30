@@ -29,17 +29,23 @@ const BankCardsPage = lazy(() => import('./pages/BankCardsPage.jsx'));
 const BankAccountsPage = lazy(() => import('./pages/BankAccountsPage.jsx'));
 const NewBankAccountPage = lazy(() => import('./pages/NewBankAccountPage.jsx'));
 const BankAccountDetailPage = lazy(() => import('./pages/BankAccountDetailPage.jsx'));
+
 const FundsPage = lazy(() => import('./pages/FundsPage.jsx'));
 const NewFundPage = lazy(() => import('./pages/NewFundPage.jsx'));
 const FundStatementPage = lazy(() => import('./pages/FundStatementPage.jsx'));
+
 const ChequesPage = lazy(() => import('./pages/ChequesPage.jsx'));
 const NewReceivedChequePage = lazy(() => import('./pages/NewReceivedChequePage.jsx'));
 const NewIssuedChequePage = lazy(() => import('./pages/NewIssuedChequePage.jsx'));
 const ChequeTransferPage = lazy(() => import('./pages/ChequeTransferPage.jsx'));
+
 const TransfersPage = lazy(() => import('./pages/TransfersPage.jsx'));
 const NewTransferPage = lazy(() => import('./pages/NewTransferPage.jsx'));
 const AiAssistantPage = lazy(() => import('./pages/AiAssistantPage.jsx'));
+
 const BankAccountStatementPage = lazy(() => import('./pages/BankAccountStatementPage.jsx'));
+
+
 const BusinessSettings = lazy(() => import('./pages/settings/BusinessSettings.jsx'));
 const UserRolls = lazy(() => import('./pages/settings/UserRolls.jsx'));
 const UserPermissions = lazy(() => import('./pages/settings/UserPermissions.jsx'));
@@ -48,9 +54,6 @@ const TaxSettings = lazy(() => import('./pages/settings/TaxSettings.jsx'));
 const AvatarSettings = lazy(() => import('./pages/settings/AvatarSettings.jsx'));
 const LogsViewer = lazy(() => import('./pages/settings/LogsViewer.jsx'));
 const ExtraCurrencies = lazy(() => import('./pages/settings/ExtraCurrencies.jsx'));
-// +++ وارد کردن کامپوننت صفحه جدید +++
-const PriceBoardPage = lazy(() => import('./pages/settings/PriceBoardPage.jsx'));
-
 
 function BackgroundManager() {
   const location = useLocation();
@@ -65,25 +68,28 @@ function BackgroundManager() {
 
 function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThemeChange, currentTheme }) {
   const navigate = useNavigate();
+  // +++ خط ۱: افزودن استیت برای کنترل انیمیشن +++
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
+  // محاسبه دقیق موقعیت دکمه هوش مصنوعی
   const speedDialBaseBottom = 30;
   const mainFabHeight = 56;
   const spacingBetweenButtons = 16;
   const closedPosition = speedDialBaseBottom + mainFabHeight + spacingBetweenButtons;
-  const openPosition = closedPosition + (3 * 40) + (2 * 16);
+  const openPosition = closedPosition + (3 * 40) + (2 * 16); // 3 آیتم با ارتفاع 40 و 2 مارجین 16
   const aiButtonBottom = isSpeedDialOpen ? openPosition : closedPosition;
 
   return (
     <Layout style={{ minHeight: '100vh', direction: 'rtl' }}>
-      <Sidebar isCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} />
+      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
       <Layout className="site-layout">
         <Layout.Header style={{ padding: '0 24px', background: currentTheme === 'dark' ? '#141414' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderBottom: '1px solid', borderColor: currentTheme === 'dark' ? '#303030' : '#f0f0f0' }}>
             <Switch checkedChildren={<SunOutlined />} unCheckedChildren={<MoonOutlined />} onChange={(checked) => onThemeChange(checked ? 'light' : 'dark')} checked={currentTheme === 'light'} />
         </Layout.Header>
         <Layout.Content style={{ margin: '16px', overflow: 'initial' }}> {children} </Layout.Content>
       </Layout>
-
+      
+      {/* +++ خط ۲: افزودن دکمه شناور هوش مصنوعی به صورت مستقل +++ */}
       <FloatButton
         icon={<FaRobot />}
         tooltip={{ title: "دستیار هوشمند", placement: "right" }}
@@ -95,13 +101,14 @@ function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThe
         }}
       />
       
+      {/* +++ خط ۳: اصلاح تولتیپ و افزودن onOpenChange به کد اصلی شما +++ */}
       <FloatButton.Group
         trigger="click"
         type="primary"
-        style={{ bottom: speedDialBaseBottom, left: 30 }}
+        style={{ bottom: 30, left: 30 }}
         icon={<PlusOutlined />}
-        tooltip={{ title: "ثبت جدید", placement: "right" }}
-        onOpenChange={setIsSpeedDialOpen}
+        tooltip={{ title: "ثبت جدید", placement: "right" }} // تولتیپ به راست منتقل شد
+        onOpenChange={setIsSpeedDialOpen} // برای کنترل انیمیشن
       >
         <FloatButton icon={<FaTags />} tooltip={{ title: "افزودن اتیکت", placement: "right" }} onClick={() => navigate('/etiket')} />
         <FloatButton icon={<FaFileInvoiceDollar />} tooltip={{ title: "فاکتور جدید", placement: "right" }} onClick={() => navigate('/invoices/new')} />
@@ -155,29 +162,33 @@ function App() {
                     <Route path="settings/avatar" element={<AvatarSettings />} />
                     <Route path="settings/logs" element={<LogsViewer />} />
                     <Route path="settings/currencies" element={<ExtraCurrencies />} />
-                    {/* +++ مسیر جدید برای تابلوی قیمت +++ */}
-                    <Route path="settings/price-board" element={<PriceBoardPage />} />
                     <Route path="bank-accounts" element={<BankAccountsPage />} />
                     <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
                     <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
                     <Route path="bank-accounts/detail/:id" element={<BankAccountDetailPage />} />
                     <Route path="bank-cards" element={<BankCardsPage />} />
+                    
                     <Route path="funds" element={<FundsPage />} />
                     <Route path="funds/new" element={<NewFundPage />} />
                     <Route path="funds/edit/:id" element={<NewFundPage />} />
                     <Route path="funds/statement/:code" element={<FundStatementPage />} />
+                    
                     <Route path="cheques" element={<ChequesPage />} />
                     <Route path="cheques/received/new" element={<NewReceivedChequePage />} />
                     <Route path="cheques/received/edit/:id" element={<NewReceivedChequePage />} />
                     <Route path="cheques/issued/new" element={<NewIssuedChequePage />} />
                     <Route path="cheques/issued/edit/:id" element={<NewIssuedChequePage />} />
                     <Route path="cheques/transfer/:id" element={<ChequeTransferPage />} />
+
                     <Route path="transfers" element={<TransfersPage />} />
                     <Route path="transfers/new" element={<NewTransferPage />} />
                     <Route path="transfers/edit/:id" element={<NewTransferPage />} />
+
                     <Route path="ai-assistant" element={<AiAssistantPage />} />
+                    
                     <Route path="reports/bank-statement" element={<BankAccountStatementPage />} />
                     <Route path="reports/bank-statement/:code" element={<BankAccountStatementPage />} />
+                    
                     <Route index element={<Navigate to="dashboard" replace />} />
                   </Routes>
                 </MainLayout>
