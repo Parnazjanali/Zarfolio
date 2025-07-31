@@ -35,7 +35,7 @@ export const ApiDataProvider = ({ children }) => {
             
             const now = new Date();
             setLastUpdated(now);
-            localStorage.setItem('lastApiUpdateTimestamp', now.toISOString());
+            localStorage.setItem('lastApiUpdateTimestamp', now.toISOString()); // ذخیره زمان دقیق دریافت اطلاعات
 
             setCountdown(COUNTDOWN_SECONDS);
             
@@ -49,9 +49,41 @@ export const ApiDataProvider = ({ children }) => {
     }, []);
 
     const startTimers = useCallback(() => {
-        fetchData();
-        if (dataFetchIntervalRef.current) clearInterval(dataFetchIntervalRef.current);
-        dataFetchIntervalRef.current = setInterval(fetchData, COUNTDOWN_SECONDS * 1000);
+        const lastUpdateTimestamp = localStorage.getItem('lastApiUpdateTimestamp');
+        const lastApiData = localStorage.getItem('lastApiData');
+
+        if (lastUpdateTimestamp && lastApiData) {
+            const lastUpdate = new Date(lastUpdateTimestamp);
+            const now = new Date();
+            const diffSeconds = (now - lastUpdate) / 1000;
+
+            if (diffSeconds < COUNTDOWN_SECONDS) {
+                // اگر اطلاعات اخیر موجود است، درخواست جدید ارسال نکن
+                setLoading(false);
+                setApiData(JSON.parse(lastApiData));
+                setLastUpdated(lastUpdate);
+
+                const remainingSeconds = COUNTDOWN_SECONDS - diffSeconds;
+                setCountdown(Math.round(remainingSeconds));
+                
+                // درخواست بعدی را برای زمان مناسب تنظیم کن
+                if (dataFetchIntervalRef.current) clearTimeout(dataFetchIntervalRef.current);
+                dataFetchIntervalRef.current = setTimeout(() => {
+                    fetchData().then(() => {
+                        if (dataFetchIntervalRef.current) clearInterval(dataFetchIntervalRef.current);
+                        dataFetchIntervalRef.current = setInterval(fetchData, COUNTDOWN_SECONDS * 1000);
+                    });
+                }, remainingSeconds * 1000);
+                return;
+            }
+        }
+
+        // اگر اطلاعات اخیر موجود نیست، درخواست جدید ارسال کن
+        fetchData().then(() => {
+            if (dataFetchIntervalRef.current) clearInterval(dataFetchIntervalRef.current);
+            dataFetchIntervalRef.current = setInterval(fetchData, COUNTDOWN_SECONDS * 1000);
+        });
+
     }, [fetchData]);
 
     useEffect(() => {
@@ -59,7 +91,7 @@ export const ApiDataProvider = ({ children }) => {
         countdownIntervalRef.current = setInterval(() => {
             setCountdown(prev => {
                 if (prev <= 1) {
-                    clearInterval(countdownIntervalRef.current);
+                    // وقتی شمارش معکوس تمام شد، تایمر را پاک نکن، چون درخواست بعدی داده ها را ریست می‌کند
                     return 0;
                 }
                 return prev - 1;
@@ -72,6 +104,7 @@ export const ApiDataProvider = ({ children }) => {
         startTimers();
         return () => {
             if (dataFetchIntervalRef.current) clearInterval(dataFetchIntervalRef.current);
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
         };
     }, [startTimers]);
 
@@ -81,7 +114,7 @@ export const ApiDataProvider = ({ children }) => {
         error,
         lastUpdated,
         countdown,
-        forceFetch: startTimers,
+        forceFetch: fetchData, // تغییر به fetchData برای اطمینان از ارسال درخواست
     };
 
     return (
