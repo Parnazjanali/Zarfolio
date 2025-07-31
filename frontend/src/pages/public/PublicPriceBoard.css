@@ -1,7 +1,6 @@
 /* frontend/src/pages/public/PublicPriceBoard.css */
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
 
-/* ✅ انیمیشن‌ها دوباره اضافه شدند */
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -12,148 +11,117 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* متغیرهای رنگی پایه و پیش‌فرض */
 :root, .theme-default {
-  /* --- رنگ‌های پس‌زمینه --- */
   --bg-main: #0d1a26;
-  --bg-sidebar: rgba(13, 26, 38, 0.8);
-  --bg-box: rgba(44, 62, 80, 0.5);
+  --bg-sidebar: rgba(13, 26, 38, 0.85);
+  --bg-box: rgba(44, 62, 80, 0.6);
   --border-color: #34495e;
   --border-sidebar: #2c3e50;
-
-  /* --- رنگ‌های ثابت برای متن و عناصر --- */
   --text-primary: #f0f0f0;
   --text-secondary: #bdc3c7;
   --accent-primary: #f39c12;
   --accent-secondary: #f1c40f;
   --color-up: #2ecc71;
   --color-down: #e74c3c;
+  /* ✅ رنگ‌های کارت کریستالی برای تم تیره */
+  --crystal-bg: rgba(0, 0, 0, 0.25);
+  --crystal-border: rgba(255, 255, 255, 0.1);
 }
 
-/* تم زمرد سبز */
-.theme-emerald {
-  --bg-main: #061d15;
-  --bg-sidebar: rgba(4, 20, 15, 0.8);
-  --bg-box: rgba(5, 108, 73, 0.3);
-  --border-color: #104f32;
-  --border-sidebar: #063f25;
-}
-
-/* تم یاقوت سرخ */
-.theme-ruby {
-  --bg-main: #2a0a13;
-  --bg-sidebar: rgba(30, 7, 13, 0.8);
-  --bg-box: rgba(159, 28, 59, 0.3);
-  --border-color: #881337;
-  --border-sidebar: #53091f;
-}
-
-/* تم کهربای طلایی */
-.theme-amber {
-  --bg-main: #2c1d06;
-  --bg-sidebar: rgba(28, 19, 4, 0.8);
-  --bg-box: rgba(180, 83, 9, 0.3);
-  --border-color: #92400e;
-  --border-sidebar: #652d07;
-}
-
-/* تم بنفش نیمه‌شب */
-.theme-midnight-purple {
-  --bg-main: #1e1b4b;
-  --bg-sidebar: rgba(22, 20, 56, 0.8);
-  --bg-box: rgba(79, 70, 229, 0.2);
-  --border-color: #4338ca;
-  --border-sidebar: #312e81;
+.theme-amber { --bg-main: #2c1d06; --bg-sidebar: rgba(28, 19, 4, 0.85); --bg-box: rgba(180, 83, 9, 0.4); --border-color: #92400e; --border-sidebar: #652d07; }
+.theme-crystal-white, .theme-milky-white {
+  --bg-main: #f0f2f5;
+  --bg-sidebar: rgba(255, 255, 255, 0.9);
+  --bg-box: rgba(255, 255, 255, 0.8);
+  --border-color: #d9d9d9;
+  --border-sidebar: #e8e8e8;
+  --text-primary: #262626;
+  --text-secondary: #595959;
+  --accent-primary: #1890ff;
+  --accent-secondary: #096dd9;
+  --color-up: #52c41a;
+  --color-down: #f5222d;
+  /* ✅ رنگ‌های کارت کریستالی برای تم روشن */
+  --crystal-bg: rgba(255, 255, 255, 0.4);
+  --crystal-border: rgba(255, 255, 255, 0.9);
 }
 
 
-body {
-    margin: 0;
-    font-family: 'Vazirmatn', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    transition: background-color 0.5s ease;
-}
-
+body { margin: 0; font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
 .status-message { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 24px; }
 
-.aramis-board-container {
-    display: flex; direction: rtl; height: 100vh; width: 100vw; overflow: hidden;
-    background: radial-gradient(circle, color-mix(in srgb, var(--bg-main) 80%, black), var(--bg-main));
-    transition: background-color 0.5s ease;
+/* --- چیدمان اصلی --- */
+.aramis-board-container { display: flex; direction: rtl; height: 100vh; width: 100vw; overflow: hidden; background: var(--bg-main); }
+.prices-grid-container { flex: 2; background-color: var(--bg-sidebar); backdrop-filter: blur(8px); border-left: 1px solid var(--border-sidebar); padding: 8px; gap: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); grid-auto-rows: min-content; overflow-y: auto; }
+.right-section-container { flex: 3; position: relative; overflow: hidden; }
+.background-slider-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+.info-sidebar { position: relative; z-index: 1; width: 100%; height: 100%; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+
+/* ✅✅✅ استایل جدید برای کارت کریستالی */
+.info-card {
+    background: var(--crystal-bg) !important;
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 12px !important;
+    border: 1px solid var(--crystal-border) !important;
+    padding: 16px !important;
+    width: 100%;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
-.left-sidebar {
-    width: 320px; flex-shrink: 0; background-color: var(--bg-sidebar); backdrop-filter: blur(10px);
-    border-left: 2px solid var(--border-sidebar); display: flex; flex-direction: column; justify-content: space-between;
-    padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.3); transition: all 0.5s ease;
+/* --- بهینه‌سازی ویجت‌های داخل کارت --- */
+.info-card .time-container {
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--crystal-border);
+}
+.info-card .time-display { font-size: 1.8rem; }
+.info-card .last-update-time { font-size: 0.8rem; opacity: 0.9; }
+
+.info-card .popup-container {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--crystal-border);
+}
+.info-card .price-change-popup {
+    background-color: transparent; /* پس‌زمینه حذف شد */
+    padding: 8px 12px;
+    border: none;
+    border-right: 4px solid transparent; /* برای نمایش رنگ روند */
+}
+.info-card .price-change-popup.up { border-right-color: var(--color-up); }
+.info-card .price-change-popup.down { border-right-color: var(--color-down); }
+
+
+.info-card .weather-widget {
+    background: transparent; /* پس‌زمینه حذف شد */
+    border: none; /* خط دور حذف شد */
+    padding: 12px 0 0 0;
 }
 
-.sidebar-header { text-align: center; border-bottom: 1px solid var(--border-sidebar); padding-bottom: 20px; margin-bottom: 20px; }
-.logo-title { font-size: 2.2rem; font-weight: 700; color: var(--accent-primary); text-shadow: 0 0 10px var(--accent-primary), 0 0 20px var(--accent-primary); }
-.last-update-time { font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px; text-align: center; }
 
-.main-grid {
-    flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    grid-auto-rows: min-content; gap: 12px; padding: 12px; overflow-y: auto;
-}
+/* --- استایل‌های بخش اطلاعات --- */
+.info-sidebar .sidebar-header { text-align: center; padding-bottom: 15px; }
+.info-sidebar .logo-title { font-size: 2rem; }
+.info-sidebar .sidebar-footer { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.analog-clock { width: 120px; height: 120px; margin-top: auto; } /* کوچکتر و در پایین */
 
-.price-box {
-    background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; transition: all 0.3s ease;
-}
-
-.price-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); border-color: var(--accent-primary); }
-
-.price-title { font-size: 1.3rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 15px; }
-
+/* --- استایل‌های بخش قیمت‌ها (بدون تغییر) --- */
+.price-box { background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: all 0.3s ease; }
+.price-box:hover { transform: translateY(-3px); box-shadow: 0 5px 12px rgba(0,0,0,0.25); }
+.price-title { font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
 .price-values-container { display: flex; justify-content: center; align-items: center; width: 100%; }
 .buy-sell-container { display: flex; justify-content: space-around; align-items: center; width: 100%; }
-.price-value-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.price-value-wrapper span:first-child { font-size: 1rem; color: var(--text-secondary); }
-.price-separator { width: 1px; height: 40px; background-color: var(--border-color); }
-.price-value { font-size: 1.8rem; font-weight: 700; color: var(--accent-secondary); }
-.price-value.single { font-size: 2.2rem; }
-
-.price-difference { margin-top: 12px; padding: 4px 8px; border-radius: 6px; font-size: 1rem; font-weight: 500; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; }
+.price-value-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.price-value-wrapper span:first-child { font-size: 0.8rem; color: var(--text-secondary); }
+.price-separator { width: 1px; height: 30px; background-color: var(--border-color); }
+.price-value { font-size: 1.4rem; font-weight: 700; color: var(--accent-secondary); }
+.price-value.single { font-size: 1.7rem; }
+.price-difference { margin-top: 6px; padding: 2px 5px; border-radius: 4px; font-size: 0.85rem; gap: 5px; display: flex; justify-content: center; align-items: center; }
 .price-difference.up { color: var(--color-up); }
 .price-difference.down { color: var(--color-down); }
-.price-difference .percent-difference { color: var(--text-secondary); opacity: 0.8; }
-
 .price-box.highlight-up { background-color: color-mix(in srgb, var(--color-up) 15%, transparent); border-color: var(--color-up); }
 .price-box.highlight-down { background-color: color-mix(in srgb, var(--color-down) 15%, transparent); border-color: var(--color-down); }
 
-.analog-clock { width: 150px; height: 150px; border: 5px solid var(--text-primary); border-radius: 50%; margin: 20px auto; position: relative; background-color: rgba(0,0,0,0.2); }
-.hand { position: absolute; width: 50%; left: 0; transform-origin: 100% 50%; }
-.hour-hand { height: 6px; top: calc(50% - 3px); background: var(--text-secondary); width: 35%; left: 15%; }
-.minute-hand { height: 4px; top: calc(50% - 2px); background: var(--text-primary); width: 45%; left: 5%; }
-.second-hand { height: 2px; top: calc(50% - 1px); background: var(--color-down); }
-.center-dot { width: 12px; height: 12px; background: var(--color-down); border: 2px solid var(--text-primary); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
-
-.popup-container { display: flex; flex-direction: column-reverse; gap: 10px; width: 100%; }
-.price-change-popup {
-    padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between;
-    align-items: center; font-size: 0.9rem; animation: fadeIn 0.5s ease; z-index: 100;
-    color: #000;
-}
-.price-change-popup.up { background-color: var(--color-up); }
-.price-change-popup.down { background-color: var(--color-down); }
-
-.weather-widget { background-color: rgba(0, 0, 0, 0.25); border-radius: 10px; padding: 15px; text-align: center; border: 1px solid var(--border-color); }
-.weather-main { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; }
-.weather-icon { font-size: 3rem; color: var(--accent-primary); }
-/* ✅ کلاس انیمیشن چرخش دوباره اضافه شد */
-.weather-icon .rotating-sun {
-    animation: spin 20s linear infinite;
-}
-.weather-temp { font-size: 2.5rem; font-weight: 500; color: var(--text-primary); }
-.weather-details { display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem; color: var(--text-secondary); }
-.weather-condition { font-weight: bold; font-size: 1.1rem; color: var(--text-primary); }
-
-/* ... (بخش واکنش‌گرایی بدون تغییر) ... */
-@media (max-width: 1024px) { .left-sidebar { width: 280px; } .price-title { font-size: 1.1rem; } .price-value { font-size: 1.6rem; } .price-value.single { font-size: 2rem; } }
-@media (max-width: 768px) { .aramis-board-container { flex-direction: column; height: auto; overflow-y: auto; } .left-sidebar { width: 100%; height: auto; border-left: none; border-bottom: 2px solid var(--border-sidebar); flex-direction: row; align-items: center; justify-content: space-around; padding: 10px; } .sidebar-header, .last-update-time, .analog-clock, .popup-container { display: none; } .time-container { display: flex; align-items: center; gap: 20px; } .time-display { font-size: 1.8rem; margin-bottom: 0; } .sidebar-footer { flex-direction: row; align-items: center; } .weather-widget { padding: 10px; } .weather-main { gap: 10px; margin-bottom: 5px; } .weather-icon { font-size: 2rem; } .weather-temp { font-size: 1.8rem; } .weather-details { display: none; } .main-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 10px; } .price-value { font-size: 1.4rem; } .price-value.single { font-size: 1.8rem; } .price-difference { font-size: 0.8rem; } }
-@media (max-width: 480px) { .left-sidebar { flex-direction: column; gap: 10px; } .sidebar-header { display: block; } .main-grid { grid-template-columns: 1fr; } }
+/* Media Queries (بدون تغییر) */
+@media (max-width: 1024px) { .prices-grid-container, .right-section-container { flex: 1; } }
+@media (max-width: 768px) { .aramis-board-container { flex-direction: column-reverse; } .right-section-container { display: none; } .prices-grid-container { width: 100%; border-left: none; } }

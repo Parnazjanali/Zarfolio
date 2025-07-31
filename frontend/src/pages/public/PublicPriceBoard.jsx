@@ -1,14 +1,14 @@
 // frontend/src/pages/public/PublicPriceBoard.jsx
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Card, Spin, Alert } from 'antd';
 import { ClockCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import { Spin, Alert } from 'antd';
 import { FaSun, FaMoon, FaCloud, FaCloudShowersHeavy, FaWind, FaSmog, FaSnowflake } from 'react-icons/fa';
+import ImageSlider from '../../components/ImageSlider';
 import './PublicPriceBoard.css';
 
 const MAX_VISIBLE_POPUPS = 3;
 
-// ... (بخش ترجمه آب و هوا بدون تغییر)
 const weatherTranslations = { "Sunny": "آفتابی", "Clear": "صاف", "Partly cloudy": "کمی ابری", "Cloudy": "ابری", "Overcast": "تمام ابری", "Mist": "مه‌آلود", "Patchy rain possible": "احتمال بارش پراکنده", "Patchy snow possible": "احتمال برف پراکنده", "Patchy sleet possible": "احتمال باران و برف", "Patchy freezing drizzle possible": "احتمال نم‌نم باران یخ‌زده", "Thundery outbreaks possible": "احتمال رگبار و رعد و برق", "Blowing snow": "بوران برف", "Blizzard": "کولاک", "Fog": "مه", "Freezing fog": "مه یخ‌زده", "Patchy light drizzle": "نم‌نم باران سبک", "Light drizzle": "نم‌نم باران", "Freezing drizzle": "نم‌نم باران یخ‌زده", "Heavy freezing drizzle": "نم‌نم باران یخ‌زده شدید", "Patchy light rain": "باران سبک پراکنده", "Light rain": "باران سبک", "Moderate rain at times": "باران متوسط در برخی ساعات", "Moderate rain": "باران متوسط", "Heavy rain at times": "باران شدید در برخی ساعات", "Heavy rain": "باران شدید", "Light freezing rain": "باران یخ‌زده سبک", "Moderate or heavy freezing rain": "باران یخ‌زده متوسط یا شدید", "Light sleet": "باران و برف سبک", "Moderate or heavy sleet": "باران و برف متوسط یا شدید", "Patchy light snow": "برف سبک پراکنده", "Light snow": "برف سبک", "Patchy moderate snow": "برف متوسط پراکنده", "Moderate snow": "برف متوسط", "Patchy heavy snow": "برف سنگین پراکنده", "Heavy snow": "برف سنگین", "Ice pellets": "تگرگ", "Light rain shower": "رگبار باران سبک", "Moderate or heavy rain shower": "رگبار باران متوسط یا شدید", "Torrential rain shower": "رگبار سیل‌آسا", "Light sleet showers": "رگبار باران و برف سبک", "Moderate or heavy sleet showers": "رگبار باران و برف متوسط یا شدید", "Light snow showers": "رگبار برف سبک", "Moderate or heavy snow showers": "رگبار برف متوسط یا شدید", "Light showers of ice pellets": "رگبار تگرگ سبک", "Moderate or heavy showers of ice pellets": "رگبار تگرگ متوسط یا شدید", "Patchy light rain with thunder": "باران پراکنده و رعد و برق", "Moderate or heavy rain with thunder": "باران متوسط یا شدید با رعد و برق", "Patchy light snow with thunder": "برف پراکنده و رعد و برق", "Moderate or heavy snow with thunder": "برف متوسط یا شدید با رعد و برق",};
 
 const formatPrice = (num, unit = '') => {
@@ -18,7 +18,6 @@ const formatPrice = (num, unit = '') => {
     return `${formatted} ${displayUnit}`.trim();
 };
 
-// ✅ کامپوننت باکس قیمت با قابلیت نمایش تکی و خرید/فروش
 const PriceBox = ({ title, prices, unit, highlight, momentaryDifference }) => {
     const trendClass = highlight === 'up' ? 'highlight-up' : highlight === 'down' ? 'highlight-down' : '';
 
@@ -53,7 +52,6 @@ const PriceBox = ({ title, prices, unit, highlight, momentaryDifference }) => {
     );
 };
 
-// ... (کامپوننت ساعت و آب و هوا بدون تغییر)
 const AnalogClock = () => { const [time, setTime] = useState(new Date()); useEffect(() => { const timerId = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timerId); }, []); const seconds = time.getSeconds(); const minutes = time.getMinutes(); const hours = time.getHours(); const secondsDegrees = ((seconds / 60) * 360) + 90; const minutesDegrees = ((minutes / 60) * 360) + ((seconds / 60) * 6) + 90; const hoursIn12 = hours % 12; const hoursDegrees = ((hoursIn12 / 12) * 360) + ((minutes / 60) * 30) + 90; return ( <div className="analog-clock"> <div className="hand hour-hand" style={{ transform: `rotate(${hoursDegrees}deg)` }}></div> <div className="hand minute-hand" style={{ transform: `rotate(${minutesDegrees}deg)` }}></div> <div className="hand second-hand" style={{ transform: `rotate(${secondsDegrees}deg)` }}></div> <div className="center-dot"></div> </div> ); };
 const WeatherWidget = ({ weatherData }) => { if (!weatherData) return null; const { current } = weatherData; const { temp_c, condition, wind_kph, wind_dir, is_day, feelslike_c } = current; const isSunny = condition.code === 1000; const getWeatherIcon = () => { const iconClass = isSunny && is_day ? 'rotating-sun' : ''; const code = condition.code; if (code === 1000) return is_day ? <FaSun className={iconClass} /> : <FaMoon />; if ([1003, 1006, 1009].includes(code)) return <FaCloud />; if ([1030, 1135, 1147].includes(code)) return <FaSmog />; if (code >= 1063 && code <= 1201) return <FaCloudShowersHeavy />; if (code >= 1204 && code <= 1282) return <FaSnowflake />; return is_day ? <FaSun className={iconClass} /> : <FaMoon />; }; const getTemperatureMessage = () => { if (temp_c > 30) return "خیلی هوا گرمه"; if (temp_c >= 20 && temp_c <= 25) return "هوا عالیه"; return null; }; return ( <div className="weather-widget"> <div className="weather-main"> <div className="weather-icon">{getWeatherIcon()}</div> <div className="weather-temp">{Math.round(temp_c)}°C</div> </div> <div className="weather-details"> <div className="weather-condition">{weatherTranslations[condition.text] || condition.text}</div> <div className="weather-real-feel">دمای احساسی: {Math.round(feelslike_c)}°C</div> <div className="weather-wind"><FaWind /> {wind_kph} km/h - {wind_dir}</div> {getTemperatureMessage() && <div className="weather-message">{getTemperatureMessage()}</div>} </div> </div> ); };
 
@@ -79,7 +77,6 @@ const PublicPriceBoard = () => {
     const queuePopup = useCallback((popupData) => { setPopupQueue(prev => [...prev, { ...popupData, id: Date.now() + Math.random() }]); }, []);
     const fetchWeather = useCallback(async () => { if (config && config.showWeatherWidget && config.weatherApiUrl) { try { const res = await fetch(config.weatherApiUrl); if (!res.ok) throw new Error('Weather API Error'); setWeatherData(await res.json()); } catch (e) { console.error("Failed to fetch weather", e); } } }, [config]);
 
-    // ✅ تابع کمکی برای محاسبه قیمت نهایی
     const calculatePrice = (basePrice, percent, value) => {
         const percentAdjustment = basePrice * (percent / 100);
         return basePrice + percentAdjustment + value;
@@ -109,7 +106,7 @@ const PublicPriceBoard = () => {
                 const sellPrice = calculatePrice(apiItem.price, configItem.sellAdjustmentPercent, configItem.sellAdjustmentValue);
                 const buyPrice = calculatePrice(apiItem.price, configItem.buyAdjustmentPercent, configItem.buyAdjustmentValue);
                 prices = { sell: sellPrice, buy: buyPrice };
-                referencePrice = sellPrice; // قیمت فروش به عنوان مرجع تغییرات در نظر گرفته می‌شود
+                referencePrice = sellPrice;
             } else {
                 const finalPrice = calculatePrice(apiItem.price, configItem.adjustmentPercent, configItem.adjustmentValue);
                 prices = { single: finalPrice };
@@ -141,7 +138,7 @@ const PublicPriceBoard = () => {
             return {
                 id: configItem.symbol,
                 title: configItem.name,
-                prices, // ارسال آبجکت قیمت‌ها
+                prices,
                 unit: apiItem.unit,
                 highlight: itemHighlights.current[configItem.symbol] || '',
                 momentaryDifference,
@@ -159,34 +156,58 @@ const PublicPriceBoard = () => {
     
      if (loading && !displayItems.length) return <div className="status-message"><Spin size="large" /></div>;
      if (error) return <Alert message="خطا" description={error} type="error" showIcon style={{ margin: '50px' }} />;
+     
+    const layoutClass = config?.imageSliderEnabled ? 'layout-with-slider' : 'layout-no-slider';
 
     return (
-        // ✅ اعمال کلاس پالت رنگی
-        <div className={`aramis-board-container ${config?.colorPalette || 'theme-default'}`}>
-             <aside className="left-sidebar">
-                <div className="sidebar-main-content">
-                    <div className="sidebar-header"> <div className="logo-title">{config?.galleryName || 'گالری'}</div> </div>
-                    <div className="time-container">
-                        <div className="time-display"> <ClockCircleOutlined /> <span>{currentTime}</span> </div>
-                        {config?.showAnalogClock && <AnalogClock />}
-                        {lastUpdateTime && (<div className="last-update-time"> بروزرسانی: {lastUpdateTime} </div>)}
+        <div className={`aramis-board-container ${config?.colorPalette || 'theme-default'} ${layoutClass}`}>
+            
+            <div className="right-section-container">
+                {config?.imageSliderEnabled && (
+                    <div className="background-slider-wrapper">
+                        <ImageSlider />
                     </div>
-                </div>
-                <div className="sidebar-footer">
-                    <div className="popup-container">
-                        {visiblePopups.map((popup) => (
-                            <div key={popup.id} className={`price-change-popup ${popup.trend}`}>
-                                <span className="popup-name">{popup.name}</span>
-                                <div className="popup-details"> <span>{popup.difference}</span> <span>({popup.percentDifference}%)</span> {popup.trend === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />} </div>
+                )}
+                
+                <aside className="info-sidebar">
+                   {/* ✅✅✅ نام گالری درون یک کارت کریستالی مجزا */}
+                   <Card bordered={false} className="info-card gallery-name-card">
+                       <div className="logo-title">{config?.galleryName || 'گالری'}</div>
+                   </Card>
+                   
+                   <div className="sidebar-footer">
+                        <Card bordered={false} className="info-card main-info-card">
+                            <div className="time-container">
+                                <div className="time-display"> <ClockCircleOutlined /> <span>{currentTime}</span> </div>
+                                {lastUpdateTime && (<div className="last-update-time"> بروزرسانی: {lastUpdateTime} </div>)}
                             </div>
-                        ))}
-                    </div>
-                    {config?.showWeatherWidget && <WeatherWidget weatherData={weatherData} />}
-                </div>
-             </aside>
-             <main className="main-grid">
+                            
+                            <div className="popup-container">
+                               {visiblePopups.map((popup) => (
+                                   <div key={popup.id} className={`price-change-popup ${popup.trend}`}>
+                                       <span className="popup-name">{popup.name}</span>
+                                       <div className="popup-details"> <span>{popup.difference}</span> <span>({popup.percentDifference}%)</span> {popup.trend === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />} </div>
+                                   </div>
+                               ))}
+                            </div>
+
+                            {config?.showWeatherWidget && <WeatherWidget weatherData={weatherData} />}
+                        </Card>
+
+                        {/* ✅✅✅ ساعت آنالوگ درون یک کارت کریستالی مجزا */}
+                        {config?.showAnalogClock && (
+                           <Card bordered={false} className="info-card analog-clock-card">
+                               <AnalogClock />
+                           </Card>
+                        )}
+                   </div>
+                </aside>
+            </div>
+
+            <main className="prices-grid-container">
                 {displayItems.map(item => <PriceBox key={item.id} {...item} />)}
-             </main>
+            </main>
+
         </div>
     );
 };
