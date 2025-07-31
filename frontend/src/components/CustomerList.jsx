@@ -17,7 +17,7 @@ const customers = [
     id: 2,
     name: 'مشتری ویژه',
     email: 'vip.customer@example.com',
-    avatar: 'https://joeschmoe.io/api/v1/random',
+    avatar: '',
     status: 'vip',
   },
   {
