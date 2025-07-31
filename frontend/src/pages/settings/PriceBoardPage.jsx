@@ -1,5 +1,3 @@
-// frontend/src/pages/settings/PriceBoardPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import {
     Form,
@@ -26,13 +24,10 @@ import { useApiData } from '../../context/ApiDataProvider';
 const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 
-// ✅ افزودن دو پالت رنگی سفید
+// پالت‌های رنگی به موارد روشن و چشم‌نواز محدود شدند
 const colorPalettes = [
     { label: 'آبی تیره (پیش‌فرض)', value: 'theme-default' },
-    { label: 'زمرد سبز', value: 'theme-emerald' },
-    { label: 'یاقوت سرخ', value: 'theme-ruby' },
     { label: 'کهربای طلایی', value: 'theme-amber' },
-    { label: 'بنفش نیمه‌شب', value: 'theme-midnight-purple' },
     { label: 'سفید کریستالی', value: 'theme-crystal-white' },
     { label: 'سفید شیری', value: 'theme-milky-white' },
 ];
@@ -53,6 +48,7 @@ const PriceBoardPage = () => {
             showPriceChangePopup: savedConfig.showPriceChangePopup !== false,
             popupDuration: savedConfig.popupDuration || 5,
             colorPalette: savedConfig.colorPalette || 'theme-default',
+            imageSliderEnabled: savedConfig.imageSliderEnabled === true,
         });
         const initialItems = savedConfig.activeItems || [];
         initialItems.forEach(item => {
@@ -134,6 +130,7 @@ const PriceBoardPage = () => {
                     <Col><Form.Item label="ساعت آنالوگ" name="showAnalogClock" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
                     <Col><Form.Item label="ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
                     <Col><Form.Item label="پاپ‌آپ تغییر قیمت" name="showPriceChangePopup" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="اسلایدر عکس پس‌زمینه" name="imageSliderEnabled" valuePropName="checked"><Switch /></Form.Item></Col>
                     <Col><Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration"><InputNumber min={1} max={60} style={{ width: '100%' }} /></Form.Item></Col>
                 </Row>
 
