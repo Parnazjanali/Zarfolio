@@ -279,3 +279,21 @@
     .main-grid { grid-template-columns: 1fr; }
     .price-box.wide { grid-column: span 1; }
 }
+.price-up {
+    color: #28a745; /* Green */
+}
+
+.price-down {
+    color: #dc3545; /* Red */
+}
+
+/* استایل برای نمایش قیمت بیت‌کوین (اختیاری) */
+.bitcoin-price-display {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.bitcoin-label {
+    margin-left: 8px;
+}
