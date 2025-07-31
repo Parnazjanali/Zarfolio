@@ -35,7 +35,11 @@ const PriceBoardPage = () => {
             apiUrl: savedConfig.apiUrl || "https://brsapi.ir/Api/Market/Gold_Currency.php?key=FreeTB2jJTDzANcCGSnLsaxPZxmWoj7C",
             galleryName: savedConfig.galleryName || 'گالری شما',
             showAnalogClock: savedConfig.showAnalogClock !== false,
-            showWeatherWidget: savedConfig.showWeatherWidget !== false
+            showWeatherWidget: savedConfig.showWeatherWidget !== false,
+            showPriceDifference: savedConfig.showPriceDifference !== false,
+            showPriceChangePopup: savedConfig.showPriceChangePopup !== false,
+            // مقداردهی اولیه برای تنظیمات جدید
+            popupDuration: savedConfig.popupDuration || 5,
         });
         setActiveItems(savedConfig.activeItems || []);
     }, [form]);
@@ -46,10 +50,14 @@ const PriceBoardPage = () => {
             apiUrl: form.getFieldValue('apiUrl'),
             showAnalogClock: form.getFieldValue('showAnalogClock'),
             showWeatherWidget: form.getFieldValue('showWeatherWidget'),
+            showPriceDifference: form.getFieldValue('showPriceDifference'),
+            showPriceChangePopup: form.getFieldValue('showPriceChangePopup'),
+            // ذخیره مقدار جدید در تنظیمات
+            popupDuration: form.getFieldValue('popupDuration'),
             activeItems: activeItems,
         };
         localStorage.setItem('priceBoardConfig', JSON.stringify(configToSave));
-        message.success('تنظیمات تابلو با موفقیت ذخیره شد!');
+        message.success('تنظیمات تابلو با موفقیت ذخیره شد و در تابلوی عمومی اعمال گردید!');
     };
 
     const allApiOptions = apiData ?
@@ -91,6 +99,7 @@ const PriceBoardPage = () => {
     return (
         <Card>
             <Title level={2}>پنل مدیریت حرفه‌ای تابلو</Title>
+            <Paragraph type="secondary">تغییرات در این بخش به صورت آنی در تابلوی قیمت عمومی (در صورت باز بودن در تب دیگر) اعمال خواهد شد.</Paragraph>
             <Divider />
 
             <Form form={form} layout="vertical">
@@ -106,9 +115,17 @@ const PriceBoardPage = () => {
                     </Col>
                 </Row>
                 
-                <Row gutter={16}>
-                    <Col><Form.Item label="نمایش ساعت آنالوگ" name="showAnalogClock" valuePropName="checked"><Switch /></Form.Item></Col>
-                    <Col><Form.Item label="نمایش ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch /></Form.Item></Col>
+                <Row gutter={16} align="bottom">
+                    <Col><Form.Item label="نمایش ساعت آنالوگ" name="showAnalogClock" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="نمایش ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="نمایش اختلاف قیمت" name="showPriceDifference" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="پاپ‌آپ تغییر قیمت" name="showPriceChangePopup" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    {/* فیلد جدید برای مدت زمان پاپ آپ */}
+                    <Col>
+                        <Form.Item label="مدت زمان پاپ‌آپ (ثانیه)" name="popupDuration">
+                            <InputNumber min={1} max={60} style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 <Row gutter={16} style={{marginBottom: '24px'}}>
