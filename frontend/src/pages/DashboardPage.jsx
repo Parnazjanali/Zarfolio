@@ -5,7 +5,6 @@ import { Row, Col, Card, Statistic } from 'antd';
 import { ArrowUpOutlined, UserOutlined, ShoppingCartOutlined, DollarCircleOutlined } from '@ant-design/icons';
 
 // 1. وارد کردن کامپوننت‌های جدید
-import SalesChart from '../components/SalesChart.jsx';
 import ActivityFeed from '../components/ActivityFeed.jsx';
 import CustomerList from '../components/CustomerList.jsx';
 
@@ -62,13 +61,6 @@ const DashboardPage = () => {
                <span>امروز</span>
             </div>
           </Card>
-        </Col>
-      </Row>
-
-      {/* بخش نمودار */}
-      <Row style={{ marginBottom: '24px' }}>
-        <Col span={24}>
-          <SalesChart />
         </Col>
       </Row>
 
