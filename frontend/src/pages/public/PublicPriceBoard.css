@@ -1,3 +1,8 @@
+/* frontend/src/pages/public/PublicPriceBoard.css (Optimized Version) */
+
+/* ==========================================================================
+   1. General Styles & Font Imports
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
 
@@ -11,8 +16,13 @@
     --border-color: rgba(255, 255, 255, 0.1);
     --color-up: #27ae60;
     --color-down: #c0392b;
-    --color-up-bg: rgba(39, 174, 96, 0.2);
-    --color-down-bg: rgba(192, 57, 43, 0.2);
+    --color-up-bg: rgba(39, 174, 96, 0.15);
+    --color-down-bg: rgba(192, 57, 43, 0.15);
+}
+
+body {
+    margin: 0;
+    padding: 0;
 }
 
 .aramis-board-container {
@@ -27,19 +37,46 @@
     position: relative;
 }
 
-/* --- Sidebar (Left) --- */
+/* ==========================================================================
+   2. Main Layout (Sidebar & Grid)
+   ========================================================================== */
 .left-sidebar {
     width: 240px;
     background-color: var(--item-bg);
     padding: 1rem;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    border-right: 1px solid var(--border-color);
+    flex-direction: column; /* چیدمان ستونی برای سایدبار */
+    justify-content: space-between; /* محتوای اصلی بالا، فوتر پایین */
+    border-left: 1px solid var(--border-color);
     flex-shrink: 0;
 }
 
+.sidebar-main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+}
+
+.main-grid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+/* ==========================================================================
+   3. Sidebar Components
+   ========================================================================== */
 .sidebar-header {
     width: 100%;
     text-align: center;
@@ -53,26 +90,27 @@
     color: var(--highlight-color);
 }
 
-.time-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
+.time-container, .weather-widget {
     width: 100%;
+    text-align: center;
 }
 
 .time-display {
     font-family: 'Orbitron', sans-serif;
     font-size: clamp(1rem, 3vw, 1.3rem);
-    color: var(--primary-text);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    width: 100%;
+    margin-bottom: 0.75rem;
 }
 
-/* --- Analog Clock --- */
+.last-update-time {
+    font-size: 0.8rem;
+    color: var(--secondary-text);
+    margin-top: 10px;
+}
+
 .analog-clock {
     width: 100px;
     height: 100px;
@@ -80,220 +118,105 @@
     background-color: #2c3e50;
     border: 3px solid var(--secondary-text);
     position: relative;
+    margin: 0 auto;
 }
-.hand {
-    position: absolute;
-    width: 50%;
-    height: 2px;
-    top: 50%;
-    left: 0;
-    background-color: #ecf0f1;
-    transform-origin: 100% 50%;
-    transition: transform 0.5s;
-}
+
+.hand { position: absolute; width: 50%; height: 2px; top: 50%; left: 0; background-color: #ecf0f1; transform-origin: 100% 50%; transition: transform 0.5s; }
 .hour-hand { width: 35%; left: 15%; height: 3px; background-color: var(--highlight-color); }
 .minute-hand { width: 45%; left: 5%; }
 .second-hand { height: 1.5px; background-color: #e74c3c; transition: none; }
-.center-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #e74c3c;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 1.5px solid #ecf0f1;
-    z-index: 10;
+.center-dot { width: 8px; height: 8px; background-color: #e74c3c; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1.5px solid #ecf0f1; z-index: 10; }
+
+/* --- Popup Notification System (Queue) --- */
+.popup-container {
+    display: flex;
+    flex-direction: column-reverse; /* جدیدترین پاپ‌آپ بالا نمایش داده شود */
+    gap: 8px;
+    width: 100%;
 }
 
-/* Ticker & Weather Styles */
-.ticker, .weather-widget {
-    width: 100%;
-    background-color: var(--item-bg);
-    border-radius: 8px;
-    padding: 0.75rem;
-    text-align: center;
+.price-change-popup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.9rem;
+    animation: slideIn 0.4s ease-out forwards;
 }
-.ticker-title, .weather-location {
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    color: var(--secondary-text);
-    margin-bottom: 0.25rem;
-}
-.ticker-value, .weather-temp {
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-    font-weight: 700;
-    color: #fff;
-}
-.weather-widget { margin-top: auto; }
+.popup-name { font-weight: 700; }
+.popup-details { display: flex; align-items: center; gap: 5px; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
+.price-change-popup.up { background-color: var(--color-up); }
+.price-change-popup.down { background-color: var(--color-down); }
+
+/* --- Weather Widget --- */
+.weather-widget { background-color: var(--item-bg); border-radius: 8px; padding: 0.75rem; }
+.weather-temp { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3.5vw, 1.5rem); font-weight: 700; }
 .weather-icon { font-size: 2rem; color: #f1c40f; margin-bottom: 0.5rem; }
 
-/* --- Notification Area in Sidebar --- */
-.notification-area-placeholder, .notification-area {
-    width: 100%;
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-radius: 8px;
-    padding: 0.5rem;
-    opacity: 0;
-    transform: scale(0.95);
-    transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.4s ease;
-}
 
-.notification-area.show {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.notification-area.up {
-    background-color: var(--color-up-bg);
-    border: 1px solid var(--color-up);
-}
-.notification-area.down {
-    background-color: var(--color-down-bg);
-    border: 1px solid var(--color-down);
-}
-
-.notification-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-    color: var(--primary-text);
-}
-.notification-area.up .anticon { color: var(--color-up); }
-.notification-area.down .anticon { color: var(--color-down); }
-
-.notification-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.9rem;
-    gap: 0.2rem;
-}
-
-/* --- Main Grid --- */
-.main-grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 0.5rem;
-    padding: 0.75rem;
-}
-
+/* ==========================================================================
+   4. Main Grid Components (Price Boxes)
+   ========================================================================== */
 .price-box {
     background-color: var(--item-bg);
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 1rem 0.5rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
     border-top: 3px solid;
     border-image: linear-gradient(to left, #f1c40f, #e67e22) 1;
-    transition: background-color 0.4s ease-in-out;
+    transition: background-color 0.4s ease, border-color 0.4s ease;
 }
-/* --- استایل‌های جدید برای هایلایت شدن باکس --- */
+
+.price-box:hover { background-color: var(--item-hover-bg); }
+
+/* Price Box Highlight Styles */
 .price-box.highlight-up {
     background-color: var(--color-up-bg);
+    border-image: none;
+    border-top-color: var(--color-up);
 }
 .price-box.highlight-down {
     background-color: var(--color-down-bg);
+    border-image: none;
+    border-top-color: var(--color-down);
 }
 
+.price-title { font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 500; color: var(--secondary-text); margin-bottom: 0.5rem; }
+.price-value { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3.5vw, 1.5rem); font-weight: 700; color: #fff; letter-spacing: 0.5px; width: 100%; }
 
-.price-box:hover { background-color: var(--item-hover-bg); }
-.price-box.wide { grid-column: span 2; }
-
-.price-title {
-    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-    font-weight: 500;
-    color: var(--secondary-text);
-    margin-bottom: 0.5rem;
-}
-.price-values {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-}
-.price-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-}
-.price-label {
-    font-size: clamp(0.7rem, 2vw, 0.8rem);
-    font-weight: 700;
-}
-.sell-label { color: #e74c3c; }
-.buy-label { color: #2ecc71; }
-.price-value {
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(1.1rem, 3.5vw, 1.4rem);
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.5px;
-}
-.price-value.single { width: 100%; }
+/* Price Difference (momentary text) */
+.price-difference { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.85rem; margin-top: 8px; }
+.price-difference.up { color: var(--color-up); }
+.price-difference.down { color: var(--color-down); }
+.rial-difference, .percent-difference { font-family: 'Vazirmatn', sans-serif; }
 
 
-/* --- Footer --- */
-.aramis-footer {
-    position: absolute;
-    bottom: 5px;
-    left: 10px;
-    font-size: 0.8rem;
-    font-family: 'Orbitron', sans-serif;
-    color: rgba(255, 255, 255, 0.5);
+/* ==========================================================================
+   5. Animations
+   ========================================================================== */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
-/* --- Media Queries for Responsiveness --- */
-@media (max-width: 1024px) {
-    .main-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(5, 1fr);
-    }
-    .price-box.wide { grid-column: span 1; }
-}
-
+/* ==========================================================================
+   6. Media Queries
+   ========================================================================== */
 @media (max-width: 768px) {
     .aramis-board-container { flex-direction: column; height: auto; min-height: 100vh; }
-    .left-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 0.5rem; }
-    .sidebar-header, .time-container, .ticker, .weather-widget, .notification-area-placeholder, .notification-area { flex-basis: 45%; margin-bottom: 0.5rem; }
-    .weather-widget { margin-top: 0; }
-    .main-grid { grid-template-columns: repeat(2, 1fr); padding: 0.5rem; }
-    .aramis-footer { position: relative; text-align: center; padding: 1rem; left: 0; }
+    .left-sidebar { width: 100%; border-left: none; border-bottom: 1px solid var(--border-color); flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 0.5rem; }
+    .sidebar-main-content, .sidebar-footer { flex-basis: 100%; flex-direction: row; justify-content: space-around; align-items: center; }
+    .time-container, .weather-widget { flex-basis: 45%; }
+    .popup-container { position: fixed; bottom: 1rem; right: 1rem; width: 220px; z-index: 100; }
+    .main-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 }
 
 @media (max-width: 480px) {
-    .left-sidebar { justify-content: center; }
-    .sidebar-header, .time-container, .ticker, .weather-widget, .notification-area-placeholder, .notification-area { flex-basis: 90%; }
-    .main-grid { grid-template-columns: 1fr; }
-    .price-box.wide { grid-column: span 1; }
-}
-.price-up {
-    color: #28a745; /* Green */
-}
-
-.price-down {
-    color: #dc3545; /* Red */
-}
-
-/* استایل برای نمایش قیمت بیت‌کوین (اختیاری) */
-.bitcoin-price-display {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-.bitcoin-label {
-    margin-left: 8px;
+    .sidebar-main-content, .sidebar-footer { flex-direction: column; }
+    .time-container, .weather-widget { flex-basis: 90%; margin-bottom: 1rem; }
 }
