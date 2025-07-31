@@ -17,12 +17,25 @@ import {
     Statistic,
     InputNumber,
     Popconfirm,
-    Switch
+    Switch,
+    Tabs
 } from 'antd';
 import { SyncOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
 
 const { Title, Paragraph, Text } = Typography;
+const { TabPane } = Tabs;
+
+// ✅ افزودن دو پالت رنگی سفید
+const colorPalettes = [
+    { label: 'آبی تیره (پیش‌فرض)', value: 'theme-default' },
+    { label: 'زمرد سبز', value: 'theme-emerald' },
+    { label: 'یاقوت سرخ', value: 'theme-ruby' },
+    { label: 'کهربای طلایی', value: 'theme-amber' },
+    { label: 'بنفش نیمه‌شب', value: 'theme-midnight-purple' },
+    { label: 'سفید کریستالی', value: 'theme-crystal-white' },
+    { label: 'سفید شیری', value: 'theme-milky-white' },
+];
 
 const PriceBoardPage = () => {
     const [form] = Form.useForm();
@@ -33,27 +46,28 @@ const PriceBoardPage = () => {
         const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig')) || {};
         form.setFieldsValue({
             apiUrl: savedConfig.apiUrl || "https://brsapi.ir/Api/Market/Gold_Currency.php?key=FreeTB2jJTDzANcCGSnLsaxPZxmWoj7C",
+            weatherApiUrl: savedConfig.weatherApiUrl || "https://api.weatherapi.com/v1/current.json?key=352696f4a53a4545aa9104158253107&q=tehran",
             galleryName: savedConfig.galleryName || 'گالری شما',
             showAnalogClock: savedConfig.showAnalogClock !== false,
             showWeatherWidget: savedConfig.showWeatherWidget !== false,
-            showPriceDifference: savedConfig.showPriceDifference !== false,
             showPriceChangePopup: savedConfig.showPriceChangePopup !== false,
-            // مقداردهی اولیه برای تنظیمات جدید
             popupDuration: savedConfig.popupDuration || 5,
+            colorPalette: savedConfig.colorPalette || 'theme-default',
         });
-        setActiveItems(savedConfig.activeItems || []);
+        const initialItems = savedConfig.activeItems || [];
+        initialItems.forEach(item => {
+            item.showBuySell = item.showBuySell || false;
+            item.buyAdjustmentPercent = item.buyAdjustmentPercent || 0;
+            item.buyAdjustmentValue = item.buyAdjustmentValue || 0;
+            item.sellAdjustmentPercent = item.sellAdjustmentPercent || 0;
+            item.sellAdjustmentValue = item.sellAdjustmentValue || 0;
+        });
+        setActiveItems(initialItems);
     }, [form]);
 
     const handleSaveConfig = () => {
         const configToSave = {
-            galleryName: form.getFieldValue('galleryName'),
-            apiUrl: form.getFieldValue('apiUrl'),
-            showAnalogClock: form.getFieldValue('showAnalogClock'),
-            showWeatherWidget: form.getFieldValue('showWeatherWidget'),
-            showPriceDifference: form.getFieldValue('showPriceDifference'),
-            showPriceChangePopup: form.getFieldValue('showPriceChangePopup'),
-            // ذخیره مقدار جدید در تنظیمات
-            popupDuration: form.getFieldValue('popupDuration'),
+            ...form.getFieldsValue(),
             activeItems: activeItems,
         };
         localStorage.setItem('priceBoardConfig', JSON.stringify(configToSave));
@@ -76,6 +90,11 @@ const PriceBoardPage = () => {
                     unit: apiItem.unit,
                     adjustmentPercent: 0,
                     adjustmentValue: 0,
+                    showBuySell: false,
+                    buyAdjustmentPercent: 0,
+                    buyAdjustmentValue: 0,
+                    sellAdjustmentPercent: 0,
+                    sellAdjustmentValue: 0,
                 }]);
             }
         }
@@ -103,29 +122,19 @@ const PriceBoardPage = () => {
             <Divider />
 
             <Form form={form} layout="vertical">
-                <Title level={4}>۱. منبع داده و تنظیمات کلی</Title>
+                <Title level={4}>۱. تنظیمات کلی و ظاهری</Title>
                 <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="نام گالری" name="galleryName"><Input /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="آدرس API" name="apiUrl">
-                            <Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی داده</Button>} />
-                        </Form.Item>
-                    </Col>
+                    <Col xs={24} md={12}><Form.Item label="نام گالری" name="galleryName"><Input /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="پالت رنگی" name="colorPalette"><Select options={colorPalettes} /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="آدرس API قیمت" name="apiUrl"><Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی</Button>} /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="آدرس API هواشناسی" name="weatherApiUrl"><Input /></Form.Item></Col>
                 </Row>
                 
                 <Row gutter={16} align="bottom">
-                    <Col><Form.Item label="نمایش ساعت آنالوگ" name="showAnalogClock" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
-                    <Col><Form.Item label="نمایش ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
-                    <Col><Form.Item label="نمایش اختلاف قیمت" name="showPriceDifference" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="ساعت آنالوگ" name="showAnalogClock" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
+                    <Col><Form.Item label="ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
                     <Col><Form.Item label="پاپ‌آپ تغییر قیمت" name="showPriceChangePopup" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
-                    {/* فیلد جدید برای مدت زمان پاپ آپ */}
-                    <Col>
-                        <Form.Item label="مدت زمان پاپ‌آپ (ثانیه)" name="popupDuration">
-                            <InputNumber min={1} max={60} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
+                    <Col><Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration"><InputNumber min={1} max={60} style={{ width: '100%' }} /></Form.Item></Col>
                 </Row>
 
                 <Row gutter={16} style={{marginBottom: '24px'}}>
@@ -138,7 +147,7 @@ const PriceBoardPage = () => {
                 <Title level={4}>۲. افزودن آیتم به تابلو</Title>
                 <Select
                     showSearch
-                    placeholder="یک آیتم از لیست API برای افزودن انتخاب کنید..."
+                    placeholder="یک آیتم برای افزودن انتخاب کنید..."
                     style={{ width: '100%', marginBottom: '16px' }}
                     options={allApiOptions}
                     onSelect={handleAddItem}
@@ -156,11 +165,32 @@ const PriceBoardPage = () => {
                                 <Text type="secondary">قیمت خام API:</Text><br/>
                                 <Text strong>{new Intl.NumberFormat('fa-IR').format(findRawPrice(item.symbol))} {item.unit !== 'تومان' ? item.unit : ''}</Text>
                             </Col>
-                            <Col xs={12} md={6}>
-                                <InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" />
-                            </Col>
-                            <Col xs={12} md={6}>
-                                <InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/>
+                            <Col xs={24} md={12}>
+                                <Form.Item label="نمایش قیمت خرید/فروش" style={{marginBottom: '8px'}}>
+                                   <Switch checked={item.showBuySell} onChange={(checked) => handleItemChange(item.symbol, 'showBuySell', checked)} />
+                                </Form.Item>
+
+                                {item.showBuySell ? (
+                                    <Tabs defaultActiveKey="sell">
+                                        <TabPane tab="تنظیمات قیمت فروش" key="sell">
+                                            <Row gutter={8}>
+                                                <Col span={12}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                            </Row>
+                                        </TabPane>
+                                        <TabPane tab="تنظیمات قیمت خرید" key="buy">
+                                             <Row gutter={8}>
+                                                <Col span={12}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                            </Row>
+                                        </TabPane>
+                                    </Tabs>
+                                ) : (
+                                    <Row gutter={8}>
+                                        <Col span={12}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
+                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/></Col>
+                                    </Row>
+                                )}
                             </Col>
                             <Col xs={24} md={6}>
                                 <Popconfirm title="آیا از حذف این آیتم مطمئن هستید؟" onConfirm={() => handleRemoveItem(item.symbol)} okText="بله" cancelText="خیر">
