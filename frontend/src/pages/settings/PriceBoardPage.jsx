@@ -155,48 +155,54 @@ const PriceBoardPage = () => {
                 <Divider />
 
                 <Title level={4}>۳. مدیریت آیتم‌های فعال</Title>
-                {activeItems.map(item => (
-                    <Card key={item.symbol} size="small" style={{ marginBottom: 16 }} title={item.name}>
-                        <Row gutter={[16, 16]} align="middle">
-                            <Col xs={24} md={6}>
-                                <Text type="secondary">قیمت خام API:</Text><br/>
-                                <Text strong>{new Intl.NumberFormat('fa-IR').format(findRawPrice(item.symbol))} {item.unit !== 'تومان' ? item.unit : ''}</Text>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item label="نمایش قیمت خرید/فروش" style={{marginBottom: '8px'}}>
-                                   <Switch checked={item.showBuySell} onChange={(checked) => handleItemChange(item.symbol, 'showBuySell', checked)} />
-                                </Form.Item>
+                {/* START: IMPROVEMENT FOR ACTIVE ITEMS LAYOUT */}
+                <Row gutter={[16, 16]}>
+                    {activeItems.map(item => (
+                        <Col xs={24} lg={12} key={item.symbol}>
+                            <Card size="small" title={item.name} style={{ height: '100%' }}>
+                                <Row gutter={[16, 16]} align="middle">
+                                    <Col xs={24} md={8}>
+                                        <Text type="secondary">قیمت خام API:</Text><br/>
+                                        <Text strong>{new Intl.NumberFormat('fa-IR').format(findRawPrice(item.symbol))} {item.unit !== 'تومان' ? item.unit : ''}</Text>
+                                    </Col>
+                                    <Col xs={24} md={10}>
+                                        <Form.Item label="نمایش قیمت خرید/فروش" style={{marginBottom: '8px'}}>
+                                           <Switch checked={item.showBuySell} onChange={(checked) => handleItemChange(item.symbol, 'showBuySell', checked)} />
+                                        </Form.Item>
 
-                                {item.showBuySell ? (
-                                    <Tabs defaultActiveKey="sell">
-                                        <TabPane tab="تنظیمات قیمت فروش" key="sell">
+                                        {item.showBuySell ? (
+                                            <Tabs defaultActiveKey="sell" size="small">
+                                                <TabPane tab="قیمت فروش" key="sell">
+                                                    <Row gutter={8}>
+                                                        <Col span={12}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                                    </Row>
+                                                </TabPane>
+                                                <TabPane tab="قیمت خرید" key="buy">
+                                                     <Row gutter={8}>
+                                                        <Col span={12}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                                    </Row>
+                                                </TabPane>
+                                            </Tabs>
+                                        ) : (
                                             <Row gutter={8}>
-                                                <Col span={12}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                                <Col span={12}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
+                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/></Col>
                                             </Row>
-                                        </TabPane>
-                                        <TabPane tab="تنظیمات قیمت خرید" key="buy">
-                                             <Row gutter={8}>
-                                                <Col span={12}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
-                                            </Row>
-                                        </TabPane>
-                                    </Tabs>
-                                ) : (
-                                    <Row gutter={8}>
-                                        <Col span={12}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
-                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/></Col>
-                                    </Row>
-                                )}
-                            </Col>
-                            <Col xs={24} md={6}>
-                                <Popconfirm title="آیا از حذف این آیتم مطمئن هستید؟" onConfirm={() => handleRemoveItem(item.symbol)} okText="بله" cancelText="خیر">
-                                    <Button type="primary" danger icon={<DeleteOutlined />} block>حذف</Button>
-                                </Popconfirm>
-                            </Col>
-                        </Row>
-                    </Card>
-                ))}
+                                        )}
+                                    </Col>
+                                    <Col xs={24} md={6}>
+                                        <Popconfirm title="آیا از حذف این آیتم مطمئن هستید؟" onConfirm={() => handleRemoveItem(item.symbol)} okText="بله" cancelText="خیر">
+                                            <Button type="primary" danger icon={<DeleteOutlined />} block>حذف</Button>
+                                        </Popconfirm>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+                {/* END: IMPROVEMENT FOR ACTIVE ITEMS LAYOUT */}
 
                 <Divider />
                 <Button type="primary" size="large" block onClick={handleSaveConfig} >ذخیره نهایی تنظیمات تابلو</Button>
