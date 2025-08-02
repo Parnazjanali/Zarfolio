@@ -199,7 +199,7 @@ const PublicPriceBoard = () => {
     const layoutClass = config?.imageSliderEnabled ? 'layout-with-slider' : 'layout-no-slider';
 
     return (
-        <div className={`aramis-board-container ${config?.colorPalette || 'theme-default'} ${layoutClass}`}>
+        <div className={`zarfolio-board-container ${config?.colorPalette || 'theme-default'} ${layoutClass}`}>
             <PanelGroup direction="horizontal">
                 <Panel defaultSize={65} minSize={50}>
                     <div className="right-section-container">
