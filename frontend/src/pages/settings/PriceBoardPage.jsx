@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
     Form, Input, Button, Card, Typography, Select, Row, Col, Spin,
-    Alert, Divider, message, Statistic, InputNumber, Popconfirm, Switch, Tabs
+    Alert, Divider, App, Statistic, InputNumber, Popconfirm, Switch, Tabs
 } from 'antd';
 import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
 import ImageGalleryModal from '../../components/ImageGalleryModal'; // وارد کردن کامپوننت جدید
 
 const { Title, Paragraph, Text } = Typography;
-const { TabPane } = Tabs;
 
 const colorPalettes = [
     { label: 'آبی تیره (پیش‌فرض)', value: 'theme-default' },
@@ -31,6 +30,7 @@ const PriceBoardPage = () => {
     const [activeItems, setActiveItems] = useState([]);
     const [editingItemSymbol, setEditingItemSymbol] = useState(null);
     const [editingName, setEditingName] = useState('');
+    const { message } = App.useApp();
     
     // --- State های جدید برای مدیریت گالری ---
     const [imageSliderEnabled, setImageSliderEnabled] = useState(false);
@@ -155,6 +155,31 @@ const PriceBoardPage = () => {
         message.info(`${newSelectedImages.length} عکس برای اسلایدر انتخاب شد.`);
     };
     // --- پایان توابع جدید ---
+    const sellTabPane = (item) => (
+        <Row gutter={[8, 8]}>
+            <Col span={24}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+            <Col span={24}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+        </Row>
+    );
+
+    const buyTabPane = (item) => (
+        <Row gutter={[8, 8]}>
+            <Col span={24}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+            <Col span={24}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+        </Row>
+    );
+    const tabItems = (item) => ([
+        {
+            key: 'sell',
+            label: 'قیمت فروش',
+            children: sellTabPane(item)
+        },
+        {
+            key: 'buy',
+            label: 'قیمت خرید',
+            children: buyTabPane(item)
+        }
+    ]);
 
     return (
         <Card>
@@ -166,10 +191,26 @@ const PriceBoardPage = () => {
             <Form form={form} layout="vertical">
                 <Title level={4}>۱. تنظیمات کلی و ظاهری</Title>
                 <Row gutter={16}>
-                    <Col xs={24} md={12}><Form.Item label="نام گالری" name="galleryName"><Input /></Form.Item></Col>
-                    <Col xs={24} md={12}><Form.Item label="پالت رنگی" name="colorPalette"><Select options={colorPalettes} /></Form.Item></Col>
-                    <Col xs={24} md={12}><Form.Item label="آدرس API قیمت" name="apiUrl"><Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی</Button>} /></Form.Item></Col>
-                    <Col xs={24} md={12}><Form.Item label="آدرس API هواشناسی" name="weatherApiUrl"><Input /></Form.Item></Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item label="نام گالری" name="galleryName">
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item label="پالت رنگی" name="colorPalette">
+                            <Select options={colorPalettes} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item label="آدرس API قیمت" name="apiUrl">
+                            <Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی</Button>} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item label="آدرس API هواشناسی" name="weatherApiUrl">
+                            <Input />
+                        </Form.Item>
+                    </Col>
                 </Row>
                 
                 <Row gutter={16} align="bottom">
@@ -181,7 +222,11 @@ const PriceBoardPage = () => {
                             <Switch onChange={setImageSliderEnabled} />
                         </Form.Item>
                     </Col>
-                    <Col><Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration"><InputNumber min={1} max={60} style={{ width: '100%' }} /></Form.Item></Col>
+                    <Col>
+                        <Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration">
+                            <InputNumber min={1} max={60} style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 {imageSliderEnabled && (
@@ -205,8 +250,10 @@ const PriceBoardPage = () => {
                                     <Select options={transitionOptions} placeholder="یک افکت را انتخاب کنید" />
                                 </Form.Item>
                                 <Form.Item name="randomImageOrder" valuePropName="checked">
-                                    <Switch />
-                                    <Text style={{ marginRight: 8 }}>نمایش عکس‌ها با ترتیب تصادفی</Text>
+                                    <div>
+                                        <Switch />
+                                        <Text style={{ marginRight: 8 }}>نمایش عکس‌ها با ترتیب تصادفی</Text>
+                                    </div>
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -270,20 +317,7 @@ const PriceBoardPage = () => {
                                         </Form.Item>
 
                                         {item.showBuySell ? (
-                                            <Tabs defaultActiveKey="sell" size="small">
-                                                <TabPane tab="قیمت فروش" key="sell">
-                                                    <Row gutter={[8, 8]}>
-                                                        <Col span={24}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                        <Col span={24}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
-                                                    </Row>
-                                                </TabPane>
-                                                <TabPane tab="قیمت خرید" key="buy">
-                                                     <Row gutter={[8, 8]}>
-                                                        <Col span={24}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                        <Col span={24}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
-                                                    </Row>
-                                                </TabPane>
-                                            </Tabs>
+                                            <Tabs defaultActiveKey="sell" size="small" items={tabItems(item)} />
                                         ) : (
                                             <Row gutter={[8, 8]}>
                                                 <Col span={24}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
