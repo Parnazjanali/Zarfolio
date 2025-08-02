@@ -69,7 +69,7 @@ body {
 }
 
 /* --- استایل‌های Resizable Panel --- */
-.aramis-board-container {
+.zarfolio-board-container {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
@@ -195,7 +195,7 @@ body {
 .weather-widget-container,
 .combined-info-card,
 .analog-clock-card {
-  width: 140px;
+  width: 180px;
 }
 
 .info-card {
@@ -303,7 +303,7 @@ body {
 .price-box.highlight-down { background-color: color-mix(in srgb, var(--color-down) 15%, transparent); border-color: var(--color-down); }
 
 @media (max-width: 768px) { 
-  .aramis-board-container [data-panel-group-direction="horizontal"] {
+  .zarfolio-board-container [data-panel-group-direction="horizontal"] {
     flex-direction: column-reverse;
   }
   .resize-handle {
