@@ -46,7 +46,7 @@ func SetupAllRoutes(
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
 
-	// --- مسیر جدید برای آپلود عکس (نسخه ساده شده) ---
+	// --- مسیر آپلود عکس با آدرس جدید ---
 	apiV1.Post("/upload-image", func(c *fiber.Ctx) error {
 		file, err := c.FormFile("file")
 		if err != nil {
@@ -54,9 +54,8 @@ func SetupAllRoutes(
 			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "فایل در درخواست یافت نشد."})
 		}
 
-		// مسیر ذخیره‌سازی فایل‌ها (این پوشه باید در ساختار پروژه شما وجود داشته باشد)
-		// این مسیر به frontend/public اشاره دارد تا فایل‌ها مستقیماً برای نمایش در دسترس باشند
-		uploadPath := "./frontend/public/uploads/slider/"
+		// مسیر جدید برای ذخیره‌سازی فایل‌ها مطابق با درخواست شما
+		uploadPath := "./frontend/src/assets/images/"
 
 		// اطمینان از وجود پوشه
 		if err := os.MkdirAll(uploadPath, 0755); err != nil {
@@ -74,15 +73,15 @@ func SetupAllRoutes(
 			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "خطا در ذخیره‌سازی فایل."})
 		}
 
-		// برگرداندن آدرس عمومی فایل برای استفاده در Frontend
-		publicFilePath := "/uploads/slider/" + newFileName
+		// برگرداندن آدرس عمومی جدید فایل برای استفاده در Frontend
+		publicFilePath := "/src/assets/images/" + newFileName
 		utils.Log.Info("Image uploaded successfully", zap.String("path", publicFilePath))
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"message":  "فایل با موفقیت آپلود شد.",
 			"filePath": publicFilePath,
 		})
 	})
-	// --- پایان بخش جدید ---
+	// --- پایان بخش آپلود عکس ---
 
 	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
 
