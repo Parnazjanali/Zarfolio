@@ -1,4 +1,3 @@
-/* frontend/src/pages/public/PublicPriceBoard.css */
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
 
 @keyframes spin {
@@ -23,12 +22,20 @@
   --accent-secondary: #f1c40f;
   --color-up: #2ecc71;
   --color-down: #e74c3c;
-  /* ✅ رنگ‌های کارت کریستالی برای تم تیره */
   --crystal-bg: rgba(0, 0, 0, 0.25);
+  --crystal-bg-darker: rgba(0, 0, 0, 0.7);
   --crystal-border: rgba(255, 255, 255, 0.1);
+  --resizer-color: #34495e; /* رنگ جداکننده */
 }
 
-.theme-amber { --bg-main: #2c1d06; --bg-sidebar: rgba(28, 19, 4, 0.85); --bg-box: rgba(180, 83, 9, 0.4); --border-color: #92400e; --border-sidebar: #652d07; }
+.theme-amber {
+  --bg-main: #2c1d06;
+  --bg-sidebar: rgba(28, 19, 4, 0.85);
+  --bg-box: rgba(180, 83, 9, 0.4);
+  --border-color: #92400e;
+  --border-sidebar: #652d07;
+}
+
 .theme-crystal-white, .theme-milky-white {
   --bg-main: #f0f2f5;
   --bg-sidebar: rgba(255, 255, 255, 0.9);
@@ -41,71 +48,244 @@
   --accent-secondary: #096dd9;
   --color-up: #52c41a;
   --color-down: #f5222d;
-  /* ✅ رنگ‌های کارت کریستالی برای تم روشن */
-  --crystal-bg: rgba(255, 255, 255, 0.4);
-  --crystal-border: rgba(255, 255, 255, 0.9);
+  --crystal-bg: rgba(255, 255, 255, 0.5);
+  --crystal-bg-darker: rgba(240, 242, 245, 0.8);
+  --crystal-border: rgba(0, 0, 0, 0.1);
+  --resizer-color: #d9d9d9;
 }
 
+body {
+  margin: 0;
+  font-family: 'Vazirmatn', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+.status-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 24px;
+}
 
-body { margin: 0; font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
-.status-message { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 24px; }
+/* --- استایل‌های Resizable Panel --- */
+.aramis-board-container {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  direction: rtl; /* جهت کلی راست به چپ */
+}
 
-/* --- چیدمان اصلی --- */
-.aramis-board-container { display: flex; direction: rtl; height: 100vh; width: 100vw; overflow: hidden; background: var(--bg-main); }
-.prices-grid-container { flex: 2; background-color: var(--bg-sidebar); backdrop-filter: blur(8px); border-left: 1px solid var(--border-sidebar); padding: 8px; gap: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); grid-auto-rows: min-content; overflow-y: auto; }
-.right-section-container { flex: 4.5; position: relative; overflow: hidden; }
-.background-slider-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-.info-sidebar { position: relative; z-index: 1; width: 100%; height: 2%; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+.resize-handle {
+  width: 8px;
+  background-color: var(--resizer-color);
+  cursor: col-resize;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+.resize-handle[data-dragging="true"],
+.resize-handle:hover {
+  background-color: var(--accent-primary);
+}
 
-/* ✅✅✅ استایل جدید برای کارت کریستالی */
+/* --- استایل بخش‌ها --- */
+.prices-grid-container {
+  height: 100%;
+  background-color: var(--bg-sidebar);
+  backdrop-filter: blur(8px);
+  padding: 8px;
+  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-auto-rows: min-content;
+  overflow-y: auto;
+}
+.right-section-container {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.background-slider-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.info-sidebar {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* ... بقیه استایل‌ها بدون تغییر باقی می‌مانند ... */
+.gallery-name-container {
+    position: absolute;
+    top: 10px;
+    left: 2px;
+    right: 2px;
+    z-index: 3;
+    background: var(--crystal-bg-darker);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 12px;
+    border: 1px solid var(--crystal-border);
+    padding: 8px 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #FFFFFF;
+}
+
+.theme-crystal-white .gallery-name-container,
+.theme-milky-white .gallery-name-container {
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.gallery-name-container .logo-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.theme-crystal-white .header-last-update,
+.theme-milky-white .header-last-update {
+    color: var(--text-secondary);
+}
+
+.gallery-name-container .header-last-update {
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 1;
+    color: var(--text-secondary); /* استفاده از متغیر رنگ ثانویه که معمولاً تیره‌تر است */
+}
+
+.bottom-center-widgets {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  width: 100%;
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.right-corner-widgets {
+  position: absolute;
+  bottom: 6%;
+  right: 20px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 15px;
+  align-items: center;
+}
+
+.weather-widget-container,
+.combined-info-card,
+.analog-clock-card {
+  width: 140px;
+}
+
 .info-card {
     background: var(--crystal-bg) !important;
     backdrop-filter: blur(15px) saturate(180%);
     -webkit-backdrop-filter: blur(15px) saturate(180%);
     border-radius: 12px !important;
     border: 1px solid var(--crystal-border) !important;
-    padding: 10px !important;
-    width: 25%;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
 }
 
-/* --- بهینه‌سازی ویجت‌های داخل کارت --- */
-.info-card .time-container {
+.info-card .ant-card-body {
+    padding: 10px !important;
+}
+
+.combined-info-card .time-container {
     text-align: center;
-    padding-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--crystal-border);
+    margin-bottom: 10px;
 }
-.info-card .time-display { font-size: 1.8rem; }
-.info-card .last-update-time { font-size: 0.8rem; opacity: 0.9; }
-
-.info-card .popup-container {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--crystal-border);
-}
-.info-card .price-change-popup {
-    background-color: transparent; /* پس‌زمینه حذف شد */
-    padding: 8px 12px;
-    border: none;
-    border-right: 4px solid transparent; /* برای نمایش رنگ روند */
-}
-.info-card .price-change-popup.up { border-right-color: var(--color-up); }
-.info-card .price-change-popup.down { border-right-color: var(--color-down); }
-
-
-.info-card .weather-widget {
-    background: transparent; /* پس‌زمینه حذف شد */
-    border: none; /* خط دور حذف شد */
-    padding: 12px 0 0 0;
+.combined-info-card .time-display {
+  font-size: 1.5rem;
 }
 
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8rem;
+}
 
-/* --- استایل‌های بخش اطلاعات --- */
-.info-sidebar .sidebar-header { text-align: center; padding-bottom: 15px; }
-.info-sidebar .logo-title { font-size: 2rem; }
-.info-sidebar .sidebar-footer { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.analog-clock { width: 120px; height: 120px; margin-top: auto; } /* کوچکتر و در پایین */
+.price-change-popup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8px;
+    animation: fadeIn 0.5s ease-in-out;
+    border-radius: 6px;
+    color: #FFFFFF;
+}
+.price-change-popup.up { 
+    background-color: var(--color-up); 
+}
+.price-change-popup.down { 
+    background-color: var(--color-down); 
+}
+.popup-details { 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+}
 
-/* --- استایل‌های بخش قیمت‌ها (بدون تغییر) --- */
+.weather-widget { 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+    gap: 8px; 
+}
+.weather-main { 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.weather-icon { font-size: 3rem; line-height: 1; }
+.weather-icon .rotating-sun { animation: spin 20s linear infinite; }
+.weather-temp { font-size: 1.4rem; font-weight: bold; }
+.weather-details { font-size: 0.8rem; }
+.weather-condition { font-weight: bold; margin-bottom: 4px; }
+.weather-message {
+    background-color: var(--accent-primary);
+    color: var(--bg-main);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 4px;
+    display: inline-block;
+    font-size: 0.75rem;
+}
+
+.analog-clock-card .ant-card-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.analog-clock { width: 120px; height: 120px; }
+
 .price-box { background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: all 0.3s ease; }
 .price-box:hover { transform: translateY(-3px); box-shadow: 0 5px 12px rgba(0,0,0,0.25); }
 .price-title { font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
@@ -122,6 +302,20 @@ body { margin: 0; font-family: 'Vazirmatn', sans-serif; background-color: var(--
 .price-box.highlight-up { background-color: color-mix(in srgb, var(--color-up) 15%, transparent); border-color: var(--color-up); }
 .price-box.highlight-down { background-color: color-mix(in srgb, var(--color-down) 15%, transparent); border-color: var(--color-down); }
 
-/* Media Queries (بدون تغییر) */
-@media (max-width: 1024px) { .prices-grid-container, .right-section-container { flex: 1; } }
-@media (max-width: 768px) { .aramis-board-container { flex-direction: column-reverse; } .right-section-container { display: none; } .prices-grid-container { width: 100%; border-left: none; } }
+@media (max-width: 768px) { 
+  .aramis-board-container [data-panel-group-direction="horizontal"] {
+    flex-direction: column-reverse;
+  }
+  .resize-handle {
+    display: none;
+  }
+  .right-section-container {
+    display: none !important;
+  }
+}
+
+.analog-clock .hand { width: 50%; height: 6px; background: var(--text-primary); position: absolute; top: 50%; transform-origin: 100%; transform: rotate(90deg); transition: all 0.05s; transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1); border-radius: 3px; }
+.analog-clock .hour-hand { z-index: 3; width: 30%; height: 8px; left: 20%; }
+.analog-clock .minute-hand { z-index: 4; height: 6px; width: 40%; left: 10%; }
+.analog-clock .second-hand { z-index: 5; background: var(--accent-primary); width: 45%; height: 2px; left: 5%; }
+.analog-clock .center-dot { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: var(--text-secondary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 6; }
