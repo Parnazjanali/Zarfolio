@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Tabs, Upload, Button, message, Spin } from 'antd';
+import { Modal, Tabs, Upload, Button, App } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import './ImageGalleryModal.css';
 
@@ -7,6 +7,7 @@ const { TabPane } = Tabs;
 const { Dragger } = Upload;
 
 const ImageGalleryModal = ({ visible, allImages = [], selectedImages = [], onClose, onConfirm, onImageUpload }) => {
+    const { message } = App.useApp();
     const [activeKey, setActiveKey] = useState('1');
     const [localSelected, setLocalSelected] = useState(selectedImages);
 
@@ -58,7 +59,7 @@ const ImageGalleryModal = ({ visible, allImages = [], selectedImages = [], onClo
     return (
         <Modal
             title="کتابخانه و مدیریت تصاویر"
-            visible={visible}
+            open={visible} // <<<--- تغییر در این خط: visible به open تغییر کرد
             onCancel={onClose}
             width={800}
             footer={[

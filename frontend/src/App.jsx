@@ -132,7 +132,6 @@ function App() {
   return (
     <ConfigProvider theme={antdAppTheme} direction="rtl">
       <AntApp>
-        {/* +++ خط ۲: پوشش دادن کل برنامه با مدیر داده برای دسترسی سراسری +++ */}
         <ApiDataProvider>
           <BackgroundManager />
           <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>

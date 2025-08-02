@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
+
 type AuthMiddleware struct {
 	permissionService *authz.PermissionService 
 	logger            *zap.Logger
