@@ -18,13 +18,12 @@ import {
     Switch,
     Tabs
 } from 'antd';
-import { SyncOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SyncOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
 
 const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 
-// پالت‌های رنگی به موارد روشن و چشم‌نواز محدود شدند
 const colorPalettes = [
     { label: 'آبی تیره (پیش‌فرض)', value: 'theme-default' },
     { label: 'کهربای طلایی', value: 'theme-amber' },
@@ -36,6 +35,8 @@ const PriceBoardPage = () => {
     const [form] = Form.useForm();
     const { apiData, loading, error, lastUpdated, countdown, forceFetch } = useApiData();
     const [activeItems, setActiveItems] = useState([]);
+    const [editingItemSymbol, setEditingItemSymbol] = useState(null);
+    const [editingName, setEditingName] = useState('');
 
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig')) || {};
@@ -106,6 +107,20 @@ const PriceBoardPage = () => {
         ));
     };
 
+    const handleEditNameClick = (item) => {
+        setEditingItemSymbol(item.symbol);
+        setEditingName(item.name);
+    };
+
+    const handleNameChange = (e) => {
+        setEditingName(e.target.value);
+    };
+
+    const handleNameSave = (symbol) => {
+        handleItemChange(symbol, 'name', editingName);
+        setEditingItemSymbol(null);
+    };
+
     const findRawPrice = (symbol) => {
         const item = apiData ? [...apiData.gold, ...apiData.currency, ...apiData.cryptocurrency].find(i => i.symbol === symbol) : null;
         return item ? item.price : 'N/A';
@@ -155,40 +170,59 @@ const PriceBoardPage = () => {
                 <Divider />
 
                 <Title level={4}>۳. مدیریت آیتم‌های فعال</Title>
-                {/* START: IMPROVEMENT FOR ACTIVE ITEMS LAYOUT */}
                 <Row gutter={[16, 16]}>
                     {activeItems.map(item => (
                         <Col xs={24} lg={12} key={item.symbol}>
-                            <Card size="small" title={item.name} style={{ height: '100%' }}>
+                            <Card size="small" title={
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    {editingItemSymbol === item.symbol ? (
+                                        <Input
+                                            value={editingName}
+                                            onChange={handleNameChange}
+                                            onPressEnter={() => handleNameSave(item.symbol)}
+                                            onBlur={() => handleNameSave(item.symbol)}
+                                            style={{ flexGrow: 1, marginLeft: '10px' }}
+                                        />
+                                    ) : (
+                                        <span style={{ flexGrow: 1 }}>{item.name}</span>
+                                    )}
+                                    <Button
+                                        type="text"
+                                        icon={<EditOutlined />}
+                                        onClick={() => handleEditNameClick(item)}
+                                        size="small"
+                                    />
+                                </div>
+                            } style={{ height: '100%' }}>
                                 <Row gutter={[16, 16]} align="middle">
                                     <Col xs={24} md={8}>
                                         <Text type="secondary">قیمت خام API:</Text><br/>
                                         <Text strong>{new Intl.NumberFormat('fa-IR').format(findRawPrice(item.symbol))} {item.unit !== 'تومان' ? item.unit : ''}</Text>
                                     </Col>
                                     <Col xs={24} md={10}>
-                                        <Form.Item label="نمایش قیمت خرید/فروش" style={{marginBottom: '8px'}}>
+                                        <Form.Item label="نمایش خرید/فروش" style={{marginBottom: '8px'}}>
                                            <Switch checked={item.showBuySell} onChange={(checked) => handleItemChange(item.symbol, 'showBuySell', checked)} />
                                         </Form.Item>
 
                                         {item.showBuySell ? (
                                             <Tabs defaultActiveKey="sell" size="small">
                                                 <TabPane tab="قیمت فروش" key="sell">
-                                                    <Row gutter={8}>
-                                                        <Col span={12}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                                    <Row gutter={[8, 8]}>
+                                                        <Col span={24}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                        <Col span={24}><InputNumber addonAfter="تومان" value={item.sellAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
                                                     </Row>
                                                 </TabPane>
                                                 <TabPane tab="قیمت خرید" key="buy">
-                                                     <Row gutter={8}>
-                                                        <Col span={12}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
-                                                        <Col span={12}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
+                                                     <Row gutter={[8, 8]}>
+                                                        <Col span={24}><InputNumber addonAfter="%" value={item.buyAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
+                                                        <Col span={24}><InputNumber addonAfter="تومان" value={item.buyAdjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'buyAdjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="سود ثابت" /></Col>
                                                     </Row>
                                                 </TabPane>
                                             </Tabs>
                                         ) : (
-                                            <Row gutter={8}>
-                                                <Col span={12}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
-                                                <Col span={12}><InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/></Col>
+                                            <Row gutter={[8, 8]}>
+                                                <Col span={24}><InputNumber addonAfter="%" value={item.adjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'adjustmentPercent', val)} style={{ width: '100%' }} placeholder="افزایش درصدی" /></Col>
+                                                <Col span={24}><InputNumber addonAfter="تومان" value={item.adjustmentValue} onChange={(val) => handleItemChange(item.symbol, 'adjustmentValue', val)} style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} placeholder="افزایش عددی"/></Col>
                                             </Row>
                                         )}
                                     </Col>
@@ -202,7 +236,6 @@ const PriceBoardPage = () => {
                         </Col>
                     ))}
                 </Row>
-                {/* END: IMPROVEMENT FOR ACTIVE ITEMS LAYOUT */}
 
                 <Divider />
                 <Button type="primary" size="large" block onClick={handleSaveConfig} >ذخیره نهایی تنظیمات تابلو</Button>

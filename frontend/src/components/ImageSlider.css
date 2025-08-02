@@ -3,7 +3,7 @@
   height: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 3px;
 }
 
 .image-slider-container.empty {
