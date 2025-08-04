@@ -8,6 +8,7 @@ import (
 	"gold-api/internal/api/proxy"
 	"gold-api/internal/service/auth"
 	"gold-api/internal/service/crm"
+	crmmanager "gold-api/internal/service/crmManager"
 	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
 	"log"
@@ -74,12 +75,16 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("ProfileHandlerAG initialized successfully.")
 
-	var crmService crm.CrmService 
-
-	crmHandlerAG, err := handler.NewCrmHandler(crmService)
+	crmManagerClient, err := crmmanager.NewClient(crmManagerBaseURL)
 	if err != nil {
-		utils.Log.Fatal("ERROR: Failed to initialize CrmHandlerAG. Exiting application.", zap.Error(err))
+		utils.Log.Fatal("Failed to initialize CrmManagerClient. Exiting application.", zap.Error(err))
 	}
+
+	crmSvc, err := crm.NewCrmService(crmManagerClient)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize CrmService. Exiting application.", zap.Error(err))
+	}
+	crmHandlerAG := handler.NewCrmHandler(crmSvc, utils.Log)
 	utils.Log.Info("CrmHandlerAG initialized successfully.")
 
 	proxyHandler := proxy.NewProxyHandler(utils.Log)

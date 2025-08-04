@@ -181,24 +181,24 @@ func (c *profileManagerHTTPClient) LogoutUser(token string) error {
 		zap.String("url", c.baseURL+"/auth/logout"),
 		zap.String("token_prefix", token[:utils.Min(len(token), 10)]),
 	)
-	resp, err := c.client.Do(httpReq)
-	if err != nil {
-		utils.Log.Error("ProfileManagerHTTPClient: Error sending logout request", zap.Error(err))
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
-			return fmt.Errorf("%w: timeout connecting to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+		resp, err := c.client.Do(httpReq)
+		if err != nil {
+			utils.Log.Error("ProfileManagerHTTPClient: Error sending logout request", zap.Error(err))
+			if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
+				return fmt.Errorf("%w: timeout connecting to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+			}
+			if errors.Is(err, syscall.ECONNREFUSED) {
+				return fmt.Errorf("%w: connection refused to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+			}
+			return fmt.Errorf("failed to send logout request to profile manager: %w", err)
 		}
-		if errors.Is(err, syscall.ECONNREFUSED) {
-			return fmt.Errorf("%w: connection refused to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+		defer resp.Body.Close()
+		utils.Log.Info("ProfileManagerHTTPClient: Received response from Profile Manager", zap.Int("status", resp.StatusCode), zap.String("token_prefix", token[:utils.Min(len(token), 10)]))
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			utils.Log.Error("Failed to read profile manager logout response body", zap.Error(err))
+			return fmt.Errorf("failed to read response body: %w", err)
 		}
-		return fmt.Errorf("failed to send logout request to profile manager: %w", err)
-	}
-	defer resp.Body.Close()
-	utils.Log.Info("ProfileManagerHTTPClient: Received response from Profile Manager", zap.Int("status", resp.StatusCode), zap.String("token_prefix", token[:utils.Min(len(token), 10)]))
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		utils.Log.Error("Failed to read profile manager logout response body", zap.Error(err))
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
 
 	if resp.StatusCode != http.StatusOK {
 		var errorResp model.ErrorResponse

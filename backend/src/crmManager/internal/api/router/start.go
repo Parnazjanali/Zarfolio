@@ -1,6 +1,7 @@
 package router
 
 import (
+	"crm-gold/internal/api/authz"
 	"crm-gold/internal/api/handler"
 	"crm-gold/internal/api/middleware"
 	"crm-gold/internal/repository/db/postgresDb"
@@ -30,12 +31,19 @@ func StartServer(port string) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Route not found."})
 	})
 
+	permissionService, err := authz.NewPermissionService(utils.Log)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize PermissionService. Exiting application.", zap.Error(err))
+	}
+	utils.Log.Info("PermissionService initialized successfully.")
+
+	jwtValidator := utils.NewJWTValidatorImpl()
+	utils.Log.Info("JWTValidator initialized successfully.")
+
 	customerRepo, err := postgresDb.NewCustomerRepository(postgresDb.DB, utils.Log)
 	if err != nil {
 		utils.Log.Fatal("Failed to initialize customer repository", zap.Error(err))
 	}
-	
-	
 
 	customerService, err := service.NewCustomerService(customerRepo, utils.Log)
 	if err != nil {
@@ -46,9 +54,8 @@ func StartServer(port string) error {
 	if crmHandler == nil {
 		utils.Log.Fatal("Failed to initialize CrmHandler", zap.Error(fmt.Errorf("crmHandler cannot be nil")))
 	}
-
-	internalJWTValidator := utils.NewJWTValidatorImpl("INTERNAL_SERVICE_JWT_SECRET", utils.Log)
-	authZMiddlewareForCRM, err := middleware.NewAuthZMiddleware(nil, utils.Log, internalJWTValidator)
+	
+	authZMiddlewareForCRM, err := middleware.NewAuthZMiddleware(permissionService, utils.Log, jwtValidator)
 	if err != nil {
 		utils.Log.Fatal("Failed to initialize AuthZMiddleware for CRM", zap.Error(err))
 	}

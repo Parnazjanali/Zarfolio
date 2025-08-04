@@ -4,7 +4,8 @@ import (
 	"context"
 	"crm-gold/internal/model"
 	"crm-gold/internal/repository/repo"
-	"errors" 
+	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -15,19 +16,17 @@ type customerRepositoryImpl struct {
 	logger *zap.Logger
 }
 
-
-
-func NewCustomerRepository(db *gorm.DB, logger *zap.Logger) (repo.CustRepo, error) { 
+func NewCustomerRepository(db *gorm.DB, logger *zap.Logger) (repo.CustRepo, error) {
 	if db == nil {
-		return nil, errors.New("database connection cannot be nil for CustomerRepository") 
+		return nil, errors.New("database connection cannot be nil for CustomerRepository")
 	}
 	if logger == nil {
-		return nil, errors.New("logger cannot be nil for CustomerRepository") 
+		return nil, errors.New("logger cannot be nil for CustomerRepository")
 	}
 	return &customerRepositoryImpl{
 		db:     db,
 		logger: logger,
-	}, nil 
+	}, nil
 }
 func (r *customerRepositoryImpl) CheckCustomerCodeExists(ctx context.Context, id uint, code string) (bool, error) {
 	var count int64
@@ -39,24 +38,18 @@ func (r *customerRepositoryImpl) CheckCustomerCodeExists(ctx context.Context, id
 	return count > 0, nil
 }
 func (r *customerRepositoryImpl) CreateCustomer(ctx context.Context, customer *model.Customer) (*model.Customer, error) {
-	if customer == nil {
-		return nil, errors.New("customer cannot be nil")
-	}
-	if customer.Code == "" {
-		return nil, errors.New("customer code is required")
-	}
-	if customer.Nikename == "" {
-		return nil, errors.New("customer nikename is required")
+	r.logger.Debug("Attempting to save customer to database.", zap.String("code", customer.Code))
+
+	result := r.db.WithContext(ctx).Create(customer)
+	if result.Error != nil {
+		r.logger.Error("Failed to save customer to database.", zap.Error(result.Error), zap.String("customer_code", customer.Code))
+		return nil, result.Error
 	}
 
-	if err := r.db.WithContext(ctx).Create(customer).Error; err != nil {
-		r.logger.Error("failed to create customer", zap.Error(err))
-		return nil, err
-	}
-	r.logger.Info("customer created successfully", zap.String("customer_code", customer.Code))
+	r.logger.Info("Customer saved successfully to database.", zap.Uint("customer_id", customer.ID))
 	return customer, nil
 }
-// GetAllCustomers retrieves all customers from the database.
+
 func (r *customerRepositoryImpl) GetAllCustomers(ctx context.Context) ([]model.Customer, error) {
 	var customers []model.Customer
 	if err := r.db.WithContext(ctx).Find(&customers).Error; err != nil {
@@ -66,7 +59,6 @@ func (r *customerRepositoryImpl) GetAllCustomers(ctx context.Context) ([]model.C
 	return customers, nil
 }
 
-// GetCustomerByCode retrieves a customer by their code.
 func (r *customerRepositoryImpl) GetCustomerByCode(ctx context.Context, code string) (*model.Customer, error) {
 	var customer model.Customer
 	if err := r.db.WithContext(ctx).Where("code = ?", code).First(&customer).Error; err != nil {
@@ -92,5 +84,12 @@ func (r *customerRepositoryImpl) GetCustomerByUniqueFields(ctx context.Context, 
 	}
 	return &customer, nil
 }
+func (r *customerRepositoryImpl) FindOrCreateCusType(ctx context.Context, label string) (*model.CusType, error) {
+	var cusType model.CusType
+	result := r.db.WithContext(ctx).Where("label = ?", label).FirstOrCreate(&cusType, model.CusType{Label: label, Code: label})
 
-
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find or create customer type: %w", result.Error)
+	}
+	return &cusType, nil
+}

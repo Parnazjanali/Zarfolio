@@ -20,7 +20,7 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler) error {
 	crmGroup := app.Group("/crm") 
 	utils.Log.Info("Setting up customer routes in CrmManager...")
 
-	crmGroup.Get("/customers", crmHandler.HandleGetCustomers)
+	crmGroup.Get("/customer", crmHandler.HandleGetCustomers)
 	crmGroup.Post("/customers", crmHandler.HandleCreateCustomer)
 	/*crmGroup.Put("/customers/:id", crmHandler.HandleUpdateCustomer)
 	crmGroup.Delete("/customers/:id", crmHandler.HandleDeleteCustomer)

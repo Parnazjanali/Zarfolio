@@ -5,6 +5,7 @@ import (
 	"crm-gold/internal/repository/db/postgresDb"
 	"crm-gold/internal/utils"
 	"fmt"
+	"os"
 
 	"go.uber.org/zap"
 )
@@ -22,8 +23,15 @@ func main() {
 	}
 	utils.Log.Info("Database initialized successfully.")
 
-	if err := router.StartServer(":8082"); err != nil {
-		utils.Log.Fatal("Profile Manager server failed to start or encountered a fatal error.", zap.Error(err))
+	crmManagerPort := os.Getenv("CRM_MANAGER_PORT")
+	if crmManagerPort == "" {
+		crmManagerPort = ":8082"
 	}
+
+	utils.Log.Info("CRM Manager Service attempting to start Fiber server", zap.String("port", crmManagerPort))
+	if err := router.StartServer(crmManagerPort); err != nil {
+		utils.Log.Fatal("CRM Manager Service failed to start Fiber server", zap.Error(err))
+	}
+
 	utils.Log.Info("CRM Manager Service started successfully on port 8082.")
 }

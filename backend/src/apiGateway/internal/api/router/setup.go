@@ -19,7 +19,7 @@ func SetupAllRoutes(
 	authHandler *handler.AuthHandler,
 	accountHandlerAG *handler.AccountHandlerAG,
 	crmHandlerAG *handler.CrmHandler,
-	permissionService *authz.PermissionService,
+	permissionService authz.PermissionService,
 	profileHandlerAG *handler.ProfileHandler,
 	proxyHandler *proxy.ProxyHandler,
 ) error {
@@ -48,7 +48,15 @@ func SetupAllRoutes(
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
 
-	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
+	jwtValidator := utils.NewJWTValidatorImpl("CRM_MANAGER_SERVICE_SECRET", utils.Log)
+
+	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, utils.Log, jwtValidator)
+	if err != nil {
+		// This check is important because NewAuthMiddleware returns an error
+		utils.Log.Error("Failed to initialize AuthMiddleware", zap.Error(err))
+		return fmt.Errorf("failed to initialize auth middleware: %w", err)
+	}
+	utils.Log.Info("AuthMiddleware initialized successfully.")
 
 	if err := SetUpAuthRoutes(apiV1, authHandler, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up auth routes: %w", err)
@@ -58,16 +66,13 @@ func SetupAllRoutes(
 		return fmt.Errorf("failed to set up account routes: %w", err)
 	}
 
-	if err := SetUpUserManagementRoutes(apiV1, profileHandlerAG, authMiddleware); err != nil {
-		return fmt.Errorf("failed to set up user management routes: %w", err)
-	}
 	if err := SetUpCrmRoutes(apiV1, crmHandlerAG, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up CRM routes: %w", err)
 	}
 
+	// Proxy routes
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerServiceURL != "" {
-
 		apiV1.Get("/uploads/*", proxyHandler.HandleStaticFileProxy(profileManagerServiceURL))
 		utils.Log.Info("Configured GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
 	} else {

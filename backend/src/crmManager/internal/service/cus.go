@@ -7,13 +7,13 @@ import (
 
 	"crm-gold/internal/model"
 	"crm-gold/internal/repository/repo"
-	"crm-gold/internal/utils" 
+	"crm-gold/internal/utils"
 
 	"go.uber.org/zap"
 )
 
 type CusService interface {
-	CreateCustomer(ctx context.Context, customer *model.Customer) (*model.Customer, error)
+	CreateCustomer(ctx context.Context, customer *model.CreateCustomerRequest) (*model.Customer, error)
 	GetCustomers(ctx context.Context) ([]model.Customer, error)
 }
 
@@ -22,12 +22,12 @@ type customerServiceImpl struct {
 	logger       *zap.Logger
 }
 
-func NewCustomerService(customerRepo repo.CustRepo, logger *zap.Logger) (CusService,error) {
+func NewCustomerService(customerRepo repo.CustRepo, logger *zap.Logger) (CusService, error) {
 	if customerRepo == nil {
-		utils.Log.Fatal("customerRepository cannot be nil for CustomerService.")
+		return nil, errors.New("customerRepository cannot be nil for CustomerService")
 	}
 	if logger == nil {
-		utils.Log.Fatal("logger cannot be nil for CustomerService.")
+		return nil, errors.New("logger cannot be nil for CustomerService")
 	}
 	return &customerServiceImpl{
 		customerRepo: customerRepo,
@@ -35,31 +35,24 @@ func NewCustomerService(customerRepo repo.CustRepo, logger *zap.Logger) (CusServ
 	}, nil
 }
 
-func (s *customerServiceImpl) CreateCustomer(ctx context.Context, customer *model.Customer) (*model.Customer, error) {
+func (s *customerServiceImpl) CreateCustomer(ctx context.Context, req *model.CreateCustomerRequest) (*model.Customer, error) {
 	s.logger.Info("Attempting to create a new customer in service layer.",
-		zap.String("customer_code", customer.Code), zap.String("nikename", customer.Nikename))
+		zap.String("customer_code", req.Code), zap.String("nikename", req.Nikename))
 
-	
-	if customer.Code == "" {
-		return nil, errors.New("customer code is required")
-	}
-	if customer.Nikename == "" {
+	if req.Nikename == "" {
 		return nil, errors.New("customer nikename is required")
 	}
-	if customer.Name == "" {
+	if req.Name == "" {
 		return nil, errors.New("customer name is required")
 	}
-	if customer.Mobile == "" {
+	if req.Mobile == "" {
 		return nil, errors.New("customer mobile is required")
 	}
-	if customer.Shenasemeli == "" {
+	if req.Shenasemeli == "" {
 		return nil, errors.New("customer shenasemeli is required")
 	}
-	if customer.BIDID == 0 { 
-		return nil, errors.New("business ID is required")
-	}
 
-	existingCustomer, err := s.customerRepo.GetCustomerByUniqueFields(ctx, customer.Code, customer.Nikename, customer.Mobile, customer.Shenasemeli, customer.BIDID)
+	existingCustomer, err := s.customerRepo.GetCustomerByUniqueFields(ctx, req.Code, req.Nikename, req.Mobile, req.Shenasemeli, req.BIDID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check for existing customer: %w", err)
 	}
@@ -67,13 +60,44 @@ func (s *customerServiceImpl) CreateCustomer(ctx context.Context, customer *mode
 		return nil, errors.New("customer with provided unique fields already exists")
 	}
 
-	
-	if customer.Code == "" { 
-		generatedCode, err := s.generateUniqueCustomerCode(ctx, customer.BIDID)
+	var customerTypes []model.CusType
+	if req.CustomerCategory != "" {
+		// Find or create the CusType based on the category string
+		cusType, err := s.customerRepo.FindOrCreateCusType(ctx, req.CustomerCategory)
 		if err != nil {
-			return nil, fmt.Errorf("failed to generate unique customer code: %w", err)
+			return nil, fmt.Errorf("failed to handle customer category: %w", err)
 		}
-		customer.Code = generatedCode
+		customerTypes = append(customerTypes, *cusType)
+	}
+
+	customer := &model.Customer{
+		Code:                req.Code,
+		Nikename:            req.Nikename,
+		Name:                req.Name,
+		FamilyName:          utils.PtrString(req.FamilyName),
+		Company:             utils.PtrString(req.Company),
+		Mobile:              req.Mobile,
+		Mobile2:             utils.PtrString(req.Mobile2),
+		Tel:                 utils.PtrString(req.Tel),
+		Fax:                 utils.PtrString(req.Fax),
+		Email:               utils.PtrString(req.Email),
+		Website:             utils.PtrString(req.Website),
+		Address:             utils.PtrString(req.Address),
+		Postalcode:          utils.PtrString(req.Postalcode),
+		Shahr:               utils.PtrString(req.Shahr),
+		Ostan:               utils.PtrString(req.Ostan),
+		Keshvar:             utils.PtrString(req.Keshvar),
+		Shenasemeli:         req.Shenasemeli,
+		Codeeghtesadi:       utils.PtrString(req.Codeeghtesadi),
+		Sabt:                utils.PtrString(req.Sabt),
+		TaxID:               utils.PtrString(req.TaxID),
+		BIDID:               req.BIDID,
+		InitialBalanceToman: req.InitialBalanceToman,
+		InitialBalanceGold:  req.InitialBalanceGold,
+		GoldRateType:        utils.PtrString(req.GoldRateType),
+		DefaultGoldUnit:     utils.PtrString(req.DefaultGoldUnit),
+		DefaultGoldUnitRate: utils.PtrFloat64(req.DefaultGoldUnitRate),
+		CustomerTypes:       customerTypes,
 	}
 
 	createdCustomer, err := s.customerRepo.CreateCustomer(ctx, customer)
@@ -90,10 +114,10 @@ func (s *customerServiceImpl) generateUniqueCustomerCode(ctx context.Context, bi
 	const maxAttempts = 10
 	for i := 0; i < maxAttempts; i++ {
 
-		randomStr,err := utils.GenerateSecureRandomString(8) 
+		randomStr, err := utils.GenerateSecureRandomString(8)
 		if err != nil {
 			return "", fmt.Errorf("failed to generate random string for customer code: %w", err)
-			
+
 		}
 
 		code := fmt.Sprintf("CUS-%s", randomStr)

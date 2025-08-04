@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.uber.org/zap" 
 )
 
 type JWTValidator interface {
@@ -16,23 +15,22 @@ type JWTValidator interface {
 
 type JWTValidatorImpl struct {
 	jwtSecret []byte
-	logger    *zap.Logger 
 }
 
-func NewJWTValidatorImpl(secretEnvVarName string, logger *zap.Logger) *JWTValidatorImpl {
-	jwtSecret := os.Getenv(secretEnvVarName)
+func NewJWTValidatorImpl() *JWTValidatorImpl {
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecret == "" {
-		logger.Fatal(fmt.Sprintf("%s environment variable is not set. Cannot initialize JWTValidator.", secretEnvVarName))
+		Log.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot initialize JWTValidator.")
+
 	}
 	return &JWTValidatorImpl{
 		jwtSecret: []byte(jwtSecret),
-		logger:    logger,
 	}
 }
 
 func (v *JWTValidatorImpl) ValidateToken(tokenString string) (*model.CustomClaims, error) {
 	if v.jwtSecret == nil || len(v.jwtSecret) == 0 {
-		v.logger.Error("JWT Secret Key is not initialized in JWTValidatorImpl. Cannot validate JWT.")
+		Log.Error("JWT Secret Key is not initialized in JWTValidatorImpl. Cannot validate JWT.")
 		return nil, errors.New("jwt secret key not configured in validator")
 	}
 

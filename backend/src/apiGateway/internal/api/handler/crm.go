@@ -1,25 +1,28 @@
 package handler
 
 import (
-	"fmt"
+	"gold-api/internal/model"
 	"gold-api/internal/service/crm"
-	"gold-api/internal/utils"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type CrmHandler struct {
-	crmService crm.CrmService
+	crmSvc crm.CrmService
+	logger *zap.Logger
 }
 
-func NewCrmHandler(crmSvc crm.CrmService) (*CrmHandler, error) {
+// NewCrmHandler سازنده‌ای برای CrmHandler است.
+func NewCrmHandler(crmSvc crm.CrmService, logger *zap.Logger) *CrmHandler {
 	if crmSvc == nil {
-		utils.Log.Error("CrmService is nil when passed to NewCrmHandler.", zap.String("reason", "crm_service_nil"))
-		return nil, fmt.Errorf("CrmService cannot be nil for CrmHandler")
+		logger.Fatal("crmSvc cannot be nil for CrmHandler.")
 	}
-	utils.Log.Info("CrmHandler initialized successfully.")
-	return &CrmHandler{crmService: crmSvc}, nil
+	if logger == nil {
+		logger.Fatal("logger cannot be nil for CrmHandler.")
+	}
+	return &CrmHandler{crmSvc: crmSvc, logger: logger}
 }
 
 func (h *CrmHandler) HandleGetCustomers(c *fiber.Ctx) error {
@@ -27,9 +30,46 @@ func (h *CrmHandler) HandleGetCustomers(c *fiber.Ctx) error {
 	return nil
 }
 func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
-	// Implementation for creating a customer
-	return nil
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: User context missing."})
+	}
+	userRoles, ok := c.Locals("userRoles").([]string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: User roles missing."})
+	}
+	h.logger.Info("Creating customer", zap.String("user_id", userID), zap.Strings("user_roles", userRoles))
+	
+	var req model.CreateCustomerRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		h.logger.Error("Failed to parse request body for customer creation", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request body",
+			Details: err.Error(),
+		})
+	}
+
+	createdCustomer, err := h.crmSvc.CreateCustomer(c.Context(), &req) // <-- اصلاح شد
+	if err != nil {
+		h.logger.Error("Failed to create customer via service layer", zap.Error(err))
+
+		if strings.Contains(err.Error(), "already exists") {
+			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{
+				Message: "Customer with this code or mobile already exists.",
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Failed to create customer due to an internal error.",
+			Details: err.Error(),
+		})
+	}
+
+	h.logger.Info("Customer created successfully.", zap.Uint("customer_id", createdCustomer.ID), zap.String("customer_code", createdCustomer.Code))
+	return c.Status(fiber.StatusCreated).JSON(createdCustomer)
 }
+
 func (h *CrmHandler) HandleUpdateCustomer(c *fiber.Ctx) error {
 	// Implementation for updating a customer
 	return nil
@@ -111,4 +151,3 @@ func (h *CrmHandler) HandleGetCustomerCard(c *fiber.Ctx) error {
 	// Implementation for getting customer card
 	return nil
 }
-

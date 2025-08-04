@@ -66,22 +66,26 @@ var rolePermissionsMap = map[string][]string{
         model.PermReportViewSalesSummary, model.PermReportViewInventorySummary, model.PermReportViewProfitLoss, model.PermReportViewBalances, model.PermReportExportData,
     },
 }
+type PermissionService interface {
+    GetPermissionsForRoles(roles []string) []string
+    HasPermission(roles []string, requiredPermission string) bool
+}
 
-type PermissionService struct {
+type PermissionServiceImpl struct {
     logger *zap.Logger
 }
 
-func NewPermissionService(logger *zap.Logger) *PermissionService {
+func NewPermissionService(logger *zap.Logger) PermissionService { // <-- Returns the interface, not the struct pointer
     if logger == nil {
-        panic("Logger cannot be nil for PermissionService in API Gateway.")
+        panic("Logger cannot be nil for PermissionService.")
     }
-    return &PermissionService{logger: logger}
+    return &PermissionServiceImpl{logger: logger}
 }
 
-func (s *PermissionService) GetPermissionsForRoles(roles []string) []string {
+func (s *PermissionServiceImpl) GetPermissionsForRoles(roles []string) []string {
     uniquePerms := make(map[string]struct{})
     for _, role := range roles {
-        if perms, ok := rolePermissionsMap[role]; ok { 
+        if perms, ok := rolePermissionsMap[role]; ok {
             for _, perm := range perms {
                 uniquePerms[perm] = struct{}{}
             }
@@ -95,11 +99,10 @@ func (s *PermissionService) GetPermissionsForRoles(roles []string) []string {
     return permsList
 }
 
-func (s *PermissionService) HasPermission(roles []string, requiredPermission string) bool {
-   
+func (s *PermissionServiceImpl) HasPermission(roles []string, requiredPermission string) bool {
     for _, role := range roles {
-        if role == model.RoleAdmin { 
-            return true // Admin has all permissions
+        if role == model.RoleAdmin {
+            return true
         }
     }
 
@@ -108,7 +111,7 @@ func (s *PermissionService) HasPermission(roles []string, requiredPermission str
         if perm == requiredPermission {
             return true
         }
-        if strings.HasSuffix(perm, ":*") { 
+        if strings.HasSuffix(perm, ":*") {
             resourcePrefix := strings.TrimSuffix(perm, ":*")
             if strings.HasPrefix(requiredPermission, resourcePrefix+":") {
                 return true
