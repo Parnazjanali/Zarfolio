@@ -14,16 +14,16 @@ import (
 )
 
 type AuthHandler struct {
-    authService auth.AuthService // اینترفیس AuthService
+	authService auth.AuthService 
 }
 
-func NewAuthHandler(authSvc auth.AuthService) (*AuthHandler, error) { // 👈 تغییر Signature
-	if authSvc == nil { // 👈 این چک باید اینجا برقرار باشه
+func NewAuthHandler(authSvc auth.AuthService) (*AuthHandler, error) { 
+	if authSvc == nil { 
 		utils.Log.Error("AuthService is nil when passed to NewAuthHandler.", zap.String("reason", "auth_service_nil"))
-		return nil, fmt.Errorf("AuthService cannot be nil for AuthHandler") // 👈 برگرداندن خطا
+		return nil, fmt.Errorf("AuthService cannot be nil for AuthHandler") 
 	}
 	utils.Log.Info("AuthHandler initialized successfully.")
-	return &AuthHandler{authService: authSvc}, nil // 👈 برگرداندن غیر-nil و nil error
+	return &AuthHandler{authService: authSvc}, nil 
 }
 
 func (h *AuthHandler) RegisterUser(c *fiber.Ctx) error {
@@ -122,20 +122,20 @@ func (h *AuthHandler) LoginUser(c *fiber.Ctx) error {
 		zap.String("username", user.Username),
 		zap.Any("roles", user.Roles),
 	)
-	  var exp int64
-    if claims.ExpiresAt != nil { 
-        exp = claims.ExpiresAt.Unix()
-    } else {
-        
-        exp = 0 
-        utils.Log.Warn("JWT token returned without an 'exp' claim.", zap.String("username", user.Username))
-    }
+	var exp int64
+	if claims.ExpiresAt != nil {
+		exp = claims.ExpiresAt.Unix()
+	} else {
+
+		exp = 0
+		utils.Log.Warn("JWT token returned without an 'exp' claim.", zap.String("username", user.Username))
+	}
 
 	return c.Status(fiber.StatusOK).JSON(model.AuthResponse{
 		Message: "Login successful",
 		Token:   token,
 		User:    user,
-		Exp:    exp,
+		Exp:     exp,
 	})
 }
 
@@ -158,10 +158,14 @@ func (h *AuthHandler) LogoutUser(c *fiber.Ctx) error {
 	}
 	tokenString := tokenParts[1]
 
+	utils.Log.Info("AuthHandler: Attempting to logout token", zap.String("token_prefix", tokenString[:min(len(tokenString), 10)])) // Add this
+	
 	err := h.authService.LogoutUser(tokenString)
+
 	if err != nil {
 		utils.Log.Error("Logout failed in service layer", zap.String("token", tokenString), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidCredentials) { 
+
+		if errors.Is(err, service.ErrInvalidCredentials) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Message: "Invalid or expired token",
 				Code:    "401",
@@ -237,10 +241,10 @@ func (h *AuthHandler) HandleResetPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	err := h.authService.ResetPassword(req.Token, req.NewPassword) 
+	err := h.authService.ResetPassword(req.Token, req.NewPassword)
 	if err != nil {
 		utils.Log.Error("Failed to reset password in service layer", zap.String("token_prefix", req.Token[:min(len(req.Token), 10)]), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidToken) { 
+		if errors.Is(err, service.ErrInvalidToken) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Invalid or expired reset token.", Code: "401"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -270,12 +274,12 @@ func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
 		})
 	}
 
-	username := c.Locals("username").(string) 
+	username := c.Locals("username").(string)
 
 	user, token, claims, err := h.authService.VerifyTwoFACode(username, req.Code)
 	if err != nil {
 		utils.Log.Error("2FA login failed in service layer", zap.String("username", username), zap.Error(err))
-		if errors.Is(err, service.ErrInvalidTwoFACode) { 
+		if errors.Is(err, service.ErrInvalidTwoFACode) {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Invalid 2FA code.", Code: "401"})
 		}
 		if errors.Is(err, service.ErrProfileManagerDown) {
@@ -297,7 +301,6 @@ func (h *AuthHandler) HandleLoginTwoFA(c *fiber.Ctx) error {
 	})
 }
 
-// ... (min func)
 
 func min(a, b int) int {
 	if a < b {

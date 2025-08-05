@@ -23,7 +23,11 @@ const CustomerDetailPage = () => {
   const customer = {
     name: 'مشتری ویژه',
     email: 'vip.customer@example.com',
+<<<<<<< HEAD
     avatar: ''
+=======
+    avatar: 'https://joeschmoe.io/api/v1/random'
+>>>>>>> parnaz-changes
   };
 
   return (

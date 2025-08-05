@@ -7,6 +7,10 @@ import (
 	service "gold-api/internal/service/common"
 	profilemanager "gold-api/internal/service/profilemanger"
 	"gold-api/internal/utils"
+<<<<<<< HEAD
+=======
+	"os"
+>>>>>>> parnaz-changes
 
 	"go.uber.org/zap"
 )
@@ -23,14 +27,22 @@ type AuthServiceImpl struct {
 	profileMgrClient profilemanager.ProfileManagerClient
 }
 
+<<<<<<< HEAD
 func NewAuthService(client profilemanager.ProfileManagerClient) (AuthService, error) { // 👈 CHANGE RETURN TYPE TO THE INTERFACE
+=======
+func NewAuthService(client profilemanager.ProfileManagerClient) (AuthService, error) {
+>>>>>>> parnaz-changes
 	if client == nil {
 		utils.Log.Error("ProfileManagerClient passed to NewAuthService is nil.", zap.String("reason", "profile_manager_client_is_nil"))
 		return nil, fmt.Errorf("ProfileManagerClient cannot be nil for AuthService")
 	}
 
 	utils.Log.Info("AuthService initialized successfully.")
+<<<<<<< HEAD
 	return &AuthServiceImpl{profileMgrClient: client}, nil // 👈 Return a pointer to the concrete implementation, which satisfies the interface
+=======
+	return &AuthServiceImpl{profileMgrClient: client}, nil
+>>>>>>> parnaz-changes
 }
 
 func (s *AuthServiceImpl) LoginUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
@@ -72,7 +84,11 @@ func (s *AuthServiceImpl) RegisterUser(req model.RegisterRequest) error {
 }
 
 func (s *AuthServiceImpl) RequestPasswordReset(email string) error {
+<<<<<<< HEAD
 	err := s.profileMgrClient.RequestPasswordReset(email) // این متد باید در ProfileManagerClient تعریف شود
+=======
+	err := s.profileMgrClient.RequestPasswordReset(email)
+>>>>>>> parnaz-changes
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
 			return service.ErrUserNotFound
@@ -86,7 +102,11 @@ func (s *AuthServiceImpl) RequestPasswordReset(email string) error {
 }
 
 func (s *AuthServiceImpl) ResetPassword(token, newPassword string) error {
+<<<<<<< HEAD
 	err := s.profileMgrClient.ResetPassword(token, newPassword) // این متد باید در ProfileManagerClient تعریف شود
+=======
+	err := s.profileMgrClient.ResetPassword(token, newPassword)
+>>>>>>> parnaz-changes
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidToken) {
 			return service.ErrInvalidToken
@@ -100,7 +120,11 @@ func (s *AuthServiceImpl) ResetPassword(token, newPassword string) error {
 }
 
 func (s *AuthServiceImpl) LoginTwoFA(username, code string) (*model.User, string, *model.CustomClaims, error) {
+<<<<<<< HEAD
 	user, token, claims, err := s.profileMgrClient.VerifyTwoFACode(username, code) // این متد باید در ProfileManagerClient تعریف شود
+=======
+	user, token, claims, err := s.profileMgrClient.VerifyTwoFACode(username, code)
+>>>>>>> parnaz-changes
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTwoFACode) {
 			return nil, "", nil, service.ErrInvalidTwoFACode
@@ -114,7 +138,13 @@ func (s *AuthServiceImpl) LoginTwoFA(username, code string) (*model.User, string
 }
 
 func (s *AuthServiceImpl) LogoutUser(token string) error {
+<<<<<<< HEAD
 	// ... (همانند قبل، با استفاده از s.profileMgrClient.LogoutUser)
+=======
+	serviceSecret := os.Getenv("PROFILE_MANAGER_SERVICE_SECRET")
+	utils.Log.Info("DEBUG: PROFILE_MANAGER_SERVICE_SECRET value", zap.String("secret_value", serviceSecret))
+
+>>>>>>> parnaz-changes
 	err := s.profileMgrClient.LogoutUser(token)
 	if err != nil {
 		utils.Log.Error("Logout failed in ProfileManagerClient", zap.Error(err), zap.String("token_prefix", token[:utils.Min(len(token), 10)])) // استفاده از utils.Min
@@ -130,6 +160,7 @@ func (s *AuthServiceImpl) LogoutUser(token string) error {
 	return nil
 }
 
+<<<<<<< HEAD
 func (s *AuthServiceImpl) VerifyTwoFACode (username, code string)(*model.User, string, *model.CustomClaims, error){
   // 1. یک مدل درخواست برای تأیید 2FA بسازید
     req := model.VerifyTwoFARequest{
@@ -163,4 +194,34 @@ func (s *AuthServiceImpl) VerifyTwoFACode (username, code string)(*model.User, s
         zap.String("username", user.Username),
     )
     return user, token, claims, nil
+=======
+func (s *AuthServiceImpl) VerifyTwoFACode(username, code string) (*model.User, string, *model.CustomClaims, error) {
+
+	req := model.VerifyTwoFARequest{
+		Username: username,
+		Code:     code,
+	}
+
+	user, token, claims, err := s.profileMgrClient.VerifyTwoFACode(req.Username, req.Code)
+
+	if err != nil {
+		utils.Log.Error("2FA verification failed in ProfileManagerClient",
+			zap.String("username", username),
+			zap.Error(err),
+		)
+
+		if errors.Is(err, service.ErrInvalidTwoFACode) {
+			return nil, "", nil, service.ErrInvalidTwoFACode
+		}
+		if errors.Is(err, service.ErrProfileManagerDown) {
+			return nil, "", nil, service.ErrProfileManagerDown
+		}
+		return nil, "", nil, fmt.Errorf("%w: failed to verify 2FA code with profile manager", service.ErrInternalService)
+	}
+
+	utils.Log.Info("User 2FA verified successfully by Profile Manager",
+		zap.String("username", user.Username),
+	)
+	return user, token, claims, nil
+>>>>>>> parnaz-changes
 }

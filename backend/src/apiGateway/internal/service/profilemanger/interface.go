@@ -18,7 +18,10 @@ type ProfileManagerClient interface {
 	VerifyAndEnableTwoFA(userID string, req model.VerifyTwoFARequest) error
 	DisableTwoFA(userID string, req model.DisableTwoFARequest) error
 
+<<<<<<< HEAD
 	// --- User Management Operations (Admin/Owner) ---
+=======
+>>>>>>> parnaz-changes
 	GetUsers() ([]model.User, error)
 	GetUserByID(userID string) (*model.User, error)
 	CreateUser(req model.RegisterRequest) (*model.User, error) 

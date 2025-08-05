@@ -1,6 +1,5 @@
 package model
 
-
 const (
 	RoleAdmin       = "admin"
 	RoleOwner       = "owner"
@@ -48,6 +47,7 @@ const (
 	PermReportViewProfitLoss       = "report:view_profit_loss"
 	PermReportViewBalances         = "report:view_balances"
 	PermReportExportData           = "report:export_data"
+	PermReportImportData		   = "report:import_data"
 
 	PermUserRead              = "user:read"
 	PermUserCreate            = "user:create"
