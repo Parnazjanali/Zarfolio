@@ -6,7 +6,7 @@ import (
 )
 
 type CrmManagerClient interface {
-	GetCustomers() ([]model.Customer, error)
+	GetAllCustomers(ctx context.Context) ([]model.Customer, error)
 	CreateCustomer(ctx context.Context, customer *model.CreateCustomerRequest) (*model.Customer, error)
 	/*	UpdateCustomer(id string, req model.UpdateCustomerRequest) (*model.Customer, error)
 		DeleteCustomer(id string) error

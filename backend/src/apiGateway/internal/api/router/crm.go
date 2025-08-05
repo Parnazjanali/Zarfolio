@@ -21,9 +21,7 @@ func SetUpCrmRoutes(apiGroup fiber.Router, crmHandlerAG *handler.CrmHandler, aut
 	crmGroup := apiGroup.Group("/crm") 
 	utils.Log.Info("Configuring /api/v1/crm protected routes.")
 
-	 crmGroup.Use(authMiddleware.VerifyServiceToken())
-
-	crmGroup.Get("/customers", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomers)     
+	crmGroup.Get("/customers", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetAllCustomers)     
 	crmGroup.Post("/customers", authMiddleware.AuthorizeMiddleware(model.PermCRMCreateCustomer), crmHandlerAG.HandleCreateCustomer)
 	crmGroup.Put("/customers/:id", authMiddleware.AuthorizeMiddleware(model.PermCRMUpdateCustomer), crmHandlerAG.HandleUpdateCustomer)
 	crmGroup.Delete("/customers/:id", authMiddleware.AuthorizeMiddleware(model.PermCRMDeleteCustomer), crmHandlerAG.HandleDeleteCustomer)

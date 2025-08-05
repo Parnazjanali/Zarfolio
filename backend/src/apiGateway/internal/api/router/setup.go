@@ -48,8 +48,8 @@ func SetupAllRoutes(
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
 
-	jwtValidator := utils.NewJWTValidatorImpl("CRM_MANAGER_SERVICE_SECRET", utils.Log)
-
+	jwtValidator := utils.NewJWTValidatorImpl("JWT_SECRET_KEY", utils.Log)
+	
 	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, utils.Log, jwtValidator)
 	if err != nil {
 		// This check is important because NewAuthMiddleware returns an error

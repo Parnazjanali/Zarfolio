@@ -75,7 +75,7 @@ func StartServer(port string) {
 	}
 	utils.Log.Info("ProfileHandlerAG initialized successfully.")
 
-	crmManagerClient, err := crmmanager.NewClient(crmManagerBaseURL)
+	crmManagerClient, err := crmmanager.NewCrmManagerClient(crmManagerBaseURL)
 	if err != nil {
 		utils.Log.Fatal("Failed to initialize CrmManagerClient. Exiting application.", zap.Error(err))
 	}

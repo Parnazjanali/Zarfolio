@@ -4,6 +4,7 @@ import { FaPlus, FaTrashAlt } from 'react-icons/fa';
 import AddGroupModal from '../components/AddGroupModal';
 import './NewCustomerPage.css';
 
+// --- ثابت‌ها و توابع فرمت‌بندی ---
 const initialGroupOptions = [
   "بنکداران (بازار)", "تراشکار", "جواهر", "سازنده", "سرمایه",
   "صندوق", "کارمندان", "متفرقه", "مخارج", "همکار", "ویترین", "کیفی"
@@ -47,13 +48,13 @@ const formatBalanceToPersianWords = (rialAmount, type) => {
   let statusText = '';
   if (type === 'debtor') statusText = 'به ما بدهکار است';
   else if (type === 'creditor') statusText = 'از ما بستانکار است';
-
   if (rialAmount === 0 && statusText) return `صفر تومان ${statusText}`.trim();
   if (rialAmount === 0 && !statusText) return 'صفر تومان';
-  
   const formattedTomanAmount = parseFloat(tomanAmount.toFixed(2)).toLocaleString('fa-IR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return `${formattedTomanAmount} تومان ${statusText}`.trim();
 };
+// --- پایان ثابت‌ها و توابع ---
+
 
 function NewCustomerPage() {
   const [groupOptions, setGroupOptions] = useState(initialGroupOptions);
@@ -69,31 +70,11 @@ function NewCustomerPage() {
     country: defaultCountry, 
     province: defaultProvince, 
     city: (cityOptionsInitial[defaultProvince] && cityOptionsInitial[defaultProvince][0]) || cityOptionsInitial["-- بدون انتخاب --"]?.[0] || '', 
-    birthDate: '', // تاریخ تولد (فارسی)
-    phones: [''], // آرایه شماره تلفن‌ها
-    address: '',
+    birthDate: '',
+    phones: [''], address: '',
     goldBalance: '', goldBalanceType: 'debtor', 
     financialBalance: '', financialBalanceType: 'debtor',
-    currencyBalances: [], // آرایه مانده‌های ارزی
-    // فیلدهای جدید دیگر که ممکن است در فرم باشند:
-    // emailField: '',
-    // websiteField: '',
-    // telField: '',
-    // faxField: '',
-    // companyField: '',
-    // codeeghtesadiField: '',
-    // sabtField: '',
-    // taxIdField: '',
-    // goldRateTypeField: '',
-    // defaultGoldUnitField: '',
-    // defaultGoldUnitRateField: '',
-    // preferredCommunicationField: '',
-    // receiveEmailPromosField: false,
-    // receiveSMSPromosField: false,
-    // statusField: '', // این معمولاً در بک‌اند پیش‌فرض است
-    // lastActivityDateField: '',
-    // assignedEmployeeIdField: '',
-    // internalNotesField: '',
+    currencyBalances: [],
   });
 
   const [displayFinancialBalance, setDisplayFinancialBalance] = useState('');
@@ -104,6 +85,7 @@ function NewCustomerPage() {
 
   const navigate = useNavigate();
 
+  // --- Effects and Handlers for form inputs ---
   useEffect(() => {
     const balanceStr = String(formData.financialBalance);
     if (balanceStr === '' || isNaN(parseInt(balanceStr, 10))) {
@@ -315,62 +297,93 @@ function NewCustomerPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+    const token = localStorage.getItem('authToken'); 
 
     if (!token) {
       alert('Authentication token not found. Please login again.');
-      // Potentially navigate to login page: navigate('/login');
       return;
     }
 
-    // Helper to parse string numbers (potentially with commas) to float, default to 0 if invalid
     const parseFloatOrDefault = (value) => {
       const strValue = String(value).replace(/,/g, '');
       const num = parseFloat(strValue);
       return isNaN(num) ? 0.0 : num;
     };
-
-    let debit = 0;
-    let credit = 0;
-    const financialBalanceFloat = parseFloatOrDefault(formData.financialBalance);
-
-    if (formData.financialBalanceType === 'debtor') {
-      debit = financialBalanceFloat;
-    } else if (formData.financialBalanceType === 'creditor') {
-      credit = financialBalanceFloat;
+    
+   const getNullableString = (value) => {
+    if (value === undefined || value === null) {
+        return null;
     }
-
-    const payload = {
-      national_id: formData.idNumber || '', // Assuming idNumber corresponds to national_id
-      first_name: formData.name,
-      last_name: formData.lastName,
-      account_code: formData.accountCode,
-      debit: debit,
-      credit: credit,
-      // UserID will be set by the backend based on the token
+    const trimmedValue = String(value).trim();
+    return trimmedValue === '' ? null : trimmedValue;
+};
+    
+    const mapBalance = (amount, type) => {
+      if (type === 'debtor') {
+        return parseFloatOrDefault(amount);
+      } else if (type === 'creditor') {
+        return -parseFloatOrDefault(amount);
+      }
+      return 0.0;
     };
 
-    // GoldBalance and CurrencyBalances are not part of the Counterparty model per previous step.
-    // If they were, they would be processed here.
-    // console.log('Data being sent to backend:', payload);
+    const payload = {
+        code: getNullableString(formData.accountCode),
+        nikename: getNullableString(formData.name),
+        name: getNullableString(formData.name),
+        familyName: getNullableString(formData.lastName),
+        company: getNullableString(formData.companyField),
+        
+        mobile: getNullableString(formData.phones[0]),
+        mobile2: formData.phones[1] ? getNullableString(formData.phones[1]) : null,
+        tel: getNullableString(formData.telField),
+        fax: getNullableString(formData.faxField),
+        email: getNullableString(formData.emailField),
+        website: getNullableString(formData.websiteField),
+
+        address: getNullableString(formData.address),
+        postalcode: getNullableString(formData.postalCodeField),
+        shahr: getNullableString(formData.city),
+        ostan: getNullableString(formData.province),
+        keshvar: getNullableString(formData.country),
+        
+        shenasemeli: getNullableString(formData.idNumber),
+        codeeghtesadi: getNullableString(formData.codeeghtesadiField),
+        sabt: getNullableString(formData.sabtField),
+        taxid: getNullableString(formData.taxIdField),
+        
+        initialBalanceToman: mapBalance(formData.financialBalance, formData.financialBalanceType),
+        initialBalanceGold: mapBalance(formData.goldBalance, formData.goldBalanceType),
+
+        goldRateType: getNullableString(formData.goldRateTypeField),
+        defaultGoldUnit: getNullableString(formData.defaultGoldUnitField),
+        defaultGoldUnitRate: parseFloatOrDefault(formData.defaultGoldUnitRateField),
+        customerCategory: getNullableString(formData.customerGroup),
+
+        customerTypes: [], // این باید با یک لیست از CusTypeها پر شود
+        bankAccounts: formData.currencyBalances.length > 0 ? formData.currencyBalances.map(cb => ({
+          bank: getNullableString(cb.currencyType),
+          accountNum: getNullableString(cb.amount),
+        })) : [],
+    };
 
     try {
-       const response = await fetch('/api/v1/crm/customers', { 
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, 
-          },
-          body: JSON.stringify(payload),
-        });
+      const API_BASE_URL = 'http://localhost:8080';
+      const response = await fetch(`${API_BASE_URL}/api/v1/crm/customers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (response.ok) {
         const result = await response.json();
         alert('مشتری جدید با موفقیت ثبت شد!');
         console.log('Customer created successfully:', result);
-        // Reset form (optional, or navigate)
         setFormData({
-          accountCode: '', name: '', lastName: '', idNumber: '', // Added idNumber to reset
+          accountCode: '', name: '', lastName: '', idNumber: '', 
           customerGroup: groupOptions[0],
           country: defaultCountry,
           province: defaultProvince,
@@ -384,7 +397,6 @@ function NewCustomerPage() {
         setDisplayFinancialBalance('');
         setDisplayGoldBalance('');
         setFinancialBalanceText('');
-        // navigate('/customers'); // Optional: navigate to customer list
       } else {
         const errorData = await response.json();
         console.error('Failed to create customer:', errorData);
@@ -402,17 +414,16 @@ function NewCustomerPage() {
       <form onSubmit={handleSubmit} className="new-customer-form-redesigned">
         <div className="form-main-section">
           {/* ستون اول */}
-          <div className="form-column main-column"> {/* کلاس جدید */}
+          <div className="form-column main-column">
             <div className="form-row four-fields">
               <div className="form-group">
                 <label htmlFor="accountCode">کد حساب</label>
                 <div className="input-with-button">
-                  {/* <button type="button" className="icon-button" title="راهنما/جستجو کد حساب">?</button> */}
                   <input type="text" id="accountCode" name="accountCode" value={formData.accountCode} onChange={handleMainFormChange} />
                 </div>
               </div>
               <div className="form-group">
-                <label htmlFor="idNumber">کد/شناسه ملی</label> {/* Added idNumber field */}
+                <label htmlFor="idNumber">کد/شناسه ملی</label>
                 <input type="text" id="idNumber" name="idNumber" value={formData.idNumber} onChange={handleMainFormChange} />
               </div>
               <div className="form-group">
@@ -433,8 +444,6 @@ function NewCustomerPage() {
                 </div>
               </div>
             </div>
-
-            {/* ردیف جدید برای کشور و استان */}
             <div className="form-row two-fields">
                 <div className="form-group">
                     <label htmlFor="country">کشور</label>
@@ -449,7 +458,6 @@ function NewCustomerPage() {
                     </select>
                 </div>
             </div>
-
             <div className="form-group">
               <label htmlFor="city">شهر</label>
               <div className="input-with-button">
@@ -466,7 +474,7 @@ function NewCustomerPage() {
             </div>
           </div>
           {/* ستون دوم */}
-          <div className="form-column side-column"> {/* کلاس جدید */}
+          <div className="form-column side-column">
             <div className="form-group">
               <label>شماره تلفن‌ها</label>
               {formData.phones.map((phone, index) => (
@@ -483,7 +491,6 @@ function NewCustomerPage() {
             </div>
           </div>
         </div>
-
         <div className="form-balance-section">
           <h2 className="section-title">اطلاعات مالی و حساب</h2>
           <div className="balance-subsection-container">

@@ -35,7 +35,7 @@ func InitDB() error {
 		dbUser = "crm_user"
 	}
 	if dbPassword == "" {
-		    dbPassword = "crm_pass" 
+		    dbPassword = "E3wgj02G?SFw" 
 	}
 	if dbName == "" {
 		dbName = "zarfolio"

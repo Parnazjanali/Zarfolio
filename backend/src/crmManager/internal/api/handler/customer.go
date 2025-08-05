@@ -32,7 +32,7 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 		})
 	}
 
-
+	utils.Log.Info("CRM Manager received raw body", zap.ByteString("body", c.Body()))
 	createdCustomer, err := h.crmSvc.CreateCustomer(c.Context(), &req)
 	if err != nil {
 		utils.Log.Error("Failed to create customer via service layer", zap.Error(err))
@@ -55,7 +55,16 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(createdCustomer)
 }
 
-func (h *CrmHandler) HandleGetCustomers(c *fiber.Ctx) error {
-	// Implement the logic for getting customers
-	return nil
+func (h *CrmHandler) HandleGetAllCustomers(c *fiber.Ctx) error {
+	utils.Log.Info("Handling request to get all customers.")
+	customers, err := h.crmSvc.GetAllCustomers(c.Context())
+	if err != nil {
+		utils.Log.Error("Failed to get customers via service layer", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Failed to get customers due to an internal error.",
+			Details: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(customers)
 }

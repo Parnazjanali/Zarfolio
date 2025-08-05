@@ -14,12 +14,12 @@ import (
 )
 
 type AuthMiddleware struct {
-	permissionService authz.PermissionService 
+	permissionService authz.PermissionService
 	jwtValidator      utils.JWTValidator
 	logger            *zap.Logger
 }
 
-func NewAuthMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthMiddleware, error) { 
+func NewAuthMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthMiddleware, error) {
 	if permService == nil {
 		return nil, fmt.Errorf("permissionService cannot be nil for AuthMiddleware")
 	}
@@ -40,6 +40,7 @@ func NewAuthMiddleware(permService authz.PermissionService, logger *zap.Logger, 
 func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
+		m.logger.Debug("Received Authorization header", zap.String("header", authHeader))
 		if authHeader == "" {
 			m.logger.Warn("Authorization header missing for protected route",
 				zap.String("path", c.OriginalURL()), zap.String("required_perm", requiredPermission))
@@ -47,12 +48,13 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Ha
 		}
 
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
+		m.logger.Debug("Received token string", zap.String("token", tokenString))
 		if tokenString == "" {
 			m.logger.Warn("Bearer token missing for protected route",
+
 				zap.String("path", c.OriginalURL()), zap.String("required_perm", requiredPermission))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Bearer token missing."})
 		}
-
 		claims, err := m.jwtValidator.ValidateToken(tokenString)
 		if err != nil {
 			m.logger.Error("Invalid or expired token for protected route",
@@ -60,6 +62,7 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Ha
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Invalid or expired token", Details: err.Error()})
 		}
 
+		c.Locals("userToken", tokenString)
 		c.Locals("userID", claims.UserID)
 		c.Locals("username", claims.Username)
 
@@ -84,7 +87,7 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.Ha
 	}
 }
 
-func (m *AuthMiddleware) VerifyServiceToken() fiber.Handler {
+/*func (m *AuthMiddleware) VerifyServiceToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		internalJWTString := c.Get("X-Internal-JWT")
 		if internalJWTString == "" {
@@ -113,3 +116,4 @@ func (m *AuthMiddleware) VerifyServiceToken() fiber.Handler {
 		return c.Next()
 	}
 }
+*/

@@ -10,11 +10,12 @@ import (
 	"crm-gold/internal/utils"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type CusService interface {
 	CreateCustomer(ctx context.Context, customer *model.CreateCustomerRequest) (*model.Customer, error)
-	GetCustomers(ctx context.Context) ([]model.Customer, error)
+	GetAllCustomers(ctx context.Context) ([]model.Customer, error)
 }
 
 type customerServiceImpl struct {
@@ -51,11 +52,24 @@ func (s *customerServiceImpl) CreateCustomer(ctx context.Context, req *model.Cre
 	if req.Shenasemeli == "" {
 		return nil, errors.New("customer shenasemeli is required")
 	}
+	if req.Code == "" {
+		newCode, err := s.generateUniqueCustomerCode(ctx, req.BIDID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate unique customer code: %w", err)
+		}
+		req.Code = newCode
+	}
 
 	existingCustomer, err := s.customerRepo.GetCustomerByUniqueFields(ctx, req.Code, req.Nikename, req.Mobile, req.Shenasemeli, req.BIDID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check for existing customer: %w", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+		} else {
+
+			return nil, fmt.Errorf("failed to check for existing customer: %w", err)
+		}
 	}
+
 	if existingCustomer != nil {
 		return nil, errors.New("customer with provided unique fields already exists")
 	}
@@ -134,9 +148,10 @@ func (s *customerServiceImpl) generateUniqueCustomerCode(ctx context.Context, bi
 	return "", errors.New("failed to generate a unique customer code after multiple attempts")
 }
 
-func (s *customerServiceImpl) GetCustomers(ctx context.Context) ([]model.Customer, error) {
+func (s *customerServiceImpl) GetAllCustomers(ctx context.Context) ([]model.Customer, error) {
+
 	s.logger.Info("Fetching all customers from service layer.")
-	customers, err := s.customerRepo.GetAllCustomers(ctx) // <-- این متد را در ریپازیتوری پیاده‌سازی کنید
+	customers, err := s.customerRepo.GetAllCustomers(ctx) 
 	if err != nil {
 		s.logger.Error("Failed to fetch customers from database", zap.Error(err))
 		return nil, fmt.Errorf("failed to fetch customers: %w", err)

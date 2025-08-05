@@ -10,6 +10,9 @@ import (
 
     "gold-api/internal/model"
 )
+type ContextKey string
+
+const UserTokenContextKey ContextKey = "userToken"
 
 type JWTValidator interface {
     ValidateToken(token string) (*model.CustomClaims, error)

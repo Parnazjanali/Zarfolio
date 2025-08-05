@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
@@ -17,6 +18,13 @@ func main() {
 	defer utils.Log.Sync()
 
 	utils.Log.Info("Starting CRM Manager Service...")
+
+	err := godotenv.Load()
+	if err != nil {
+		utils.Log.Fatal("Error loading .env file: %v", zap.String("error", err.Error()))
+	}
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	utils.Log.Info("Loaded JWT_SECRET_KEY", zap.String("key", jwtSecretKey), zap.Int("length", len(jwtSecretKey)))
 
 	if err := postgresDb.InitDB(); err != nil {
 		utils.Log.Fatal("Failed to initialize database", zap.Error(err))

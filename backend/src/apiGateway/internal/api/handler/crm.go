@@ -3,6 +3,7 @@ package handler
 import (
 	"gold-api/internal/model"
 	"gold-api/internal/service/crm"
+	"gold-api/internal/utils"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +15,6 @@ type CrmHandler struct {
 	logger *zap.Logger
 }
 
-// NewCrmHandler سازنده‌ای برای CrmHandler است.
 func NewCrmHandler(crmSvc crm.CrmService, logger *zap.Logger) *CrmHandler {
 	if crmSvc == nil {
 		logger.Fatal("crmSvc cannot be nil for CrmHandler.")
@@ -25,10 +25,22 @@ func NewCrmHandler(crmSvc crm.CrmService, logger *zap.Logger) *CrmHandler {
 	return &CrmHandler{crmSvc: crmSvc, logger: logger}
 }
 
-func (h *CrmHandler) HandleGetCustomers(c *fiber.Ctx) error {
-	// Implementation for getting customers
-	return nil
+func (h *CrmHandler) HandleGetAllCustomers(c *fiber.Ctx) error {
+	h.logger.Info("Received request to get all customers.")
+
+	customers, err := h.crmSvc.GetAllCustomers(c.Context())
+	if err != nil {
+		h.logger.Error("Failed to fetch customers from service layer", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Failed to retrieve customers.",
+			Details: err.Error(),
+		})
+	}
+
+	return c.JSON(customers)
+
 }
+
 func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 	userID, ok := c.Locals("userID").(string)
 	if !ok || userID == "" {
@@ -39,18 +51,18 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Unauthorized: User roles missing."})
 	}
 	h.logger.Info("Creating customer", zap.String("user_id", userID), zap.Strings("user_roles", userRoles))
-	
+
 	var req model.CreateCustomerRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		h.logger.Error("Failed to parse request body for customer creation", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
-			Message: "Invalid request body",
-			Details: err.Error(),
-		})
+		h.logger.Error("Failed to parse request body from client", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid request body", Details: err.Error()})
 	}
+	utils.Log.Info("API Gateway received model", zap.Any("request", req))
 
-	createdCustomer, err := h.crmSvc.CreateCustomer(c.Context(), &req) // <-- اصلاح شد
+	h.logger.Info("Successfully parsed request body from client", zap.Any("request_body", req))
+
+	createdCustomer, err := h.crmSvc.CreateCustomer(c.Context(), &req)
 	if err != nil {
 		h.logger.Error("Failed to create customer via service layer", zap.Error(err))
 
@@ -59,7 +71,6 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 				Message: "Customer with this code or mobile already exists.",
 			})
 		}
-
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
 			Message: "Failed to create customer due to an internal error.",
 			Details: err.Error(),

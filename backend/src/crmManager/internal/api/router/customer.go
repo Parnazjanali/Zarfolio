@@ -2,14 +2,14 @@ package router
 
 import (
 	"crm-gold/internal/api/handler"
+	"crm-gold/internal/api/middleware"
 	"crm-gold/internal/utils"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-
 )
 
-func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler) error {
+func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMiddleware *middleware.AuthZMiddleware) error {
 	if app == nil {
 		return fmt.Errorf("fiber app instance cannot be nil in CrmManager.")
 	}
@@ -17,10 +17,10 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler) error {
 		return fmt.Errorf("crmHandler is nil in CrmManager's SetUpCustomerRoutes.")
 	}
 
-	crmGroup := app.Group("/crm") 
+	crmGroup := app.Group("/crm")
 	utils.Log.Info("Setting up customer routes in CrmManager...")
 
-	crmGroup.Get("/customer", crmHandler.HandleGetCustomers)
+	crmGroup.Get("/customers", crmHandler.HandleGetAllCustomers)
 	crmGroup.Post("/customers", crmHandler.HandleCreateCustomer)
 	/*crmGroup.Put("/customers/:id", crmHandler.HandleUpdateCustomer)
 	crmGroup.Delete("/customers/:id", crmHandler.HandleDeleteCustomer)
@@ -31,7 +31,7 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler) error {
 
 	crmGroup.Post("/customers/search", crmHandler.HandleSearchCustomers)
 	crmGroup.Post("/customers/filter", crmHandler.HandleFilterCustomers)
-	crmGroup.Get("/customers/salespersons", crmHandler.HandleGetCustomersBySalesperson) 
+	crmGroup.Get("/customers/salespersons", crmHandler.HandleGetCustomersBySalesperson)
 
 
 	crmGroup.Post("/customers/group-update", crmHandler.HandleGroupUpdateCustomers)
@@ -51,7 +51,6 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler) error {
 
 	crmGroup.Get("/customers/:code/balance", crmHandler.HandleGetCustomerBalance)
 	crmGroup.Get("/customers/:code/bank-cards", crmHandler.HandleGetCustomerCard)*/
-
 
 	utils.Log.Info("Customer routes set up successfully in CrmManager.")
 	return nil
