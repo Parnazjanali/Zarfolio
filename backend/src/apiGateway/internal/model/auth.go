@@ -39,19 +39,16 @@ type VerifyTwoFARequest struct {
 	// You might also need a session ID or temporary token here if it's a multi-step process
 }
 
-// NEW: Request for disabling 2FA (might require password for security)
 type DisableTwoFARequest struct {
 	Password string `json:"password"` // User's password to confirm disabling 2FA
 	Code     string `json:"code"`     // Current 2FA code to confirm
 }
 
-// NEW: Request for changing username
 type ChangeUsernameRequest struct {
 	NewUsername string `json:"new_username"`
 	Password    string `json:"password"` // Current password for re-authentication
 }
 
-// NEW: Request for changing password
 type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`

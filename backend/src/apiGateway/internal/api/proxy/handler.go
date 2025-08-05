@@ -47,17 +47,13 @@ func (h *ProxyHandler) HandleStaticFileProxy(targetBaseURL string) fiber.Handler
 			zap.String("target_url", targetURL),
 			zap.String("method", c.Method()))
 
-		// ایجاد یک درخواست HTTP جدید برای ارسال به سرویس مقصد
-		// برای GET requests، بدنه null است.
+		
 		proxyReq, err := http.NewRequest(http.MethodGet, targetURL, nil)
 		if err != nil {
 			h.logger.Error("Failed to create proxy request for static file", zap.Error(err))
 			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Proxy error: Could not create internal request."})
 		}
 
-		// کپی کردن هدرهای اصلی درخواست از کلاینت به درخواست پراکسی
-		// این شامل هدرهایی مانند "Accept", "User-Agent" و ... می‌شود.
-		// هدرهای "Host", "Content-Length", "Connection", "Accept-Encoding" معمولاً توسط Go's http.Client مدیریت می‌شوند یا نباید فوروارد شوند.
 		for key, values := range c.GetReqHeaders() {
 			if key == "Host" || key == "Content-Length" || key == "Connection" || key == "Accept-Encoding" {
 				continue
@@ -67,11 +63,10 @@ func (h *ProxyHandler) HandleStaticFileProxy(targetBaseURL string) fiber.Handler
 			}
 		}
 
-		// ارسال درخواست پراکسی به سرویس مقصد
 		resp, err := h.httpClient.Do(proxyReq)
 		if err != nil {
 			h.logger.Error("Failed to execute proxy request for static file", zap.Error(err), zap.String("target_url", targetURL))
-			// تفکیک خطاهای شبکه/Timeout برای پیام بهتر
+
 			if os.IsTimeout(err) {
 				return c.Status(fiber.StatusGatewayTimeout).JSON(model.ErrorResponse{Message: "Proxy error: Backend service timed out."})
 			}
@@ -96,9 +91,6 @@ func (h *ProxyHandler) HandleStaticFileProxy(targetBaseURL string) fiber.Handler
 	}
 }
 
-// ForwardRequest همانطور که قبلا بحث کردیم، یک متد پراکسی عمومی تر است که برای سایر هندلرها
-// (مانند AccountHandlerAG و ProfileHandlerAG) می تواند به جای منطق پراکسی دستی استفاده شود.
-// این متد درست است و باید در همین فایل باقی بماند.
 func (h *ProxyHandler) ForwardRequest(c *fiber.Ctx, targetBaseURL string, targetPath string, requiresAuth bool) error {
     fullTargetURL := fmt.Sprintf("%s%s", targetBaseURL, targetPath)
 

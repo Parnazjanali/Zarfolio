@@ -50,4 +50,8 @@ func SetupAllRoutes(app *fiber.App, authHandler *handler.AuthHandler, accountHan
 	})
 
 	return nil
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> parnaz-changes

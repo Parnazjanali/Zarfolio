@@ -2,15 +2,13 @@ package server
 
 import (
 	"fmt"
+	"gold-api/internal/api/authz"
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/api/proxy"
-	"gold-api/internal/authz"
 	"gold-api/internal/model"
 	"gold-api/internal/utils"
 	"os"
-	"path/filepath" // اضافه شد برای کار با پسوند فایل
-	"time"          // اضافه شد برای ساخت نام منحصر به فرد
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -20,7 +18,8 @@ func SetupAllRoutes(
 	app *fiber.App,
 	authHandler *handler.AuthHandler,
 	accountHandlerAG *handler.AccountHandlerAG,
-	permissionService *authz.PermissionService,
+	crmHandlerAG *handler.CrmHandler,
+	permissionService authz.PermissionService,
 	profileHandlerAG *handler.ProfileHandler,
 	proxyHandler *proxy.ProxyHandler,
 ) error {
@@ -32,6 +31,9 @@ func SetupAllRoutes(
 	}
 	if accountHandlerAG == nil {
 		return fmt.Errorf("AccountHandlerAG is nil in SetupAllRoutes")
+	}
+	if crmHandlerAG == nil {
+		return fmt.Errorf("CrmHandlerAG is nil in SetupAllRoutes")
 	}
 	if permissionService == nil {
 		return fmt.Errorf("PermissionService is nil in SetupAllRoutes")
@@ -46,44 +48,15 @@ func SetupAllRoutes(
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
 
-	// --- مسیر آپلود عکس با آدرس جدید ---
-	apiV1.Post("/upload-image", func(c *fiber.Ctx) error {
-		file, err := c.FormFile("file")
-		if err != nil {
-			utils.Log.Error("Cannot read file from form", zap.Error(err))
-			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "فایل در درخواست یافت نشد."})
-		}
-
-		// مسیر جدید برای ذخیره‌سازی فایل‌ها مطابق با درخواست شما
-		uploadPath := "./frontend/src/assets/images/"
-
-		// اطمینان از وجود پوشه
-		if err := os.MkdirAll(uploadPath, 0755); err != nil {
-			utils.Log.Error("Cannot create upload directory", zap.Error(err))
-			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "خطا در ساخت پوشه آپلود."})
-		}
-
-		// ایجاد یک نام منحصر به فرد برای فایل برای جلوگیری از جایگزین شدن فایل‌های همنام
-		newFileName := fmt.Sprintf("%d-%s", time.Now().UnixNano(), file.Filename)
-		destination := filepath.Join(uploadPath, newFileName)
-
-		// ذخیره فایل در مسیر مورد نظر
-		if err := c.SaveFile(file, destination); err != nil {
-			utils.Log.Error("Failed to save file", zap.Error(err))
-			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "خطا در ذخیره‌سازی فایل."})
-		}
-
-		// برگرداندن آدرس عمومی جدید فایل برای استفاده در Frontend
-		publicFilePath := "/src/assets/images/" + newFileName
-		utils.Log.Info("Image uploaded successfully", zap.String("path", publicFilePath))
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message":  "فایل با موفقیت آپلود شد.",
-			"filePath": publicFilePath,
-		})
-	})
-	// --- پایان بخش آپلود عکس ---
-
-	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
+	jwtValidator := utils.NewJWTValidatorImpl("JWT_SECRET_KEY", utils.Log)
+	
+	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, utils.Log, jwtValidator)
+	if err != nil {
+		// This check is important because NewAuthMiddleware returns an error
+		utils.Log.Error("Failed to initialize AuthMiddleware", zap.Error(err))
+		return fmt.Errorf("failed to initialize auth middleware: %w", err)
+	}
+	utils.Log.Info("AuthMiddleware initialized successfully.")
 
 	if err := SetUpAuthRoutes(apiV1, authHandler, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up auth routes: %w", err)
@@ -93,16 +66,25 @@ func SetupAllRoutes(
 		return fmt.Errorf("failed to set up account routes: %w", err)
 	}
 
-	if err := SetUpUserManagementRoutes(apiV1, profileHandlerAG, authMiddleware); err != nil {
-		return fmt.Errorf("failed to set up user management routes: %w", err)
+	if err := SetUpCrmRoutes(apiV1, crmHandlerAG, authMiddleware); err != nil {
+		return fmt.Errorf("failed to set up CRM routes: %w", err)
 	}
 
+	// Proxy routes
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerServiceURL != "" {
 		apiV1.Get("/uploads/*", proxyHandler.HandleStaticFileProxy(profileManagerServiceURL))
 		utils.Log.Info("Configured GET proxy for /api/v1/uploads/* to profileManager", zap.String("profile_manager_url", profileManagerServiceURL))
 	} else {
 		utils.Log.Warn("PROFILE_MANAGER_BASE_URL not set in env. Cannot configure proxy for profile pictures/uploads.")
+	}
+
+	crmManagerServiceURL := os.Getenv("CRM_MANAGER_BASE_URL")
+	if crmManagerServiceURL != "" {
+		apiV1.Get("/crm/uploads/*", proxyHandler.HandleStaticFileProxy(crmManagerServiceURL))
+		utils.Log.Info("Configured GET proxy for /api/v1/crm/uploads/* to CRM Manager", zap.String("crm_manager_url", crmManagerServiceURL))
+	} else {
+		utils.Log.Warn("CRM_MANAGER_BASE_URL not set in env. Cannot configure proxy for CRM uploads.")
 	}
 
 	app.Use(func(c *fiber.Ctx) error {

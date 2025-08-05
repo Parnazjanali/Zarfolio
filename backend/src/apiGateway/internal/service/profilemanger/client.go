@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+<<<<<<< HEAD
 	"go.uber.org/zap"
 )
 
@@ -35,6 +36,28 @@ func NewClient(baseURL string) (ProfileManagerClient, error) { // این تاب�
     }
     
     return concreteClient, nil 
+=======
+	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
+)
+
+type profileManagerHTTPClient struct {
+	baseURL string
+	client  *http.Client
+}
+
+func NewClient(baseURL string) (ProfileManagerClient, error) {
+	if baseURL == "" {
+		return nil, fmt.Errorf("ProfileManagerClient base URL cannot be empty")
+	}
+
+	concreteClient := &profileManagerHTTPClient{
+		baseURL: baseURL,
+		client:  &http.Client{Timeout: 10 * time.Second},
+	}
+
+	return concreteClient, nil
+>>>>>>> parnaz-changes
 }
 
 func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error) {
@@ -55,7 +78,11 @@ func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) { // Changed to os.ErrDeadlineExceeded
 			return nil, "", nil, fmt.Errorf("%w: timeout connecting to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
 		}
+<<<<<<< HEAD
 		if errors.Is(err, syscall.ECONNREFUSED) { 
+=======
+		if errors.Is(err, syscall.ECONNREFUSED) {
+>>>>>>> parnaz-changes
 			return nil, "", nil, fmt.Errorf("%w: connection refused to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
 		}
 		return nil, "", nil, fmt.Errorf("failed to send request to profile manager: %w", err)
@@ -101,8 +128,15 @@ func (c *profileManagerHTTPClient) AuthenticateUser(username, password string) (
 		UserID:   authResp.User.ID,
 		Username: authResp.User.Username,
 		Roles:    authResp.User.Roles,
+<<<<<<< HEAD
 	}
 
+=======
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Unix(authResp.Exp, 0)),
+		},
+	}
+>>>>>>> parnaz-changes
 	return authResp.User, authResp.Token, claims, nil
 }
 
@@ -139,7 +173,11 @@ func (c *profileManagerHTTPClient) RegisterUser(req model.RegisterRequest) error
 		return fmt.Errorf("failed to read profile manager registration response body: %w", err)
 	}
 
+<<<<<<< HEAD
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK { // Register might return 200 or 201
+=======
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+>>>>>>> parnaz-changes
 		var errorResp model.ErrorResponse
 		if unmarshalErr := json.Unmarshal(respBody, &errorResp); unmarshalErr == nil && errorResp.Message != "" {
 			utils.Log.Error("Profile Manager returned error response for registration", zap.Int("status", resp.StatusCode), zap.String("message", errorResp.Message), zap.String("details", errorResp.Details))
@@ -170,6 +208,7 @@ func (c *profileManagerHTTPClient) LogoutUser(token string) error {
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
 
+<<<<<<< HEAD
 	resp, err := c.client.Do(httpReq)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
@@ -187,13 +226,46 @@ func (c *profileManagerHTTPClient) LogoutUser(token string) error {
 		utils.Log.Error("Failed to read profile manager logout response body", zap.Error(err))
 		return fmt.Errorf("failed to read response body: %w", err) // Return error if reading body fails
 	}
+=======
+	internalServiceSecret := os.Getenv("PROFILE_MANAGER_SERVICE_SECRET")
+	if internalServiceSecret == "" {
+		return fmt.Errorf("PROFILE_MANAGER_SERVICE_SECRET environment variable is not set for internal communication")
+	}
+	httpReq.Header.Set("X-Service-Secret", internalServiceSecret) 
+	utils.Log.Info("ProfileManagerHTTPClient: Sending logout request to Profile Manager",
+		zap.String("url", c.baseURL+"/auth/logout"),
+		zap.String("token_prefix", token[:utils.Min(len(token), 10)]),
+	)
+		resp, err := c.client.Do(httpReq)
+		if err != nil {
+			utils.Log.Error("ProfileManagerHTTPClient: Error sending logout request", zap.Error(err))
+			if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
+				return fmt.Errorf("%w: timeout connecting to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+			}
+			if errors.Is(err, syscall.ECONNREFUSED) {
+				return fmt.Errorf("%w: connection refused to profile manager service at %s", service.ErrProfileManagerDown, c.baseURL)
+			}
+			return fmt.Errorf("failed to send logout request to profile manager: %w", err)
+		}
+		defer resp.Body.Close()
+		utils.Log.Info("ProfileManagerHTTPClient: Received response from Profile Manager", zap.Int("status", resp.StatusCode), zap.String("token_prefix", token[:utils.Min(len(token), 10)]))
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			utils.Log.Error("Failed to read profile manager logout response body", zap.Error(err))
+			return fmt.Errorf("failed to read response body: %w", err)
+		}
+>>>>>>> parnaz-changes
 
 	if resp.StatusCode != http.StatusOK {
 		var errorResp model.ErrorResponse
 		if unmarshalErr := json.Unmarshal(respBody, &errorResp); unmarshalErr == nil && errorResp.Message != "" {
 			utils.Log.Error("Profile Manager returned error response for logout", zap.Int("status", resp.StatusCode), zap.String("message", errorResp.Message), zap.String("details", errorResp.Details))
 			if resp.StatusCode == http.StatusUnauthorized {
+<<<<<<< HEAD
 				return fmt.Errorf("%w: %s", service.ErrInvalidCredentials, errorResp.Message) // Use ErrInvalidCredentials
+=======
+				return fmt.Errorf("%w: %s", service.ErrInvalidCredentials, errorResp.Message)
+>>>>>>> parnaz-changes
 			}
 			return fmt.Errorf("profile manager logout failed: %s (%d)", errorResp.Message, resp.StatusCode)
 		} else {
@@ -208,10 +280,15 @@ func (c *profileManagerHTTPClient) LogoutUser(token string) error {
 	return nil
 }
 
+<<<<<<< HEAD
 // --- New methods to implement based on the ProfileManagerClient interface ---
 
 func (c *profileManagerHTTPClient) RequestPasswordReset(email string) error {
 	// Implement HTTP request to Profile Manager's /auth/password/request-reset endpoint
+=======
+func (c *profileManagerHTTPClient) RequestPasswordReset(email string) error {
+
+>>>>>>> parnaz-changes
 	reqBody := map[string]string{"email": email}
 	body, err := json.Marshal(reqBody)
 	if err != nil {
@@ -255,8 +332,14 @@ func (c *profileManagerHTTPClient) RequestPasswordReset(email string) error {
 }
 
 func (c *profileManagerHTTPClient) ResetPassword(token, newPassword string) error {
+<<<<<<< HEAD
 	// Implement HTTP request to Profile Manager's /auth/password/reset endpoint
 	reqBody := model.ResetPasswordRequest{Token: token, NewPassword: newPassword}
+=======
+
+	reqBody := model.ResetPasswordRequest{Token: token, NewPassword: newPassword}
+	
+>>>>>>> parnaz-changes
 	body, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal reset password body: %w", err)

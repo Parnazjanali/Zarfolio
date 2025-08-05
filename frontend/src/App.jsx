@@ -5,6 +5,7 @@ import { ConfigProvider, theme, FloatButton, Layout, Switch, App as AntApp } fro
 import { PlusOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { FaFileInvoiceDollar, FaUserPlus, FaTags, FaRobot } from 'react-icons/fa';
 
+<<<<<<< HEAD
 // +++ خط ۱: وارد کردن مدیر داده مرکزی +++
 import { ApiDataProvider } from './context/ApiDataProvider'; 
 
@@ -16,6 +17,16 @@ import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
 
+=======
+import LoginPage from './pages/LoginPage.jsx';
+import RequestPasswordResetPage from './pages/RequestPasswordResetPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
+import TwoFAVerifyPage from './pages/TwoFAVerifyPage.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import './App.css';
+
+>>>>>>> parnaz-changes
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage.jsx'));
 const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage.jsx'));
@@ -58,7 +69,11 @@ const AvatarSettings = lazy(() => import('./pages/settings/AvatarSettings.jsx'))
 const LogsViewer = lazy(() => import('./pages/settings/LogsViewer.jsx'));
 const ExtraCurrencies = lazy(() => import('./pages/settings/ExtraCurrencies.jsx'));
 const PriceBoardPage = lazy(() => import('./pages/settings/PriceBoardPage.jsx'));
+<<<<<<< HEAD
 const PublicPriceBoard = lazy(() => import('./pages/public/PublicPriceBoard.jsx'));
+=======
+const PublicPriceBoard = lazy(() => import('./pages/public/PublicPriceBoard.jsx')); // ++ اضافه شد
+>>>>>>> parnaz-changes
 
 function BackgroundManager() {
   const location = useLocation();
@@ -73,13 +88,24 @@ function BackgroundManager() {
 
 function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThemeChange, currentTheme }) {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
+=======
+  // +++ خط ۱: افزودن استیت برای کنترل انیمیشن +++
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+
+  // محاسبه دقیق موقعیت دکمه هوش مصنوعی
+>>>>>>> parnaz-changes
   const speedDialBaseBottom = 30;
   const mainFabHeight = 56;
   const spacingBetweenButtons = 16;
   const closedPosition = speedDialBaseBottom + mainFabHeight + spacingBetweenButtons;
+<<<<<<< HEAD
   const openPosition = closedPosition + (3 * 40) + (2 * 16);
+=======
+  const openPosition = closedPosition + (3 * 40) + (2 * 16); // 3 آیتم با ارتفاع 40 و 2 مارجین 16
+>>>>>>> parnaz-changes
   const aiButtonBottom = isSpeedDialOpen ? openPosition : closedPosition;
 
   return (
@@ -92,6 +118,10 @@ function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThe
         <Layout.Content style={{ margin: '16px', overflow: 'initial' }}> {children} </Layout.Content>
       </Layout>
       
+<<<<<<< HEAD
+=======
+      {/* +++ خط ۲: افزودن دکمه شناور هوش مصنوعی به صورت مستقل +++ */}
+>>>>>>> parnaz-changes
       <FloatButton
         icon={<FaRobot />}
         tooltip={{ title: "دستیار هوشمند", placement: "right" }}
@@ -103,13 +133,22 @@ function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThe
         }}
       />
       
+<<<<<<< HEAD
+=======
+      {/* +++ خط ۳: اصلاح تولتیپ و افزودن onOpenChange به کد اصلی شما +++ */}
+>>>>>>> parnaz-changes
       <FloatButton.Group
         trigger="click"
         type="primary"
         style={{ bottom: 30, left: 30 }}
         icon={<PlusOutlined />}
+<<<<<<< HEAD
         tooltip={{ title: "ثبت جدید", placement: "right" }}
         onOpenChange={setIsSpeedDialOpen}
+=======
+        tooltip={{ title: "ثبت جدید", placement: "right" }} // تولتیپ به راست منتقل شد
+        onOpenChange={setIsSpeedDialOpen} // برای کنترل انیمیشن
+>>>>>>> parnaz-changes
       >
         <FloatButton icon={<FaTags />} tooltip={{ title: "افزودن اتیکت", placement: "right" }} onClick={() => navigate('/etiket')} />
         <FloatButton icon={<FaFileInvoiceDollar />} tooltip={{ title: "فاکتور جدید", placement: "right" }} onClick={() => navigate('/invoices/new')} />
@@ -132,6 +171,7 @@ function App() {
   return (
     <ConfigProvider theme={antdAppTheme} direction="rtl">
       <AntApp>
+<<<<<<< HEAD
         <ApiDataProvider>
           <BackgroundManager />
           <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
@@ -202,6 +242,77 @@ function App() {
             </Routes>
           </Suspense>
         </ApiDataProvider>
+=======
+        <BackgroundManager />
+        <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
+            <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            {/* ++ مسیر جدید برای تابلوی قیمت عمومی ++ */}
+            <Route path="/b/:vanityUrl/prices" element={<PublicPriceBoard />} />
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <MainLayout isSidebarCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} onThemeChange={setCurrentTheme} currentTheme={currentTheme} >
+                  <Routes>
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="customers" element={<CustomersPage />} />
+                    <Route path="customers/new" element={<NewCustomerPage />} />
+                    <Route path="customer/:customerId" element={<CustomerDetailPage />} />
+                    <Route path="invoices" element={<InvoicesPage />} />
+                    <Route path="invoices/new" element={<NewInvoicePage />} />
+                    <Route path="inventory" element={<InventoryPage />} />
+                    <Route path="etiket" element={<EtiketPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="tasks" element={<TasksBoardPage />} />
+                    <Route path="account/settings" element={<AccountManagementPage />} />
+                    <Route path="settings/system" element={<SystemSettingsPage />} />
+                    <Route path="settings/business" element={<BusinessSettings />} />
+                    <Route path="settings/users" element={<UserRolls />} />
+                    <Route path="settings/users/permissions/:email" element={<UserPermissions />} />
+                    <Route path="settings/print" element={<PrintSettings />} />
+                    <Route path="settings/tax" element={<TaxSettings />} />
+                    <Route path="settings/avatar" element={<AvatarSettings />} />
+                    <Route path="settings/logs" element={<LogsViewer />} />
+                    <Route path="settings/currencies" element={<ExtraCurrencies />} />
+                    <Route path="settings/price-board" element={<PriceBoardPage />} />
+                    <Route path="bank-accounts" element={<BankAccountsPage />} />
+                    <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
+                    <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
+                    <Route path="bank-accounts/detail/:id" element={<BankAccountDetailPage />} />
+                    <Route path="bank-cards" element={<BankCardsPage />} />
+                    
+                    <Route path="funds" element={<FundsPage />} />
+                    <Route path="funds/new" element={<NewFundPage />} />
+                    <Route path="funds/edit/:id" element={<NewFundPage />} />
+                    <Route path="funds/statement/:code" element={<FundStatementPage />} />
+                    
+                    <Route path="cheques" element={<ChequesPage />} />
+                    <Route path="cheques/received/new" element={<NewReceivedChequePage />} />
+                    <Route path="cheques/received/edit/:id" element={<NewReceivedChequePage />} />
+                    <Route path="cheques/issued/new" element={<NewIssuedChequePage />} />
+                    <Route path="cheques/issued/edit/:id" element={<NewIssuedChequePage />} />
+                    <Route path="cheques/transfer/:id" element={<ChequeTransferPage />} />
+
+                    <Route path="transfers" element={<TransfersPage />} />
+                    <Route path="transfers/new" element={<NewTransferPage />} />
+                    <Route path="transfers/edit/:id" element={<NewTransferPage />} />
+
+                    <Route path="ai-assistant" element={<AiAssistantPage />} />
+                    
+                    <Route path="reports/bank-statement" element={<BankAccountStatementPage />} />
+                    <Route path="reports/bank-statement/:code" element={<BankAccountStatementPage />} />
+                    
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                  </Routes>
+                </MainLayout>
+              </ProtectedRoute>
+            }/>
+            <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+          </Routes>
+        </Suspense>
+>>>>>>> parnaz-changes
       </AntApp>
     </ConfigProvider>
   );

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
 
 @keyframes spin {
@@ -319,3 +320,286 @@ body {
 .analog-clock .minute-hand { z-index: 4; height: 6px; width: 40%; left: 10%; }
 .analog-clock .second-hand { z-index: 5; background: var(--accent-primary); width: 45%; height: 2px; left: 5%; }
 .analog-clock .center-dot { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: var(--text-secondary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 6; }
+=======
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+
+:root {
+    --primary-text: #e0e0e0;
+    --secondary-text: #bdc3c7;
+    --highlight-color: #ffd700;
+    --bg-gradient: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+    --item-bg: rgba(0, 0, 0, 0.2);
+    --item-hover-bg: rgba(0, 0, 0, 0.35);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --color-up: #27ae60;
+    --color-down: #c0392b;
+    --color-up-bg: rgba(39, 174, 96, 0.2);
+    --color-down-bg: rgba(192, 57, 43, 0.2);
+}
+
+.aramis-board-container {
+    direction: rtl;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: var(--bg-gradient);
+    color: var(--primary-text);
+    font-family: 'Vazirmatn', sans-serif;
+    overflow: hidden;
+    position: relative;
+}
+
+/* --- Sidebar (Left) --- */
+.left-sidebar {
+    width: 240px;
+    background-color: var(--item-bg);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    border-right: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.logo-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--highlight-color);
+}
+
+.time-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.time-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: var(--primary-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* --- Analog Clock --- */
+.analog-clock {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #2c3e50;
+    border: 3px solid var(--secondary-text);
+    position: relative;
+}
+.hand {
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    top: 50%;
+    left: 0;
+    background-color: #ecf0f1;
+    transform-origin: 100% 50%;
+    transition: transform 0.5s;
+}
+.hour-hand { width: 35%; left: 15%; height: 3px; background-color: var(--highlight-color); }
+.minute-hand { width: 45%; left: 5%; }
+.second-hand { height: 1.5px; background-color: #e74c3c; transition: none; }
+.center-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1.5px solid #ecf0f1;
+    z-index: 10;
+}
+
+/* Ticker & Weather Styles */
+.ticker, .weather-widget {
+    width: 100%;
+    background-color: var(--item-bg);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+}
+.ticker-title, .weather-location {
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
+    color: var(--secondary-text);
+    margin-bottom: 0.25rem;
+}
+.ticker-value, .weather-temp {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+    font-weight: 700;
+    color: #fff;
+}
+.weather-widget { margin-top: auto; }
+.weather-icon { font-size: 2rem; color: #f1c40f; margin-bottom: 0.5rem; }
+
+/* --- Notification Area in Sidebar --- */
+.notification-area-placeholder, .notification-area {
+    width: 100%;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0.5rem;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.4s ease;
+}
+
+.notification-area.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.notification-area.up {
+    background-color: var(--color-up-bg);
+    border: 1px solid var(--color-up);
+}
+.notification-area.down {
+    background-color: var(--color-down-bg);
+    border: 1px solid var(--color-down);
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--primary-text);
+}
+.notification-area.up .anticon { color: var(--color-up); }
+.notification-area.down .anticon { color: var(--color-down); }
+
+.notification-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.9rem;
+    gap: 0.2rem;
+}
+
+/* --- Main Grid --- */
+.main-grid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.price-box {
+    background-color: var(--item-bg);
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    border-top: 3px solid;
+    border-image: linear-gradient(to left, #f1c40f, #e67e22) 1;
+    transition: background-color 0.4s ease-in-out;
+}
+/* --- استایل‌های جدید برای هایلایت شدن باکس --- */
+.price-box.highlight-up {
+    background-color: var(--color-up-bg);
+}
+.price-box.highlight-down {
+    background-color: var(--color-down-bg);
+}
+
+
+.price-box:hover { background-color: var(--item-hover-bg); }
+.price-box.wide { grid-column: span 2; }
+
+.price-title {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    font-weight: 500;
+    color: var(--secondary-text);
+    margin-bottom: 0.5rem;
+}
+.price-values {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+.price-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+.price-label {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    font-weight: 700;
+}
+.sell-label { color: #e74c3c; }
+.buy-label { color: #2ecc71; }
+.price-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+.price-value.single { width: 100%; }
+
+
+/* --- Footer --- */
+.aramis-footer {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    font-size: 0.8rem;
+    font-family: 'Orbitron', sans-serif;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* --- Media Queries for Responsiveness --- */
+@media (max-width: 1024px) {
+    .main-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+    }
+    .price-box.wide { grid-column: span 1; }
+}
+
+@media (max-width: 768px) {
+    .aramis-board-container { flex-direction: column; height: auto; min-height: 100vh; }
+    .left-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 0.5rem; }
+    .sidebar-header, .time-container, .ticker, .weather-widget, .notification-area-placeholder, .notification-area { flex-basis: 45%; margin-bottom: 0.5rem; }
+    .weather-widget { margin-top: 0; }
+    .main-grid { grid-template-columns: repeat(2, 1fr); padding: 0.5rem; }
+    .aramis-footer { position: relative; text-align: center; padding: 1rem; left: 0; }
+}
+
+@media (max-width: 480px) {
+    .left-sidebar { justify-content: center; }
+    .sidebar-header, .time-container, .ticker, .weather-widget, .notification-area-placeholder, .notification-area { flex-basis: 90%; }
+    .main-grid { grid-template-columns: 1fr; }
+    .price-box.wide { grid-column: span 1; }
+}
+>>>>>>> parnaz-changes

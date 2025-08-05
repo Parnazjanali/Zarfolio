@@ -17,7 +17,11 @@ const customers = [
     id: 2,
     name: 'مشتری ویژه',
     email: 'vip.customer@example.com',
+<<<<<<< HEAD
     avatar: '',
+=======
+    avatar: 'https://joeschmoe.io/api/v1/random',
+>>>>>>> parnaz-changes
     status: 'vip',
   },
   {

@@ -3,6 +3,10 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+<<<<<<< HEAD
+=======
+	"os"
+>>>>>>> parnaz-changes
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -65,7 +69,11 @@ func (m *AuthZMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.H
 		return c.Next()
 	}
 }
+<<<<<<< HEAD
 func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthZMiddleware, error) { 
+=======
+func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthZMiddleware, error) {
+>>>>>>> parnaz-changes
 	if permService == nil {
 		return nil, fmt.Errorf("permissionService cannot be nil for AuthZMiddleware")
 	}
@@ -83,6 +91,7 @@ func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger,
 	}, nil
 
 }
+<<<<<<< HEAD
 
 func (m *AuthZMiddleware) VerifyInternalToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -91,10 +100,26 @@ func (m *AuthZMiddleware) VerifyInternalToken() fiber.Handler {
 			m.logger.Warn("Profile Manager: Authorization header missing for protected route", zap.String("path", c.OriginalURL()))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Message: "Unauthorized: Authorization header missing.",
+=======
+func (m *AuthZMiddleware) VerifyServiceToken() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+
+		expectedSecret := os.Getenv("PROFILE_MANAGER_SERVICE_SECRET")
+		if expectedSecret == "" {
+			m.logger.Fatal("PROFILE_MANAGER_SERVICE_SECRET not set for VerifyServiceToken middleware.")
+		}
+
+		serviceSecret := c.Get("X-Service-Secret")
+		if serviceSecret == "" {
+			m.logger.Warn("Profile Manager: X-Service-Secret header missing for internal route", zap.String("path", c.OriginalURL()))
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Unauthorized: Service secret header missing.",
+>>>>>>> parnaz-changes
 				Code:    "401",
 			})
 		}
 
+<<<<<<< HEAD
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		if tokenString == "" {
 			m.logger.Warn("Profile Manager: Bearer token missing in Authorization header", zap.String("path", c.OriginalURL()))
@@ -151,11 +176,25 @@ func (m *AuthZMiddleware) VerifyInternalToken() fiber.Handler {
 			}
 		}
 
+=======
+		if serviceSecret != expectedSecret {
+			m.logger.Warn("Profile Manager: Invalid service secret received", zap.String("path", c.OriginalURL()))
+			return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
+				Message: "Forbidden: Invalid service secret.",
+				Code:    "403",
+			})
+		}
+
+		m.logger.Debug("Profile Manager: Service token verified successfully.", zap.String("path", c.OriginalURL()))
+>>>>>>> parnaz-changes
 		return c.Next()
 	}
 }
 
+<<<<<<< HEAD
 // AuthorizePermission (اختیاری): یک متد جداگانه برای چک کردن مجوزهای خاص در Profile Manager
+=======
+>>>>>>> parnaz-changes
 func (m *AuthZMiddleware) AuthorizePermission(requiredPermission string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userRoles, ok := c.Locals("userRoles").([]string)
