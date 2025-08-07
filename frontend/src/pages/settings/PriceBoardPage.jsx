@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import {
     Form, Input, Button, Card, Typography, Select, Row, Col, Spin,
@@ -6,7 +5,7 @@ import {
 } from 'antd';
 import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
-import ImageGalleryModal from '../../components/ImageGalleryModal'; // وارد کردن کامپوننت جدید
+import ImageGalleryModal from '../../components/ImageGalleryModal';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -24,6 +23,14 @@ const transitionOptions = [
     { label: 'زوم (Zoom)', value: 'zoom' },
 ];
 
+// --- اصلاح کلیدی ۱: تعریف عکس‌های پیش‌فرض ---
+// این آدرس‌ها به پوشه public اشاره دارند.
+const defaultImages = [
+    '/images/dashboard-backgrounds/1.jpg', '/images/dashboard-backgrounds/2.jpg',
+    '/images/dashboard-backgrounds/3.jpg', '/images/dashboard-backgrounds/4.jpg',
+    '/images/dashboard-backgrounds/5.jpg', '/images/dashboard-backgrounds/6.jpg',
+    '/images/dashboard-backgrounds/7.jpg', '/images/dashboard-backgrounds/8.jpg',
+];
 
 const PriceBoardPage = () => {
     const [form] = Form.useForm();
@@ -32,12 +39,12 @@ const PriceBoardPage = () => {
     const [editingItemSymbol, setEditingItemSymbol] = useState(null);
     const [editingName, setEditingName] = useState('');
     const { message } = App.useApp();
-    
-    // --- State های جدید برای مدیریت گالری ---
-    const [imageSliderEnabled, setImageSliderEnabled] = useState(false);
+
     const [isGalleryModalVisible, setIsGalleryModalVisible] = useState(false);
-    const [allUploadedImages, setAllUploadedImages] = useState([]); //  لیست تمام عکس‌های موجود
-    const [sliderImages, setSliderImages] = useState([]); // لیست عکس‌های منتخب برای اسلایدر
+    // State برای *تمام* عکس‌های قابل نمایش (پیش‌فرض + آپلود شده)
+    const [allAvailableImages, setAllAvailableImages] = useState([]);
+    // State فقط برای عکس‌های انتخاب شده برای اسلایدر
+    const [sliderImages, setSliderImages] = useState([]);
 
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig')) || {};
@@ -55,10 +62,13 @@ const PriceBoardPage = () => {
             imageTransition: savedConfig.imageTransition || 'fade',
         });
 
-        setImageSliderEnabled(savedConfig.imageSliderEnabled === true);
-        
-        // خواندن لیست عکس‌ها از localStorage
-        setAllUploadedImages(savedConfig.allUploadedImages || []);
+        // --- اصلاح کلیدی ۲: بارگذاری و ترکیب عکس‌ها ---
+        const userUploadedImages = JSON.parse(localStorage.getItem('userUploadedImages')) || [];
+        // ادغام عکس‌های آپلود شده با عکس‌های پیش‌فرض (Set برای جلوگیری از تکرار)
+        const combinedImages = [...new Set([...userUploadedImages, ...defaultImages])];
+        setAllAvailableImages(combinedImages);
+
+        // بارگذاری عکس‌های انتخاب شده برای اسلایدر
         setSliderImages(savedConfig.sliderImages || []);
 
         const initialItems = savedConfig.activeItems || [];
@@ -76,15 +86,30 @@ const PriceBoardPage = () => {
         const configToSave = {
             ...form.getFieldsValue(),
             activeItems: activeItems,
-            // ذخیره لیست‌های جدید عکس در localStorage
-            allUploadedImages: allUploadedImages,
-            sliderImages: sliderImages,
+            // --- اصلاح کلیدی ۳: ذخیره صحیح لیست عکس‌ها ---
+            sliderImages: sliderImages, // فقط لیست عکس‌های منتخب اسلایدر ذخیره می‌شود
         };
         localStorage.setItem('priceBoardConfig', JSON.stringify(configToSave));
-        message.success('تنظیمات تابلو با موفقیت ذخیره شد و در تابلوی عمومی اعمال گردید!');
+        message.success('تنظیمات تابلو با موفقیت ذخیره شد!');
+    };
+    
+    // --- اصلاح کلیدی ۴: تابع مدیریت آپلود عکس ---
+    const handleImageUpload = (newImageUrl) => {
+        // ۱. عکس جدید را به لیست کلی عکس‌های قابل نمایش اضافه کن
+        setAllAvailableImages(prev => [newImageUrl, ...prev]);
+
+        // ۲. عکس جدید را به لیست عکس‌های آپلود شده توسط کاربر در localStorage اضافه کن
+        const userImages = JSON.parse(localStorage.getItem('userUploadedImages')) || [];
+        const updatedUserImages = [newImageUrl, ...userImages];
+        localStorage.setItem('userUploadedImages', JSON.stringify(updatedUserImages));
     };
 
-    // ... (بقیه توابع مثل handleAddItem، handleRemoveItem و ... بدون تغییر باقی می‌مانند)
+    const handleGalleryConfirm = (newSelectedImages) => {
+        setSliderImages(newSelectedImages);
+        message.info(`${newSelectedImages.length} عکس برای اسلایدر انتخاب شد.`);
+    };
+
+    // ... (بقیه توابع مثل handleAddItem، handleRemoveItem و ... بدون هیچ تغییری باقی می‌مانند)
     const allApiOptions = apiData ?
     [...apiData.gold, ...apiData.currency, ...apiData.cryptocurrency].map(item => ({
         label: `${item.name} (${item.symbol})`,
@@ -139,23 +164,7 @@ const PriceBoardPage = () => {
         const item = apiData ? [...apiData.gold, ...apiData.currency, ...apiData.cryptocurrency].find(i => i.symbol === symbol) : null;
         return item ? item.price : 'N/A';
     };
-    
-    // --- توابع جدید برای مدیریت گالری ---
-    const handleImageUpload = (newImageUrl) => {
-        // افزودن عکس جدید به لیست کلی عکس‌ها (بدون تکرار)
-        setAllUploadedImages(prev => {
-            if (prev.includes(newImageUrl)) {
-                return prev;
-            }
-            return [...prev, newImageUrl];
-        });
-    };
 
-    const handleGalleryConfirm = (newSelectedImages) => {
-        setSliderImages(newSelectedImages);
-        message.info(`${newSelectedImages.length} عکس برای اسلایدر انتخاب شد.`);
-    };
-    // --- پایان توابع جدید ---
     const sellTabPane = (item) => (
         <Row gutter={[8, 8]}>
             <Col span={24}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
@@ -170,21 +179,12 @@ const PriceBoardPage = () => {
         </Row>
     );
     const tabItems = (item) => ([
-        {
-            key: 'sell',
-            label: 'قیمت فروش',
-            children: sellTabPane(item)
-        },
-        {
-            key: 'buy',
-            label: 'قیمت خرید',
-            children: buyTabPane(item)
-        }
+        { key: 'sell', label: 'قیمت فروش', children: sellTabPane(item) },
+        { key: 'buy', label: 'قیمت خرید', children: buyTabPane(item) }
     ]);
 
     return (
         <Card>
-            {/* ... (بخش بالایی فرم بدون تغییر) ... */}
             <Title level={2}>پنل مدیریت حرفه‌ای تابلو</Title>
             <Paragraph type="secondary">تغییرات در این بخش به صورت آنی در تابلوی قیمت عمومی (در صورت باز بودن در تب دیگر) اعمال خواهد شد.</Paragraph>
             <Divider />
@@ -192,26 +192,10 @@ const PriceBoardPage = () => {
             <Form form={form} layout="vertical">
                 <Title level={4}>۱. تنظیمات کلی و ظاهری</Title>
                 <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="نام گالری" name="galleryName">
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="پالت رنگی" name="colorPalette">
-                            <Select options={colorPalettes} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="آدرس API قیمت" name="apiUrl">
-                            <Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی</Button>} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label="آدرس API هواشناسی" name="weatherApiUrl">
-                            <Input />
-                        </Form.Item>
-                    </Col>
+                    <Col xs={24} md={12}><Form.Item label="نام گالری" name="galleryName"><Input /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="پالت رنگی" name="colorPalette"><Select options={colorPalettes} /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="آدرس API قیمت" name="apiUrl"><Input addonAfter={<Button type="primary" onClick={forceFetch} loading={loading} icon={<SyncOutlined />}>به‌روزرسانی</Button>} /></Form.Item></Col>
+                    <Col xs={24} md={12}><Form.Item label="آدرس API هواشناسی" name="weatherApiUrl"><Input /></Form.Item></Col>
                 </Row>
                 
                 <Row gutter={16} align="bottom">
@@ -219,49 +203,44 @@ const PriceBoardPage = () => {
                     <Col><Form.Item label="ویجت آب و هوا" name="showWeatherWidget" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
                     <Col><Form.Item label="پاپ‌آپ تغییر قیمت" name="showPriceChangePopup" valuePropName="checked"><Switch defaultChecked /></Form.Item></Col>
                     <Col>
-                        <Form.Item label="اسلایدر عکس پس‌زمینه" name="imageSliderEnabled" valuePropName="checked">
-                            <Switch onChange={setImageSliderEnabled} />
+                        <Form.Item label="اسلایدر پس‌زمینه" name="imageSliderEnabled" valuePropName="checked">
+                           <Switch onChange={(checked) => form.setFieldsValue({ imageSliderEnabled: checked })} />
                         </Form.Item>
                     </Col>
-                    <Col>
-                        <Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration">
-                            <InputNumber min={1} max={60} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
+                    <Col><Form.Item label="مدت پاپ‌آپ (ثانیه)" name="popupDuration"><InputNumber min={1} max={60} style={{ width: '100%' }} /></Form.Item></Col>
                 </Row>
 
-                {imageSliderEnabled && (
-                    <Card size="small" title={<><CameraOutlined /> تنظیمات اسلایدر عکس</>} style={{marginTop: '16px', background: '#f8f9fa'}}>
-                        <Row gutter={16} align="middle">
-                            <Col xs={24} md={12}>
-                                <Button
-                                    type="dashed"
-                                    icon={<PictureOutlined />}
-                                    onClick={() => setIsGalleryModalVisible(true)}
-                                    block
-                                >
-                                    مدیریت گالری تصاویر
-                                </Button>
-                                <Paragraph type="secondary" style={{textAlign: 'center', marginTop: '8px'}}>
-                                    {sliderImages.length} عکس برای نمایش انتخاب شده است.
-                                </Paragraph>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item label="افکت ترنزیشن" name="imageTransition">
-                                    <Select options={transitionOptions} placeholder="یک افکت را انتخاب کنید" />
-                                </Form.Item>
-                                <Form.Item name="randomImageOrder" valuePropName="checked">
-                                    <div>
-                                        <Switch />
-                                        <Text style={{ marginRight: 8 }}>نمایش عکس‌ها با ترتیب تصادفی</Text>
-                                    </div>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-                )}
+                <Form.Item
+                    noStyle
+                    shouldUpdate={(prevValues, currentValues) => prevValues.imageSliderEnabled !== currentValues.imageSliderEnabled}
+                >
+                    {({ getFieldValue }) => getFieldValue('imageSliderEnabled') && (
+                        <Card size="small" title={<><CameraOutlined /> تنظیمات اسلایدر عکس</>} style={{marginTop: '16px', background: '#f8f9fa'}}>
+                            <Row gutter={16} align="middle">
+                                <Col xs={24} md={12}>
+                                    <Button type="dashed" icon={<PictureOutlined />} onClick={() => setIsGalleryModalVisible(true)} block>
+                                        مدیریت گالری تصاویر
+                                    </Button>
+                                    <Paragraph type="secondary" style={{textAlign: 'center', marginTop: '8px'}}>
+                                        {sliderImages.length} عکس برای نمایش انتخاب شده است.
+                                    </Paragraph>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item label="افکت ترنزیشن" name="imageTransition">
+                                        <Select options={transitionOptions} placeholder="یک افکت را انتخاب کنید" />
+                                    </Form.Item>
+                                    <Form.Item name="randomImageOrder" valuePropName="checked">
+                                        <div>
+                                            <Switch />
+                                            <Text style={{ marginRight: 8 }}>نمایش عکس‌ها با ترتیب تصادفی</Text>
+                                        </div>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Card>
+                    )}
+                </Form.Item>
 
-                {/* ... (بقیه فرم بدون تغییر) ... */}
                 <Row gutter={16} style={{marginBottom: '24px', marginTop: '24px'}}>
                     <Col><Statistic title="زمان به‌روزرسانی بعدی" value={countdown} formatter={(val) => `${String(Math.floor(val/60)).padStart(2, '0')}:${String(val%60).padStart(2, '0')}`} /></Col>
                     <Col><Text type="secondary">آخرین دریافت موفق:</Text><br/><Text strong>{lastUpdated ? lastUpdated.toLocaleTimeString('fa-IR') : 'در انتظار...'}</Text></Col>
@@ -299,12 +278,7 @@ const PriceBoardPage = () => {
                                     ) : (
                                         <span style={{ flexGrow: 1 }}>{item.name}</span>
                                     )}
-                                    <Button
-                                        type="text"
-                                        icon={<EditOutlined />}
-                                        onClick={() => handleEditNameClick(item)}
-                                        size="small"
-                                    />
+                                    <Button type="text" icon={<EditOutlined />} onClick={() => handleEditNameClick(item)} size="small" />
                                 </div>
                             } style={{ height: '100%' }}>
                                 <Row gutter={[16, 16]} align="middle">
@@ -337,15 +311,14 @@ const PriceBoardPage = () => {
                     ))}
                 </Row>
 
-
                 <Divider />
                 <Button type="primary" size="large" block onClick={handleSaveConfig}>ذخیره نهایی تنظیمات تابلو</Button>
             </Form>
 
-            {/* --- مدال گالری --- */}
+            {/* --- اصلاح کلیدی ۵: پاس دادن لیست صحیح عکس‌ها به مودال --- */}
             <ImageGalleryModal
                 visible={isGalleryModalVisible}
-                allImages={allUploadedImages}
+                allImages={allAvailableImages} 
                 selectedImages={sliderImages}
                 onClose={() => setIsGalleryModalVisible(false)}
                 onConfirm={handleGalleryConfirm}
@@ -353,24 +326,6 @@ const PriceBoardPage = () => {
             />
         </Card>
     );
-=======
-// src/pages/settings/PriceBoardPage.jsx
-import React from 'react';
-import { Card, Typography } from 'antd';
-
-const { Title, Paragraph } = Typography;
-
-const PriceBoardPage = () => {
-  return (
-    <Card>
-      <Title level={2}>تابلوی قیمت</Title>
-      <Paragraph>
-        این صفحه برای مدیریت و نمایش تابلوی قیمت محصولات و خدمات شما در نظر گرفته شده است.
-        محتوای اصلی این بخش در مراحل بعدی پیاده‌سازی خواهد شد.
-      </Paragraph>
-    </Card>
-  );
->>>>>>> parnaz-changes
 };
 
 export default PriceBoardPage;
