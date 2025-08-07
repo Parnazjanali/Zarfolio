@@ -100,8 +100,4 @@ func (v *JWTValidatorImpl) ValidateToken(tokenString string) (*model.CustomClaim
     // }
 
     return claims, nil
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> parnaz-changes

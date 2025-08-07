@@ -25,10 +25,7 @@ type UserRepository interface {
 	GetUser2FASecret(userID string) (string, error)
 SetUser2FAStatus(userID string, enabled bool) error
 	RemoveUser2FASecret(userID string) error
-<<<<<<< HEAD
-=======
 	 GetUserByEmail(email string) (*model.User, error)
->>>>>>> parnaz-changes
 }
 
 type inMemoryUserRepository struct {
@@ -43,8 +40,6 @@ func NewInMemoryUserRepository() UserRepository {
 	}
 }
 
-<<<<<<< HEAD
-=======
 // GetUserByEmail returns a user by email from the in-memory repository.
 func (r *inMemoryUserRepository) GetUserByEmail(email string) (*model.User, error) {
 	r.mu.RLock()
@@ -59,7 +54,6 @@ func (r *inMemoryUserRepository) GetUserByEmail(email string) (*model.User, erro
 	return nil, service.ErrUserNotFound
 }
 
->>>>>>> parnaz-changes
 // GetAllUsers returns a slice of all users in the in-memory repository.
 func (r *inMemoryUserRepository) GetAllUsers() ([]*model.User, error) {
 	r.mu.RLock()
@@ -213,11 +207,7 @@ type postgresUserRepository struct {
 	db *gorm.DB 
 }
 
-<<<<<<< HEAD
-func NewPostgresUserRepository(db *gorm.DB) UserRepository {
-=======
 func 	NewPostgresUserRepository(db *gorm.DB) UserRepository {
->>>>>>> parnaz-changes
 	if db == nil {
 		utils.Log.Fatal("GORM DB instance is nil for PostgresUserRepository.")
 	}
@@ -361,8 +351,6 @@ func (r *postgresUserRepository) UploadProfilePicture(userID string, pictureData
 	}
 	return nil
 }
-<<<<<<< HEAD
-=======
 
 // GetUserByEmail returns a user by email from the PostgreSQL database.
 func (r *postgresUserRepository) GetUserByEmail(email string) (*model.User, error) {
@@ -377,4 +365,3 @@ func (r *postgresUserRepository) GetUserByEmail(email string) (*model.User, erro
 	utils.Log.Info("User found in PostgreSQL by email", zap.String("email", user.Email))
 	return &user, nil
 }
->>>>>>> parnaz-changes

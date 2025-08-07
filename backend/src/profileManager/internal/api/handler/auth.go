@@ -112,10 +112,6 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		Exp:     claims.ExpiresAt.Unix(),
 	})
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> parnaz-changes
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
@@ -166,10 +162,6 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
-<<<<<<< HEAD
-	utils.Log.Info("RequestPasswordReset endpoint hit. Placeholder.", zap.String("ip", c.IP()))
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Request Password Reset endpoint hit (placeholder)"})
-=======
     var req model.RequestPasswordReset
     if err := c.BodyParser(&req); err != nil {
         utils.Log.Error("Profile Manager Handler: Failed to parse request password reset body", zap.Error(err))
@@ -198,7 +190,6 @@ func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
 
     utils.Log.Info("Profile Manager Handler: Password reset request successfully initiated", zap.String("email", req.Email))
     return c.Status(fiber.StatusOK).JSON(model.AuthResponse{Message: "اگر ایمیل شما در سیستم ثبت شده باشد، دستورالعمل بازنشانی رمز عبور برای شما ارسال خواهد شد."})
->>>>>>> parnaz-changes
 }
 
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {

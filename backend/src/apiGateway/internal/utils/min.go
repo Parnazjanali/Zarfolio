@@ -6,8 +6,6 @@ func Min(a, b int) int {
 	}
 	return b
 }
-<<<<<<< HEAD
-=======
 func PtrString(s string) *string {
 	if s == "" {
 		return nil
@@ -18,4 +16,3 @@ func PtrString(s string) *string {
 func PtrFloat64(f float64) *float64 {
 	return &f
 }
->>>>>>> parnaz-changes

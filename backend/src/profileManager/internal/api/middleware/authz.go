@@ -3,10 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-<<<<<<< HEAD
-=======
 	"os"
->>>>>>> parnaz-changes
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -69,11 +66,7 @@ func (m *AuthZMiddleware) AuthorizeMiddleware(requiredPermission string) fiber.H
 		return c.Next()
 	}
 }
-<<<<<<< HEAD
-func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthZMiddleware, error) { 
-=======
 func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger, jwtValidator utils.JWTValidator) (*AuthZMiddleware, error) {
->>>>>>> parnaz-changes
 	if permService == nil {
 		return nil, fmt.Errorf("permissionService cannot be nil for AuthZMiddleware")
 	}
@@ -91,16 +84,6 @@ func NewAuthZMiddleware(permService authz.PermissionService, logger *zap.Logger,
 	}, nil
 
 }
-<<<<<<< HEAD
-
-func (m *AuthZMiddleware) VerifyInternalToken() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-		if authHeader == "" {
-			m.logger.Warn("Profile Manager: Authorization header missing for protected route", zap.String("path", c.OriginalURL()))
-			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Message: "Unauthorized: Authorization header missing.",
-=======
 func (m *AuthZMiddleware) VerifyServiceToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
@@ -114,69 +97,10 @@ func (m *AuthZMiddleware) VerifyServiceToken() fiber.Handler {
 			m.logger.Warn("Profile Manager: X-Service-Secret header missing for internal route", zap.String("path", c.OriginalURL()))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
 				Message: "Unauthorized: Service secret header missing.",
->>>>>>> parnaz-changes
 				Code:    "401",
 			})
 		}
 
-<<<<<<< HEAD
-		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-		if tokenString == "" {
-			m.logger.Warn("Profile Manager: Bearer token missing in Authorization header", zap.String("path", c.OriginalURL()))
-			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Message: "Unauthorized: Bearer token missing.",
-				Code:    "401",
-			})
-		}
-
-		claims, err := m.jwtValidator.ValidateToken(tokenString)
-		if err != nil {
-			m.logger.Error("Profile Manager: Invalid or expired JWT token received",
-				zap.Error(err), zap.String("path", c.OriginalURL()),
-				zap.String("token_prefix", tokenString[:utils.Min(len(tokenString), 30)]+"..."))
-			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Message: "Unauthorized: Invalid or expired token.",
-				Code:    "401",
-				Details: err.Error(),
-			})
-		}
-
-		c.Locals("userID", claims.UserID)
-		c.Locals("username", claims.Username)
-		var userRoles []string
-		if err := json.Unmarshal(claims.Roles, &userRoles); err != nil {
-			m.logger.Error("Profile Manager: Failed to unmarshal user roles from JWT claims",
-				zap.String("userID", claims.UserID), zap.Error(err))
-			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-				Message: "Internal server error: Failed to parse user roles.",
-				Code:    "500",
-			})
-		}
-		c.Locals("userRoles", userRoles)
-
-		m.logger.Debug("Profile Manager: User authenticated via JWT",
-			zap.String("userID", claims.UserID),
-			zap.String("username", claims.Username),
-			zap.Strings("roles", userRoles))
-
-		requestedUserID := c.Params("id")
-		if requestedUserID != "" && requestedUserID != claims.UserID {
-
-			if !m.permissionService.HashPermission(userRoles, model.PermUserChangeAnyPassword) &&
-				!m.permissionService.HashPermission(userRoles, model.PermUserUpdate) {
-
-				m.logger.Warn("Profile Manager: Access denied to other user's profile",
-					zap.String("requester_userID", claims.UserID),
-					zap.String("target_userID", requestedUserID),
-					zap.Strings("requester_roles", userRoles))
-				return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
-					Message: "Forbidden: Cannot access another user's profile without proper permissions.",
-					Code:    "403",
-				})
-			}
-		}
-
-=======
 		if serviceSecret != expectedSecret {
 			m.logger.Warn("Profile Manager: Invalid service secret received", zap.String("path", c.OriginalURL()))
 			return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
@@ -186,15 +110,10 @@ func (m *AuthZMiddleware) VerifyServiceToken() fiber.Handler {
 		}
 
 		m.logger.Debug("Profile Manager: Service token verified successfully.", zap.String("path", c.OriginalURL()))
->>>>>>> parnaz-changes
 		return c.Next()
 	}
 }
 
-<<<<<<< HEAD
-// AuthorizePermission (اختیاری): یک متد جداگانه برای چک کردن مجوزهای خاص در Profile Manager
-=======
->>>>>>> parnaz-changes
 func (m *AuthZMiddleware) AuthorizePermission(requiredPermission string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userRoles, ok := c.Locals("userRoles").([]string)

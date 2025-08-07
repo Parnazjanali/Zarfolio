@@ -4,11 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from 'antd'; // ایمپورت کامپوننت Button از Ant Design
 import { ArrowLeftOutlined } from '@ant-design/icons'; // ایمپورت آیکون از Ant Design
 import './TwoFAVerifyPage.css';
-<<<<<<< HEAD
-import loginPageImage from '../assets/lock.jpg';
-=======
 import loginPageImage from '../assets/Lock.jpg';
->>>>>>> parnaz-changes
 import { FaShieldAlt } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';

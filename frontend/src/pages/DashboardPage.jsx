@@ -5,10 +5,7 @@ import { Row, Col, Card, Statistic } from 'antd';
 import { ArrowUpOutlined, UserOutlined, ShoppingCartOutlined, DollarCircleOutlined } from '@ant-design/icons';
 
 // 1. وارد کردن کامپوننت‌های جدید
-<<<<<<< HEAD
-=======
 import SalesChart from '../components/SalesChart.jsx';
->>>>>>> parnaz-changes
 import ActivityFeed from '../components/ActivityFeed.jsx';
 import CustomerList from '../components/CustomerList.jsx';
 
@@ -68,8 +65,6 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
-<<<<<<< HEAD
-=======
       {/* بخش نمودار */}
       <Row style={{ marginBottom: '24px' }}>
         <Col span={24}>
@@ -77,7 +72,6 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
->>>>>>> parnaz-changes
       {/* 2. بخش جدید برای فید فعالیت‌ها و لیست مشتریان */}
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={12}>

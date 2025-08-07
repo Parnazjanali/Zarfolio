@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.27.0
 	gorm.io/datatypes v1.2.5
+	gorm.io/gorm v1.30.1
 )
 
 require (
@@ -28,5 +29,4 @@ require (
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	gorm.io/driver/mysql v1.5.6 // indirect
-	gorm.io/gorm v1.30.1 // indirect
 )
