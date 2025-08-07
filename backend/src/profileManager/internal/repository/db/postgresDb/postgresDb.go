@@ -3,11 +3,7 @@ package postgresDb
 import (
 	"fmt"
 	"os"
-<<<<<<< HEAD
-	"profile-gold/internal/model" // Import your models
-=======
 	"profile-gold/internal/model" 
->>>>>>> parnaz-changes
 	"profile-gold/internal/utils"
 	"time"
 

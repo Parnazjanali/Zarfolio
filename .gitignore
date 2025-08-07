@@ -41,3 +41,4 @@ frontend/dev-dist/sw.js # Specific rule from first .gitignore
 # ---------------------
 # Ignore all .env files in the project, including subdirectories
 **/.env
+backend/src/apiGateway/.env

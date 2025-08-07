@@ -14,10 +14,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
-<<<<<<< HEAD
-=======
-
->>>>>>> parnaz-changes
 type AuthService interface {
 	RegisterUser(req model.RegisterRequest) error
 	AuthenticateUser(username, password string) (*model.User, string, *model.CustomClaims, error)
@@ -26,13 +22,6 @@ type AuthService interface {
 	ResetPassword(token, newPassword string) error
 	VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error)
 }
-<<<<<<< HEAD
-
-type UserService struct {
-	userRepo  postgresDb.UserRepository
-	tokenRepo redisdb.TokenRepository
-	jwtValidator utils.JWTValidator
-=======
 type EmailService interface {
 	SendPasswordResetEmail(toEmail, resetToken string) error
 }
@@ -42,7 +31,6 @@ type UserService struct {
 	tokenRepo    redisdb.TokenRepository
 	jwtValidator utils.JWTValidator
 	emailService EmailService
->>>>>>> parnaz-changes
 }
 
 func NewAuthService(r postgresDb.UserRepository, t redisdb.TokenRepository, j utils.JWTValidator) AuthService {
@@ -134,11 +122,7 @@ func (s *UserService) AuthenticateUser(username, password string) (*model.User, 
 func (s *UserService) LogoutUser(tokenString string) error {
 	utils.Log.Info("UserService: Attempting to logout user by blacklisting token.", zap.String("token_prefix", tokenString[:min(len(tokenString), 10)]))
 
-<<<<<<< HEAD
-    claims, err := s.jwtValidator.ValidateToken(tokenString) 
-=======
 	claims, err := s.jwtValidator.ValidateToken(tokenString)
->>>>>>> parnaz-changes
 
 	if err != nil {
 		utils.Log.Error("UserService: Failed to parse or validate token for logout", zap.Error(err),
@@ -163,13 +147,10 @@ func (s *UserService) LogoutUser(tokenString string) error {
 			zap.String("username", claims.Username), zap.Time("expires_at", expirationTime))
 		return nil
 	}
-<<<<<<< HEAD
-=======
 	utils.Log.Info("UserService: Calculated TTL for token",
 		zap.String("username", claims.Username),
 		zap.Duration("ttl", ttl),
 		zap.Time("expires_at", expirationTime))
->>>>>>> parnaz-changes
 	err = s.tokenRepo.AddTokenToBlacklist(tokenString, ttl)
 	if err != nil {
 		utils.Log.Error("UserService: Failed to add token to blacklist", zap.String("username", claims.Username), zap.Error(err))
@@ -182,23 +163,12 @@ func (s *UserService) LogoutUser(tokenString string) error {
 	return nil
 }
 
-<<<<<<< HEAD
-func (s *UserService) RequestPasswordReset(username string) error {
-	utils.Log.Info("RequestPasswordReset called", zap.String("username", username))
-	// TODO: Implement password reset logic here.
-	return errors.New("RequestPasswordReset not implemented")
-}
-
-=======
->>>>>>> parnaz-changes
 func (s *UserService) ResetPassword(token, newPassword string) error {
 	utils.Log.Info("ResetPassword called", zap.String("token_prefix", token[:min(len(token), 10)]))
 	// TODO: Implement reset password logic here.
 	return errors.New("ResetPassword not implemented")
 }
 
-<<<<<<< HEAD
-=======
 // RequestPasswordReset implements the AuthService interface.
 func (s *UserService) RequestPasswordReset(email string) error {
 	utils.Log.Info("RequestPasswordReset called", zap.String("email", email))
@@ -206,7 +176,6 @@ func (s *UserService) RequestPasswordReset(email string) error {
 	return errors.New("RequestPasswordReset not implemented")
 }
 
->>>>>>> parnaz-changes
 func (s *UserService) VerifyTwoFA(username, code string) (model.User, model.CustomClaims, error) {
 	utils.Log.Info("VerifyTwoFA called", zap.String("username", username))
 	// TODO: Implement 2FA verification logic here.
