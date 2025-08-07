@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Upload, message, List, Checkbox, Row, Col, Empty, App } from 'antd';
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Modal, Button, Upload, List, Checkbox, Row, Col, Empty, App } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConfirm, onImageUpload }) => {
     const [internalSelected, setInternalSelected] = useState(selectedImages);
-    const [fileList, setFileList] = useState([]); // --- State جدید برای مدیریت فایل‌های در حال آپلود
+    const [fileList, setFileList] = useState([]);
     const { message: messageApi } = App.useApp();
-
 
     useEffect(() => {
         if (visible) {
@@ -28,7 +27,7 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
 
     const handleRemoveAll = () => {
         setInternalSelected([]);
-    }
+    };
 
     const customRequest = async ({ file, onSuccess, onError }) => {
         const formData = new FormData();
@@ -42,10 +41,13 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                     'Authorization': `Bearer ${token}`
                 },
             });
-            // پاسخ سرور باید حاوی آدرس عکس باشد
+
+            // آدرس عکس از پاسخ جدید خوانده می‌شود و به والد ارسال می‌شود
             const imageUrl = response.data.data.imageUrl;
-            onImageUpload(imageUrl); // اطلاع‌رسانی به والد برای افزودن به لیست کلی
-            onSuccess(response.data, file); //  اطلاع‌رسانی به کامپوننت آپلود که موفقیت‌آمیز بود
+            onImageUpload(imageUrl); 
+
+            // پاسخ را برای نمایش تامبنیل به antd ارسال می‌کنیم
+            onSuccess(response.data, file);
             messageApi.success(`${file.name} با موفقیت آپلود شد.`);
         } catch (error) {
             console.error('Upload Error:', error);
@@ -55,37 +57,30 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
         }
     };
 
-    // --- تابع مدیریت تغییرات در لیست آپلود ---
     const handleUploadChange = ({ file, fileList: newFileList }) => {
-        // فقط فایل‌هایی با وضعیت 'done' یا 'uploading' را نمایش بده
-        const filteredList = newFileList.map(f => {
-            if (f.response) {
-                // اگر آپلود تمام شده، URL را از پاسخ سرور بگیر
-                f.url = f.response.data.imageUrl;
-                f.thumbUrl = f.response.data.imageUrl; // مهم برای نمایش تامبنیل
+        // ایجاد یک لیست جدید برای جلوگیری از مشکلات state در React
+        const updatedList = newFileList.map(f => {
+            // وقتی آپلود موفقیت‌آمیز بود، پاسخ سرور در f.response قرار دارد
+            if (f.response && f.response.data && f.response.data.imageUrl) {
+                // آدرس تامبنیل را از پاسخی که بک‌اند داده است تنظیم می‌کنیم
+                f.thumbUrl = f.response.data.imageUrl;
             }
             return f;
         });
-        setFileList(filteredList);
+        setFileList(updatedList);
 
-        // اگر فایل با موفقیت آپلود شده و وضعیت 'done' است، لیست را خالی کن تا برای آپلود بعدی آماده باشد
-        if (file.status === 'done') {
-            setTimeout(() => {
-                 setFileList(prevList => prevList.filter(item => item.uid !== file.uid));
-            }, 1500); // پس از ۱.۵ ثانیه فایل را از لیست حذف کن
-        } else if (file.status === 'error') {
-            // در صورت خطا نیز فایل را پس از مدتی از لیست حذف کن
+        // پاک کردن فایل از لیست نمایش پس از چند ثانیه
+        if (file.status === 'done' || file.status === 'error') {
              setTimeout(() => {
                  setFileList(prevList => prevList.filter(item => item.uid !== file.uid));
             }, 2000);
         }
     };
 
-
     return (
         <Modal
             title="مدیریت گالری تصاویر"
-            visible={visible}
+            open={visible} // 'visible' به 'open' تغییر کرد برای نسخه‌های جدیدتر antd
             onCancel={onClose}
             onOk={handleConfirm}
             okText="تایید و ذخیره"
@@ -97,8 +92,8 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                 <Col span={24}>
                     <Upload
                         customRequest={customRequest}
-                        fileList={fileList} // --- استفاده از state داخلی
-                        onChange={handleUploadChange} // --- استفاده از handler جدید
+                        fileList={fileList}
+                        onChange={handleUploadChange}
                         listType="picture"
                         multiple
                         accept="image/png, image/jpeg, image/gif, image/webp"
@@ -109,7 +104,7 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
             </Row>
 
             <div style={{ marginTop: '20px', maxHeight: '400px', overflowY: 'auto', border: '1px solid #f0f0f0', padding: '10px' }}>
-                {allImages.length > 0 ? (
+                {allImages && allImages.length > 0 ? (
                      <List
                         header={<div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                             <span>عکس‌های موجود ({allImages.length} عدد)</span>
@@ -123,7 +118,7 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                                     className={`gallery-item ${internalSelected.includes(imgUrl) ? 'selected' : ''}`}
                                     onClick={() => handleSelectImage(imgUrl)}
                                 >
-                                    <img src={imgUrl} alt="gallery thumbnail" style={{ width: '100%', height: '100px', objectFit: 'cover' }} />
+                                    <img src={imgUrl} alt="gallery thumbnail" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '4px' }} />
                                     <div className="gallery-item-overlay">
                                         <Checkbox checked={internalSelected.includes(imgUrl)} />
                                     </div>
@@ -140,21 +135,29 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                     position: relative;
                     cursor: pointer;
                     border: 2px solid transparent;
+                    border-radius: 6px;
+                    overflow: hidden;
                     transition: border-color 0.3s;
                 }
                 .gallery-item.selected {
-                    border-color: #1890ff;
+                    border-color: #1677ff; /* رنگ جدید antd */
                 }
                 .gallery-item-overlay {
                     position: absolute;
                     top: 5px;
                     right: 5px;
-                    background: rgba(255, 255, 255, 0.7);
+                    background: rgba(255, 255, 255, 0.8);
                     border-radius: 50%;
                     padding: 2px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                }
+                .gallery-item:hover .gallery-item-overlay,
+                .gallery-item.selected .gallery-item-overlay {
+                    opacity: 1;
                 }
             `}</style>
         </Modal>
