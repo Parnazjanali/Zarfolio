@@ -48,6 +48,44 @@ func SetupAllRoutes(
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
 
+	// --- مسیر آپلود عکس با آدرس جدید و صحیح ---
+	apiV1.Post("/upload-image", func(c *fiber.Ctx) error {
+		file, err := c.FormFile("image")
+		if err != nil {
+			utils.Log.Error("Cannot read file from form", zap.Error(err))
+			return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "فایل در درخواست یافت نشد."})
+		}
+
+		// **اصلاح مسیر:** فایل‌ها در پوشه public ذخیره می‌شوند تا مستقیماً قابل دسترس باشند
+		uploadPath := "./frontend/public/images/dashboard-backgrounds/"
+
+		if err := os.MkdirAll(uploadPath, 0755); err != nil {
+			utils.Log.Error("Cannot create upload directory", zap.Error(err))
+			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "خطا در ساخت پوشه آپلود."})
+		}
+
+		newFileName := fmt.Sprintf("%d-%s", time.Now().UnixNano(), filepath.Base(file.Filename))
+		destination := filepath.Join(uploadPath, newFileName)
+
+		if err := c.SaveFile(file, destination); err != nil {
+			utils.Log.Error("Failed to save file", zap.Error(err))
+			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "خطا در ذخیره‌سازی فایل."})
+		}
+
+		// **اصلاح آدرس عمومی:** آدرس باید از ریشه وب‌سایت شروع شود
+		publicFilePath := "/images/dashboard-backgrounds/" + newFileName
+		utils.Log.Info("Image uploaded successfully", zap.String("path", publicFilePath))
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "فایل با موفقیت آپلود شد.",
+			"data": fiber.Map{
+				"imageUrl": publicFilePath,
+			},
+		})
+	})
+	// --- پایان بخش آپلود عکس ---
+
+	authMiddleware := middleware.NewAuthMiddleware(permissionService, utils.Log)
 	jwtValidator := utils.NewJWTValidatorImpl("JWT_SECRET_KEY", utils.Log)
 	
 	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, utils.Log, jwtValidator)

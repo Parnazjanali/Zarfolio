@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ClockCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import { FaSun } from 'react-icons/fa';
+import { FaSun, FaMoon, FaCloud, FaCloudShowersHeavy, FaWind, FaSmog, FaSnowflake } from 'react-icons/fa';
+import {
+    Panel,
+    PanelGroup,
+    PanelResizeHandle,
+} from "react-resizable-panels";
+import ImageSlider from '../../components/ImageSlider';
 import './PublicPriceBoard.css';
 
 // کامپوننت ساعت آنالوگ
@@ -195,43 +201,71 @@ const PublicPriceBoard = () => {
     }, []);
 
     return (
-        <div className="aramis-board-container">
-            <aside className="left-sidebar">
-                <div className="sidebar-header">
-                    <div className="logo-title">گالری جرجانی</div>
-                </div>
-                <div className="time-container">
-                    <div className="time-display">
-                        <ClockCircleOutlined />
-                        <span>{currentTime}</span>
+        <div className={`zarfolio-board-container ${config?.colorPalette || 'theme-default'} ${layoutClass}`}>
+            <PanelGroup direction="horizontal">
+                <Panel defaultSize={65} minSize={50}>
+                    <div className="right-section-container">
+                        {config?.imageSliderEnabled && (
+                            <div className="background-slider-wrapper">
+                                {/* **اصلاح شده:** پاس دادن لیست عکس‌های انتخاب شده به اسلایدر */}
+                                <ImageSlider
+                                    images={config.sliderImages}
+                                    randomOrder={config.randomImageOrder}
+                                    transition={config.imageTransition}
+                                />
+                            </div>
+                        )}
+
+                        <div className="gallery-name-container">
+                            <div className="logo-title">{config?.galleryName || 'گالری'}</div>
+                            {lastUpdateTime && (<div className="header-last-update">بروزرسانی: {lastUpdateTime}</div>)}
+                        </div>
+
+                        <aside className="info-sidebar">
+                            <div className="right-corner-widgets">
+                                {config?.showWeatherWidget && (
+                                   <div className="weather-widget-container">
+                                       <Card bordered={false} className="info-card">
+                                           <WeatherWidget weatherData={weatherData} />
+                                       </Card>
+                                   </div>
+                                )}
+
+                                <Card bordered={false} className="info-card combined-info-card">
+                                    <div className="time-container">
+                                        <div className="time-display"> <ClockCircleOutlined /> <span>{currentTime}</span> </div>
+                                    </div>
+                                    
+                                    {config?.showPriceChangePopup && visiblePopups.length > 0 && (
+                                        <div className="popup-container">
+                                           {visiblePopups.map((popup) => (
+                                               <div key={popup.id} className={`price-change-popup ${popup.trend}`}>
+                                                   <span className="popup-name">{popup.name}</span>
+                                                   <div className="popup-details"> <span>{popup.difference}</span> <span>({popup.percentDifference}%)</span> {popup.trend === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />} </div>
+                                               </div>
+                                           ))}
+                                        </div>
+                                    )}
+                                </Card>
+                            </div>
+
+                           <div className="bottom-center-widgets">
+                                {config?.showAnalogClock && (
+                                   <Card bordered={false} className="info-card analog-clock-card">
+                                       <AnalogClock />
+                                   </Card>
+                                )}
+                           </div>
+                        </aside>
                     </div>
-                    <AnalogClock />
-                </div>
-                {boardData.tickers.map(ticker => <Ticker key={ticker.id} {...ticker} />)}
-                
-                <NotificationArea notification={notification} />
-
-                <div className="weather-widget">
-                    <FaSun className="weather-icon" />
-                    <div className="weather-temp">۳۷°C</div>
-                    <div className="weather-location">Tehran, IR</div>
-                </div>
-            </aside>
-
-            <main className="main-grid">
-                {boardData.grid.map(item => (
-                    <PriceBox 
-                        key={item.id}
-                        {...item}
-                        isHighlighted={highlightedItem.id === item.id}
-                        highlightTrend={highlightedItem.trend}
-                    />
-                ))}
-            </main>
-
-            <footer className="aramis-footer">
-                 zar
-            </footer>
+                </Panel>
+                <PanelResizeHandle className="resize-handle" />
+                <Panel defaultSize={35} minSize={20}>
+                    <main className="prices-grid-container">
+                        {displayItems.map(item => <PriceBox key={item.id} {...item} />)}
+                    </main>
+                </Panel>
+            </PanelGroup>
         </div>
     );
 };
