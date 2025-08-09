@@ -12,9 +12,9 @@
       "presentation": {
         "reveal": "always",
         "panel": "new",
-        "group": "frontendGroup" // گروه پنل برای frontend
+        "group": "frontendGroup"
       },
-      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+      "runOptions": { "runOn": "folderOpen" }
     },
     {
       "label": "Run Backend - API Gateway",
@@ -27,9 +27,9 @@
       "presentation": {
         "reveal": "always",
         "panel": "new",
-        "group": "apiGatewayGroup" // گروه پنل برای apiGateway
+        "group": "apiGatewayGroup"
       },
-      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+      "runOptions": { "runOn": "folderOpen" }
     },
     {
       "label": "Run Backend - Profile Manager",
@@ -42,23 +42,39 @@
       "presentation": {
         "reveal": "always",
         "panel": "new",
-        "group": "profileManagerGroup" // گروه پنل برای profileManager
+        "group": "profileManagerGroup"
       },
-      "runOptions": { "runOn": "folderOpen" } // اجرا هنگام باز شدن پوشه
+      "runOptions": { "runOn": "folderOpen" }
+    },
+    {
+      "label": "Run Backend - CRM Manager",
+      "type": "shell",
+      "command": "go run cmd/main.go",
+      "options": {
+        "cwd": "${workspaceFolder}/backend/src/crmManager"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "group": "crmManagerGroup" 
+      },
+      "runOptions": { "runOn": "folderOpen" }
     },
     {
       "label": "Run All Services",
       "dependsOn": [
         "Run Frontend (Vite)",
         "Run Backend - API Gateway",
-        "Run Backend - Profile Manager"
+        "Run Backend - Profile Manager",
+        "Run Backend - CRM Manager"
       ],
-      "dependsOrder": "parallel", // اجرای موازی تسک‌ها
+      "dependsOrder": "parallel",
       "group": {
         "kind": "build",
-        "isDefault": true // این تسک به عنوان تسک build پیش‌فرض اجرا می‌شود
+        "isDefault": true
       },
-      "problemMatcher": [] // برای جلوگیری از اسکن خروجی توسط VS Code برای خطاها
+      "problemMatcher": []
     }
   ]
 }
