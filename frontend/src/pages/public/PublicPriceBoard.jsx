@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Card, Spin, Alert } from 'antd';
 import { ClockCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { FaSun, FaMoon, FaCloud, FaCloudShowersHeavy, FaWind, FaSmog, FaSnowflake } from 'react-icons/fa';
+// ایمپورت کتابخانه جدید
 import {
     Panel,
     PanelGroup,
@@ -9,196 +11,192 @@ import {
 import ImageSlider from '../../components/ImageSlider';
 import './PublicPriceBoard.css';
 
-// کامپوننت ساعت آنالوگ
-const AnalogClock = () => {
-    const [time, setTime] = useState(new Date());
-    useEffect(() => {
-        const timerId = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(timerId);
-    }, []);
-    const seconds = time.getSeconds(), minutes = time.getMinutes(), hours = time.getHours();
-    const secondsDegrees = ((seconds / 60) * 360) + 90;
-    const minutesDegrees = ((minutes / 60) * 360) + ((seconds/60)*6) + 90;
-    const hoursDegrees = ((hours / 12) * 360) + ((minutes/60)*30) + 90;
-    return (
-        <div className="analog-clock">
-            <div className="hand hour-hand" style={{ transform: `rotate(${hoursDegrees}deg)` }}></div>
-            <div className="hand minute-hand" style={{ transform: `rotate(${minutesDegrees}deg)` }}></div>
-            <div className="hand second-hand" style={{ transform: `rotate(${secondsDegrees}deg)` }}></div>
-            <div className="center-dot"></div>
-        </div>
-    );
+const MAX_VISIBLE_POPUPS = 3;
+
+const weatherTranslations = { "Sunny": "آفتابی", "Clear": "صاف", "Partly cloudy": "کمی ابری", "Cloudy": "ابری", "Overcast": "تمام ابری", "Mist": "مه‌آلود", "Patchy rain possible": "احتمال بارش پراکنده", "Patchy snow possible": "احتمال برف پراکنده", "Patchy sleet possible": "احتمال باران و برف", "Patchy freezing drizzle possible": "احتمال نم‌نم باران یخ‌زده", "Thundery outbreaks possible": "احتمال رگبار و رعد و برق", "Blowing snow": "بوران برف", "Blizzard": "کولاک", "Fog": "مه", "Freezing fog": "مه یخ‌زده", "Patchy light drizzle": "نم‌نم باران سبک", "Light drizzle": "نم‌نم باران", "Freezing drizzle": "نم‌نم باران یخ‌زده", "Heavy freezing drizzle": "نم‌نم باران یخ‌زده شدید", "Patchy light rain": "باران سبک پراکنده", "Light rain": "باران سبک", "Moderate rain at times": "باران متوسط در برخی ساعات", "Moderate rain": "باران متوسط", "Heavy rain at times": "باران شدید در برخی ساعات", "Heavy rain": "باران شدید", "Light freezing rain": "باران یخ‌زده سبک", "Moderate or heavy freezing rain": "باران یخ‌زده متوسط یا شدید", "Light sleet": "باران و برف سبک", "Moderate or heavy sleet": "باران و برف متوسط یا شدید", "Patchy light snow": "برف سبک پراکنده", "Light snow": "برف سبک", "Patchy moderate snow": "برف متوسط پراکنده", "Moderate snow": "برف متوسط", "Patchy heavy snow": "برف سنگین پراکنده", "Heavy snow": "برف سنگین", "Ice pellets": "تگرگ", "Light rain shower": "رگبار باران سبک", "Moderate or heavy rain shower": "رگبار باران متوسط یا شدید", "Torrential rain shower": "رگبار سیل‌آسا", "Light sleet showers": "رگبار باران و برف سبک", "Moderate or heavy sleet showers": "رگبار باران و برف متوسط یا شدید", "Light snow showers": "رگبار برف سبک", "Moderate or heavy snow showers": "رگبار برف متوسط یا شدید", "Light showers of ice pellets": "رگبار تگرگ سبک", "Moderate or heavy showers of ice pellets": "رگبار تگرگ متوسط یا شدید", "Patchy light rain with thunder": "باران پراکنده و رعد و برق", "Moderate or heavy rain with thunder": "باران متوسط یا شدید با رعد و برق", "Patchy light snow with thunder": "برف پراکنده و رعد و برق", "Moderate or heavy snow with thunder": "برف متوسط یا شدید با رعد و برق",};
+
+const formatPrice = (num, unit = '') => {
+    const roundedNum = Math.round(num);
+    const formatted = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(roundedNum);
+    const displayUnit = unit === 'تومان' ? '' : unit;
+    return `${formatted} ${displayUnit}`.trim();
 };
 
-// کامپوننت باکس قیمت
-const PriceBox = ({ title, sellPrice, buyPrice, singlePrice, wide = false, isHighlighted, highlightTrend }) => {
-    const boxClassName = `price-box ${wide ? 'wide' : ''} ${isHighlighted ? `highlight-${highlightTrend}` : ''}`;
-    
+const PriceBox = ({ title, prices, unit, highlight, momentaryDifference }) => {
+    const trendClass = highlight === 'up' ? 'highlight-up' : highlight === 'down' ? 'highlight-down' : '';
+
     return (
-        <div className={boxClassName}>
+        <div className={`price-box ${trendClass}`}>
             <div className="price-title">{title}</div>
-            <div className="price-values">
-                {singlePrice && <span className="price-value single">{singlePrice}</span>}
-                {sellPrice && (
-                    <div className="price-column">
-                        <span className="price-label sell-label">فروش</span>
-                        <span className="price-value">{sellPrice}</span>
+            <div className="price-values-container">
+                {prices.buy !== undefined ? (
+                    <div className="buy-sell-container">
+                        <div className="price-value-wrapper">
+                            <span>فروش</span>
+                            <span className="price-value">{formatPrice(prices.sell, unit)}</span>
+                        </div>
+                        <div className="price-separator"></div>
+                        <div className="price-value-wrapper">
+                            <span>خرید</span>
+                            <span className="price-value">{formatPrice(prices.buy, unit)}</span>
+                        </div>
                     </div>
-                )}
-                {buyPrice && (
-                     <div className="price-column">
-                        <span className="price-label buy-label">خرید</span>
-                        <span className="price-value">{buyPrice}</span>
-                    </div>
+                ) : (
+                    <span className="price-value single">{formatPrice(prices.single, unit)}</span>
                 )}
             </div>
+            {momentaryDifference && (
+                <div className={`price-difference ${momentaryDifference.trend}`}>
+                    {momentaryDifference.trend === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                    <span className="rial-difference">{momentaryDifference.difference}</span>
+                    <span className="percent-difference">({momentaryDifference.percentDifference}%)</span>
+                </div>
+            )}
         </div>
     );
 };
 
-// کامپوننت تیکر سایدبار
-const Ticker = ({ title, value }) => (
-    <div className="ticker">
-        <div className="ticker-title">{title}</div>
-        <div className="ticker-value">{value}</div>
-    </div>
-);
-
-// کامپوننت سفارشی برای نمایش اعلان در سایدبار
-const NotificationArea = ({ notification }) => {
-    if (!notification) return <div className="notification-area-placeholder"></div>;
-
-    const { title, changeAmount, isIncrease } = notification;
-    const trendText = isIncrease ? "افزایش" : "کاهش";
-    const trendIcon = isIncrease ? <ArrowUpOutlined /> : <ArrowDownOutlined />;
-
+const AnalogClock = () => { const [time, setTime] = useState(new Date()); useEffect(() => { const timerId = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timerId); }, []); const seconds = time.getSeconds(); const minutes = time.getMinutes(); const hours = time.getHours(); const secondsDegrees = ((seconds / 60) * 360) + 90; const minutesDegrees = ((minutes / 60) * 360) + ((seconds / 60) * 6) + 90; const hoursIn12 = hours % 12; const hoursDegrees = ((hoursIn12 / 12) * 360) + ((minutes / 60) * 30) + 90; return ( <div className="analog-clock"> <div className="hand hour-hand" style={{ transform: `rotate(${hoursDegrees}deg)` }}></div> <div className="hand minute-hand" style={{ transform: `rotate(${minutesDegrees}deg)` }}></div> <div className="hand second-hand" style={{ transform: `rotate(${secondsDegrees}deg)` }}></div> <div className="center-dot"></div> </div> ); };
+const WeatherWidget = ({ weatherData }) => {
+    if (!weatherData) return null;
+    const { current } = weatherData;
+    const { temp_c, condition, wind_kph, wind_dir, is_day, feelslike_c } = current;
+    const isSunny = condition.code === 1000;
+    const getWeatherIcon = () => {
+        const iconClass = isSunny && is_day ? 'rotating-sun' : '';
+        const code = condition.code;
+        if (code === 1000) return is_day ? <FaSun className={iconClass} /> : <FaMoon />;
+        if ([1003, 1006, 1009].includes(code)) return <FaCloud />;
+        if ([1030, 1135, 1147].includes(code)) return <FaSmog />;
+        if (code >= 1063 && code <= 1201) return <FaCloudShowersHeavy />;
+        if (code >= 1204 && code <= 1282) return <FaSnowflake />;
+        return is_day ? <FaSun className={iconClass} /> : <FaMoon />;
+    };
+    const getTemperatureMessage = () => {
+        if (temp_c > 28) return "گرم";
+        if (temp_c < 10) return "سرد";
+        if (temp_c >= 18 && temp_c <= 25) return "ایده‌آل";
+        return null;
+    };
     return (
-        <div className={`notification-area ${isIncrease ? 'up' : 'down'} show`}>
-            <div className="notification-header">
-                {trendIcon}
-                <span className="notification-title">{title}</span>
+        <div className="weather-widget">
+            <div className="weather-main">
+                <div className="weather-icon">{getWeatherIcon()}</div>
+                <div className="weather-temp">{Math.round(temp_c)}°C</div>
             </div>
-            <div className="notification-body">
-                {/* --- اصلاحیه: حذف نمایش درصد تغییر --- */}
-                <span>{trendText} {changeAmount} تومانی</span>
+            <div className="weather-details">
+                <div className="weather-condition">{weatherTranslations[condition.text] || condition.text}</div>
+                <div className="weather-real-feel">دمای احساسی: {Math.round(feelslike_c)}°C</div>
+                <div className="weather-wind"><FaWind /> {wind_kph} km/h - {wind_dir}</div>
+                {getTemperatureMessage() && <div className="weather-message">{getTemperatureMessage()}</div>}
             </div>
         </div>
     );
-};
-
-
-// داده‌های اولیه
-const initialData = {
-    tickers: [
-        { id: 'tala_ons', title: "انس طلا", value: "$۳,۳۲۹" },
-        { id: 'bitcoin', title: "بیت کوین (BTC)", value: "$۱۱۷,۷۰۳" }
-    ],
-    grid: [
-        { id: 'motafareghe', title: "۱۸گرم طلای متفرقه", singlePrice: "۷,۰۵۳,۰۰۰" },
-        { id: 'abshode_750', title: "طلای آبشده (۷۵۰)", singlePrice: "۷,۱۴۸,۰۰۰" },
-        { id: 'abshode_naghdi', title: "آبشده نقدی (کیلویی)", sellPrice: "۳۰,۷۲۰,۰۰۰", buyPrice: "۳۰,۶۹۷,۰۰۰" },
-        { id: 'gold_24', title: "یک گرم طلای ۲۴ عیار", singlePrice: "۹,۵۳۰,۰۰۰" },
-        { id: 'seke_ghadim', title: "سکه طرح قدیم", sellPrice: "۷۲,۵۰۰,۰۰۰", buyPrice: "۷۲,۲۰۰,۰۰۰" },
-        { id: 'seke_jadid', title: "سکه طرح جدید", sellPrice: "۷۹,۶۰۰,۰۰۰", buyPrice: "۷۹,۰۰۰,۰۰۰" },
-        { id: 'nim_seke', title: "نیم سکه", sellPrice: "۴۲,۹۰۰,۰۰۰", buyPrice: "۴۲,۵۰۰,۰۰۰" },
-        { id: 'rob_seke', title: "ربع سکه", sellPrice: "۲۵,۲۰۰,۰۰۰", buyPrice: "۲۴,۹۰۰,۰۰۰" },
-        { id: 'seke_germi', title: "سکه گرمی", singlePrice: "۱۴,۵۰۰,۰۰۰" },
-        { id: 'arzesh_talaei', title: "ارزش طلایی سکه", singlePrice: "۲۶,۰۸۴,۴۸۰", wide: true },
-        { id: 'euro', title: "یورو", singlePrice: "۱۰۳,۱۶۰" },
-        { id: 'derham', title: "درهم", singlePrice: "۲۴,۱۰۰" },
-        { id: 'naft', title: "نفت برنت", singlePrice: "$۷۱.۵۹" },
-        { id: 'dollar', title: "دلار", singlePrice: "۸۸,۰۵۰" },
-    ]
-};
-
-const parsePersianNumber = (str) => {
-    const persian = { '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
-    let res = '';
-    const cleanedStr = String(str).replace(/,/g, '');
-    for (let i = 0; i < cleanedStr.length; i++) {
-        res += persian[cleanedStr[i]] || cleanedStr[i];
-    }
-    return parseInt(res, 10);
 };
 
 const PublicPriceBoard = () => {
+    const [displayItems, setDisplayItems] = useState([]);
+    const [config, setConfig] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [currentTime, setCurrentTime] = useState('');
-    const [boardData, setBoardData] = useState(initialData);
-    const [notification, setNotification] = useState(null);
-    const [highlightedItem, setHighlightedItem] = useState({ id: null, trend: '' });
+    const [lastUpdateTime, setLastUpdateTime] = useState('');
+    const [popupQueue, setPopupQueue] = useState([]);
+    const [visiblePopups, setVisiblePopups] = useState([]);
+    const [weatherData, setWeatherData] = useState(null);
 
-    const formatNumber = (num) => new Intl.NumberFormat('fa-IR').format(num);
+    const previousPrices = useRef(JSON.parse(localStorage.getItem('previousPrices')) || {});
+    const itemHighlights = useRef(JSON.parse(localStorage.getItem('itemHighlights')) || {});
 
     useEffect(() => {
-        let timeoutId;
+        localStorage.setItem('previousPrices', JSON.stringify(previousPrices.current));
+        localStorage.setItem('itemHighlights', JSON.stringify(itemHighlights.current));
+    });
 
-        const runPriceChange = () => {
-            setBoardData(prevData => {
-                const newData = JSON.parse(JSON.stringify(prevData));
-                const keywords = ["طلا", "دلار", "سکه", "آبشده"];
-                const itemsToUpdate = newData.grid.filter(p => 
-                    keywords.some(keyword => p.title.includes(keyword)) &&
-                    (p.singlePrice || p.sellPrice)
-                );
+    const queuePopup = useCallback((popupData) => { setPopupQueue(prev => [...prev, { ...popupData, id: Date.now() + Math.random() }]); }, []);
+    const fetchWeather = useCallback(async () => { if (config && config.showWeatherWidget && config.weatherApiUrl) { try { const res = await fetch(config.weatherApiUrl); if (!res.ok) throw new Error('Weather API Error'); setWeatherData(await res.json()); } catch (e) { console.error("Failed to fetch weather", e); } } }, [config]);
 
-                if (itemsToUpdate.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * itemsToUpdate.length);
-                    const itemToChange = itemsToUpdate[randomIndex];
-                    const originalItem = newData.grid.find(p => p.id === itemToChange.id);
+    const calculatePrice = (basePrice, percent, value) => {
+        const percentAdjustment = basePrice * (percent / 100);
+        return basePrice + percentAdjustment + value;
+    };
 
-                    const baseChange = Math.floor(Math.random() * (15000 - 2000 + 1)) + 2000;
-                    const changeAmount = baseChange * (Math.random() < 0.5 ? -1 : 1);
-                    
-                    const priceKey = originalItem.singlePrice ? 'singlePrice' : 'sellPrice';
-                    
-                    if (originalItem[priceKey]) {
-                        const oldPrice = parsePersianNumber(originalItem[priceKey]);
-                        
-                        if (isNaN(oldPrice)) return newData;
+    const prepareDisplayData = useCallback(() => {
+        setLoading(true);
+        setError(null);
 
-                        const newPrice = oldPrice + changeAmount;
-                        originalItem[priceKey] = formatNumber(newPrice);
-                        
-                        setNotification({
-                            title: `تغییر قیمت: ${originalItem.title}`,
-                            changeAmount: formatNumber(Math.abs(changeAmount)),
-                            isIncrease: changeAmount > 0,
-                        });
+        const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig'));
+        const lastApiData = JSON.parse(localStorage.getItem('lastApiData'));
+        const savedTimestamp = localStorage.getItem('lastApiUpdateTimestamp');
 
-                        setHighlightedItem({
-                            id: originalItem.id,
-                            trend: changeAmount > 0 ? 'up' : 'down'
-                        });
+        if (savedTimestamp) { const date = new Date(savedTimestamp); const newFormat = date.toLocaleString('fa-IR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).replace('،', ' -'); setLastUpdateTime(newFormat); }
+        if (!savedConfig) { setError("تنظیمات تابلو هنوز پیکربندی نشده است."); setLoading(false); return; }
+        if (!lastApiData) { setError("داده‌ای از سرور دریافت نشده است."); setLoading(false); return; }
 
-                        setTimeout(() => {
-                            setNotification(null);
-                            setHighlightedItem({ id: null, trend: '' });
-                        }, 5000);
-                    }
+        setConfig(savedConfig);
+        const allApiItems = [...lastApiData.gold, ...lastApiData.currency, ...lastApiData.cryptocurrency];
+
+        const itemsToDisplay = (savedConfig.activeItems || []).map(configItem => {
+            const apiItem = allApiItems.find(i => i.symbol === configItem.symbol);
+            if (!apiItem) return null;
+
+            let prices, referencePrice;
+            if(configItem.showBuySell) {
+                const sellPrice = calculatePrice(apiItem.price, configItem.sellAdjustmentPercent, configItem.sellAdjustmentValue);
+                const buyPrice = calculatePrice(apiItem.price, configItem.buyAdjustmentPercent, configItem.buyAdjustmentValue);
+                prices = { sell: sellPrice, buy: buyPrice };
+                referencePrice = sellPrice;
+            } else {
+                const finalPrice = calculatePrice(apiItem.price, configItem.adjustmentPercent, configItem.adjustmentValue);
+                prices = { single: finalPrice };
+                referencePrice = finalPrice;
+            }
+
+            const oldPrice = previousPrices.current[configItem.symbol];
+            let momentaryDifference = null;
+
+            if (oldPrice && oldPrice !== referencePrice) {
+                const diff = referencePrice - oldPrice;
+                const trend = diff > 0 ? 'up' : 'down';
+                itemHighlights.current[configItem.symbol] = trend;
+
+                const differenceText = formatPrice(Math.abs(diff), apiItem.unit);
+                const percentDifferenceText = (Math.abs(diff) / oldPrice * 100).toFixed(2);
+
+                momentaryDifference = { trend, difference: differenceText, percentDifference: percentDifferenceText };
+
+                if (savedConfig.showPriceChangePopup) {
+                    queuePopup({ name: configItem.name, trend, difference: differenceText, percentDifference: percentDifferenceText });
                 }
-                
-                return newData;
-            });
-            
-            scheduleNextRun();
-        };
+            } else if (oldPrice === undefined) {
+                 itemHighlights.current[configItem.symbol] = '';
+            }
 
-        const scheduleNextRun = () => {
-            const randomDelay = Math.random() * (30000 - 5000) + 5000;
-            timeoutId = setTimeout(runPriceChange, randomDelay);
-        };
+            previousPrices.current[configItem.symbol] = referencePrice;
 
-        scheduleNextRun();
+            return {
+                id: configItem.symbol,
+                title: configItem.name,
+                prices,
+                unit: apiItem.unit,
+                highlight: itemHighlights.current[configItem.symbol] || '',
+                momentaryDifference,
+            };
+        }).filter(Boolean);
 
-        return () => clearTimeout(timeoutId);
-    }, []);
-    
-    useEffect(() => {
-        const clockInterval = setInterval(() => {
-            setCurrentTime(new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }));
-        }, 1000);
-        return () => clearInterval(clockInterval);
-    }, []);
+        setDisplayItems(itemsToDisplay);
+        setLoading(false);
+    }, [queuePopup]);
+
+    useEffect(() => { if (popupQueue.length > 0 && visiblePopups.length < MAX_VISIBLE_POPUPS) { const popupToDisplay = popupQueue[0]; setVisiblePopups(prev => [...prev, popupToDisplay]); setPopupQueue(prev => prev.slice(1)); const duration = (config?.popupDuration || 5) * 1000; setTimeout(() => { setVisiblePopups(prev => prev.filter(p => p.id !== popupToDisplay.id)); }, duration); } }, [popupQueue, visiblePopups, config]);
+    useEffect(() => { prepareDisplayData(); }, [prepareDisplayData]);
+    useEffect(() => { fetchWeather(); const weatherInterval = setInterval(fetchWeather, 15 * 60 * 1000); return () => clearInterval(weatherInterval); }, [fetchWeather]);
+    useEffect(() => { const handleStorageChange = (event) => { if (event.key === 'lastApiData' || event.key === 'priceBoardConfig' || event.key === 'lastApiUpdateTimestamp') { prepareDisplayData(); } }; window.addEventListener('storage', handleStorageChange); const clockInterval = setInterval(() => setCurrentTime(new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })), 1000); return () => { window.removeEventListener('storage', handleStorageChange); clearInterval(clockInterval); }; }, [prepareDisplayData]);
+
+     if (loading && !displayItems.length) return <div className="status-message"><Spin size="large" /></div>;
+     if (error) return <Alert message="خطا" description={error} type="error" showIcon style={{ margin: '50px' }} />;
+
+    const layoutClass = config?.imageSliderEnabled ? 'layout-with-slider' : 'layout-no-slider';
 
     return (
         <div className={`zarfolio-board-container ${config?.colorPalette || 'theme-default'} ${layoutClass}`}>
@@ -207,12 +205,7 @@ const PublicPriceBoard = () => {
                     <div className="right-section-container">
                         {config?.imageSliderEnabled && (
                             <div className="background-slider-wrapper">
-                                {/* **اصلاح شده:** پاس دادن لیست عکس‌های انتخاب شده به اسلایدر */}
-                                <ImageSlider
-                                    images={config.sliderImages}
-                                    randomOrder={config.randomImageOrder}
-                                    transition={config.imageTransition}
-                                />
+                                <ImageSlider />
                             </div>
                         )}
 
