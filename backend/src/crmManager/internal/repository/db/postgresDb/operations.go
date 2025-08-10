@@ -28,6 +28,7 @@ func NewCustomerRepository(db *gorm.DB, logger *zap.Logger) (repo.CustRepo, erro
 		logger: logger,
 	}, nil
 }
+
 func (r *customerRepositoryImpl) CheckCustomerCodeExists(ctx context.Context, id uint, code string) (bool, error) {
 	var count int64
 	err := r.db.WithContext(ctx).Model(&model.Customer{}).Where("id = ? AND code = ?", id, code).Count(&count).Error
@@ -37,6 +38,7 @@ func (r *customerRepositoryImpl) CheckCustomerCodeExists(ctx context.Context, id
 	}
 	return count > 0, nil
 }
+
 func (r *customerRepositoryImpl) CreateCustomer(ctx context.Context, customer *model.Customer) (*model.Customer, error) {
 	r.logger.Debug("Attempting to save customer to database.", zap.String("code", customer.Code))
 
@@ -76,6 +78,7 @@ func (r *customerRepositoryImpl) GetCustomerByID(ctx context.Context, id uint) (
 	}
 	return &customer, nil
 }
+
 func (r *customerRepositoryImpl) GetCustomerByUniqueFields(ctx context.Context, code, nikename, mobile, shenasemeli string, bidID uint) (*model.Customer, error) {
 	var customer model.Customer
 	if err := r.db.WithContext(ctx).Where("code = ? AND nikename = ? AND mobile = ? AND shenasemeli = ? AND bid_id = ?", code, nikename, mobile, shenasemeli, bidID).First(&customer).Error; err != nil {
@@ -84,6 +87,7 @@ func (r *customerRepositoryImpl) GetCustomerByUniqueFields(ctx context.Context, 
 	}
 	return &customer, nil
 }
+
 func (r *customerRepositoryImpl) FindOrCreateCusType(ctx context.Context, label string) (*model.CusType, error) {
 	var cusType model.CusType
 	result := r.db.WithContext(ctx).Where("label = ?", label).FirstOrCreate(&cusType, model.CusType{Label: label, Code: label})
@@ -92,4 +96,30 @@ func (r *customerRepositoryImpl) FindOrCreateCusType(ctx context.Context, label 
 		return nil, fmt.Errorf("failed to find or create customer type: %w", result.Error)
 	}
 	return &cusType, nil
+}
+
+func (r *customerRepositoryImpl) UpdateCustomer(ctx context.Context, id uint, req *model.UpdateCustomerRequest) (*model.Customer, error) {
+	var customer model.Customer
+	if err := r.db.WithContext(ctx).Model(&customer).Where("id = ?", id).Updates(req).Error; err != nil {
+		r.logger.Error("failed to update customer", zap.Uint("id", id), zap.Error(err))
+		return nil, fmt.Errorf("failed to update customer: %w", err)
+	}
+	return &customer, nil
+}
+
+func (r *customerRepositoryImpl) DeleteCustomer(ctx context.Context, id uint) error {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Customer{}).Error; err != nil {
+		r.logger.Error("failed to delete customer", zap.Uint("id", id), zap.Error(err))
+		return fmt.Errorf("failed to delete customer: %w", err)
+	}
+	return nil
+}
+
+func (r *customerRepositoryImpl) GetAllCustomerTypes(ctx context.Context) ([]model.CusType, error) {
+	var customerTypes []model.CusType
+	if err := r.db.WithContext(ctx).Find(&customerTypes).Error; err != nil {
+		r.logger.Error("failed to get all customer types", zap.Error(err))
+		return nil, err
+	}
+	return customerTypes, nil
 }

@@ -13,5 +13,8 @@ type CustRepo interface {
 	CheckCustomerCodeExists(ctx context.Context, bidID uint, code string) (bool, error)
 	FindOrCreateCusType(ctx context.Context, label string) (*model.CusType, error)
 	GetAllCustomers(ctx context.Context) ([]model.Customer, error)
+	UpdateCustomer(ctx context.Context, id uint, req *model.UpdateCustomerRequest) (*model.Customer, error)
+	DeleteCustomer(ctx context.Context, id uint) error
+	GetAllCustomerTypes(ctx context.Context) ([]model.CusType, error)
 	// ... سایر متدهای CRUD (Update, Delete, ListWithFilters)
 }

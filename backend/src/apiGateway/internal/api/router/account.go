@@ -5,21 +5,43 @@ import (
 	"gold-api/internal/api/handler"
 	"gold-api/internal/api/middleware"
 	"gold-api/internal/model"
-	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
-func SetUpAccountRoutes(apiGroup fiber.Router, accountHandlerAG *handler.AccountHandlerAG, authMiddleware *middleware.AuthMiddleware) error {
-	if accountHandlerAG == nil {
-		return fmt.Errorf("AccountHandlerAG is nil in SetUpAccountRoutes")
+func SetUpAccountRoutes(apiGroup fiber.Router, accountHandlerAG *handler.AccountHandlerAG, authMiddleware *middleware.AuthMiddleware, logger *zap.Logger) error {
+	defer logger.Sync() 
+
+	if apiGroup == nil {
+		logger.Error("apiGroup is nil in SetUpAccountRoutes",
+			zap.String("service", "server"),
+			zap.String("operation", "setup-account-routes"))
+		return fmt.Errorf("apiGroup cannot be nil in SetUpAccountRoutes")
 	}
+
+	if accountHandlerAG == nil {
+		logger.Error("AccountHandlerAG is nil in SetUpAccountRoutes",
+			zap.String("service", "server"),
+			zap.String("operation", "setup-account-routes"))
+		return fmt.Errorf("AccountHandlerAG cannot be nil in SetUpAccountRoutes")
+	}
+
 	if authMiddleware == nil {
-		return fmt.Errorf("AuthMiddleware is nil in SetUpAccountRoutes")
+		logger.Error("AuthMiddleware is nil in SetUpAccountRoutes",
+			zap.String("service", "server"),
+			zap.String("operation", "setup-account-routes"))
+		return fmt.Errorf("AuthMiddleware cannot be nil in SetUpAccountRoutes")
+	}
+
+	if logger == nil {
+		return fmt.Errorf("logger cannot be nil in SetUpAccountRoutes")
 	}
 
 	accountGroup := apiGroup.Group("/account")
-	utils.Log.Info("Configuring /api/v1/account protected routes.")
+	logger.Debug("Configuring /api/v1/account protected routes",
+		zap.String("service", "server"),
+		zap.String("operation", "setup-account-routes"))
 
 	accountGroup.Post("/change-username", authMiddleware.AuthorizeMiddleware(model.PermUserUpdate), accountHandlerAG.HandleChangeUsername)
 	accountGroup.Post("/change-password", authMiddleware.AuthorizeMiddleware(model.PermUserUpdate), accountHandlerAG.HandleChangePassword)
@@ -30,6 +52,8 @@ func SetUpAccountRoutes(apiGroup fiber.Router, accountHandlerAG *handler.Account
 	twoFASetupGroup.Post("/enable", authMiddleware.AuthorizeMiddleware(model.PermUserUpdate), accountHandlerAG.HandleVerifyAndEnableTwoFA)
 	twoFASetupGroup.Post("/disable", authMiddleware.AuthorizeMiddleware(model.PermUserUpdate), accountHandlerAG.HandleDisableTwoFA)
 
-	utils.Log.Info("/account routes and /account/2fa routes configured with RBAC.")
+	logger.Debug("/account routes and /account/2fa routes configured successfully with RBAC",
+		zap.String("service", "server"),
+		zap.String("operation", "setup-account-routes"))
 	return nil
 }

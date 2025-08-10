@@ -2,7 +2,6 @@ package handler
 
 import (
 	profilemanager "gold-api/internal/service/profilemanger"
-	"gold-api/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,7 +12,6 @@ type AccountHandlerAG struct {
 
 func NewAccountHandlerAG(client profilemanager.ProfileManagerClient) *AccountHandlerAG {
 	if client == nil {
-		utils.Log.Fatal("ProfileManagerClient cannot be nil in NewAccountHandlerAG")
 		return nil
 	}
 	return &AccountHandlerAG{

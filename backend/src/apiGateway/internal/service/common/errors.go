@@ -11,4 +11,5 @@ var (
 	ErrCrmManagerDown    = errors.New("CRM manager service is unavailable")
 	ErrInvalidToken       = errors.New("invalid or expired token")
 	ErrInvalidTwoFACode   = errors.New("invalid two-factor authentication code")
+	ErrCustomerNotFound   = errors.New("customer not found")
 )

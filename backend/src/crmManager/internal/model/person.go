@@ -138,3 +138,41 @@ type CreateCustomerRequest struct {
 	DefaultGoldUnitRate float64 `json:"defaultGoldUnitRate"`
 	CustomerCategory    string  `json:"customerCategory"`
 }
+
+type UpdateCustomerRequest struct {
+	Nikename        *string  `json:"nikename,omitempty"`
+	Name            *string  `json:"name,omitempty"`
+	FamilyName      *string  `json:"familyName,omitempty" gorm:"column:family_name"`
+	Birthday        *time.Time `json:"birthday,omitempty"`
+	Company         *string  `json:"company,omitempty"`
+	
+	Mobile          *string  `json:"mobile,omitempty"`
+	Mobile2         *string  `json:"mobile2,omitempty"`
+	Tel             *string  `json:"tel,omitempty"`
+	Fax             *string  `json:"fax,omitempty"`
+	Email           *string  `json:"email,omitempty"`
+	Website         *string  `json:"website,omitempty"`
+	
+	Address         *string  `json:"address,omitempty"`
+	Postalcode      *string  `json:"postalcode,omitempty"`
+	Shahr           *string  `json:"shahr,omitempty"`
+	Ostan           *string  `json:"ostan,omitempty"`
+	Keshvar         *string  `json:"keshvar,omitempty"`
+
+	Shenasemeli     *string  `json:"shenasemeli,omitempty"`
+	Codeeghtesadi   *string  `json:"codeeghtesadi,omitempty"`
+	Sabt            *string  `json:"sabt,omitempty"`
+	TaxID           *string  `json:"taxID,omitempty"`
+
+	SpeedAccess       *bool    `json:"speedAccess,omitempty"`
+	Des               *string  `json:"des,omitempty"`
+	Status            *string  `json:"status,omitempty"`
+
+
+	CustomerCategory *string `json:"customerCategory,omitempty"`
+	PrelabelID       *uint   `json:"prelabelId,omitempty"`
+	AssignedEmployeeID *uint `json:"assignedEmployeeId,omitempty"`
+
+	BankAccounts *[]CusCard `json:"bankAccounts,omitempty"`
+	CustomerTypes *[]CusType `json:"customerTypes,omitempty"`
+}

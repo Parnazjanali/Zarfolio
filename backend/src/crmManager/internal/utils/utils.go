@@ -14,7 +14,6 @@ func GenerateSecureRandomString(length int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes)[:length], nil
 }
 
-// ptrString is a helper to convert a string to *string
 func PtrString(s string) *string {
 	if s == "" {
 		return nil
@@ -22,7 +21,7 @@ func PtrString(s string) *string {
 	return &s
 }
 
-// ptrFloat64 is a helper to convert a float64 to *float64
 func PtrFloat64(f float64) *float64 {
 	return &f
 }
+

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"crm-gold/internal/model"
 	"crm-gold/internal/repository/repo"
@@ -16,6 +18,9 @@ import (
 type CusService interface {
 	CreateCustomer(ctx context.Context, customer *model.CreateCustomerRequest) (*model.Customer, error)
 	GetAllCustomers(ctx context.Context) ([]model.Customer, error)
+	UpdateCustomer(ctx context.Context, id string, customer *model.UpdateCustomerRequest) (*model.Customer, error)
+	DeleteCustomer(ctx context.Context, id string) error
+	GetCustomerTypes(ctx context.Context) ([]model.CusType, error)
 }
 
 type customerServiceImpl struct {
@@ -76,7 +81,7 @@ func (s *customerServiceImpl) CreateCustomer(ctx context.Context, req *model.Cre
 
 	var customerTypes []model.CusType
 	if req.CustomerCategory != "" {
-		// Find or create the CusType based on the category string
+
 		cusType, err := s.customerRepo.FindOrCreateCusType(ctx, req.CustomerCategory)
 		if err != nil {
 			return nil, fmt.Errorf("failed to handle customer category: %w", err)
@@ -151,10 +156,63 @@ func (s *customerServiceImpl) generateUniqueCustomerCode(ctx context.Context, bi
 func (s *customerServiceImpl) GetAllCustomers(ctx context.Context) ([]model.Customer, error) {
 
 	s.logger.Info("Fetching all customers from service layer.")
-	customers, err := s.customerRepo.GetAllCustomers(ctx) 
+	customers, err := s.customerRepo.GetAllCustomers(ctx)
 	if err != nil {
 		s.logger.Error("Failed to fetch customers from database", zap.Error(err))
 		return nil, fmt.Errorf("failed to fetch customers: %w", err)
 	}
 	return customers, nil
+}
+func (s *customerServiceImpl) UpdateCustomer(ctx context.Context, id string, req *model.UpdateCustomerRequest) (*model.Customer, error) {
+
+	customerID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		s.logger.Error("Invalid customer ID format", zap.String("id", id), zap.Error(err))
+		return nil, errors.New("invalid customer ID format")
+	}
+
+	s.logger.Info("Attempting to update customer.", zap.Uint64("customer_id", customerID))
+
+	updatedCustomer, err := s.customerRepo.UpdateCustomer(ctx, uint(customerID), req)
+	if err != nil {
+		s.logger.Error("Failed to update customer in database", zap.Uint64("customer_id", customerID), zap.Error(err))
+		if strings.Contains(err.Error(), "not found") {
+			return nil, errors.New("customer not found")
+		}
+		return nil, fmt.Errorf("failed to update customer: %w", err)
+	}
+
+	s.logger.Info("Customer updated successfully.", zap.Uint("customer_id", updatedCustomer.ID), zap.String("customer_code", updatedCustomer.Code))
+	return updatedCustomer, nil
+}
+
+func (s *customerServiceImpl) DeleteCustomer(ctx context.Context, id string) error {
+
+	customerID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		s.logger.Error("Invalid customer ID format", zap.String("id", id), zap.Error(err))
+		return errors.New("invalid customer ID format")
+	}
+	s.logger.Info("Attempting to delete customer.", zap.Uint64("customer_id", customerID))
+
+	err = s.customerRepo.DeleteCustomer(ctx, uint(customerID))
+	if err != nil {
+		s.logger.Error("Failed to delete customer from database", zap.Uint64("customer_id", customerID), zap.Error(err))
+		if strings.Contains(err.Error(), "not found") {
+			return errors.New("customer not found")
+		}
+		return fmt.Errorf("failed to delete customer: %w", err)
+	}
+	s.logger.Info("Customer deleted successfully.", zap.Uint64("customer_id", customerID))
+	return nil
+}
+
+func (s *customerServiceImpl) GetCustomerTypes(ctx context.Context) ([]model.CusType, error) {
+	s.logger.Info("Fetching all customer types from service layer.")
+	customerTypes, err := s.customerRepo.GetAllCustomerTypes(ctx)
+	if err != nil {
+		s.logger.Error("Failed to fetch customer types from database", zap.Error(err))
+		return nil, fmt.Errorf("failed to fetch customer types: %w", err)
+	}
+	return customerTypes, nil
 }

@@ -28,6 +28,7 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 		utils.Log.Error("Failed to parse request body for customer creation", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
 			Message: "Invalid request body",
+			Code: "400",
 			Details: err.Error(),
 		})
 	}
@@ -37,7 +38,6 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 	if err != nil {
 		utils.Log.Error("Failed to create customer via service layer", zap.Error(err))
 
-		// مدیریت خطاهای خاص از لایه سرویس
 		if strings.Contains(err.Error(), "already exists") {
 			return c.Status(fiber.StatusConflict).JSON(model.ErrorResponse{
 				Message: "Customer with this code or mobile already exists.",
@@ -50,7 +50,6 @@ func (h *CrmHandler) HandleCreateCustomer(c *fiber.Ctx) error {
 		})
 	}
 
-	// 3. در صورت موفقیت، بازگرداندن پاسخ JSON
 	utils.Log.Info("Customer created successfully.", zap.Uint("customer_id", createdCustomer.ID), zap.String("customer_code", createdCustomer.Code))
 	return c.Status(fiber.StatusCreated).JSON(createdCustomer)
 }
@@ -67,4 +66,83 @@ func (h *CrmHandler) HandleGetAllCustomers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(customers)
+}
+
+func (h *CrmHandler) HandleUpdateCustomer(c *fiber.Ctx) error {
+    customerID := c.Params("id")
+    if customerID == "" {
+        utils.Log.Error("Customer ID is missing in CRM update request.")
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Customer ID is required."})
+    }
+
+
+	var req model.UpdateCustomerRequest
+    if err := c.BodyParser(&req); err != nil {
+        utils.Log.Error("Failed to parse request body for customer update in CRM", zap.Error(err))
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+            Message: "Invalid request body",
+            Details: err.Error(),
+        })
+    }
+
+    updatedCustomer, err := h.crmSvc.UpdateCustomer(c.Context(), customerID, &req)
+    if err != nil {
+
+		if strings.Contains(err.Error(), "not found") {
+            return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{
+                Message: "Customer not found.",
+            })
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+            Message: "Failed to update customer due to an internal error.",
+            Details: err.Error(),
+        })
+    }
+
+    return c.JSON(updatedCustomer)
+}
+
+func (h *CrmHandler) HandleDeleteCustomer(c *fiber.Ctx) error {
+
+	customerID := c.Params("id")
+    if customerID == "" {
+        utils.Log.Error("Customer ID is missing in Delete request.")
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Customer ID is required."})
+    }
+    
+    utils.Log.Info("Handling request to delete customer", zap.String("customer_id", customerID))
+    
+    err := h.crmSvc.DeleteCustomer(c.Context(), customerID)
+    if err != nil {
+        utils.Log.Error("Failed to delete customer via service layer", zap.Error(err))
+        
+        if strings.Contains(err.Error(), "not found") {
+            return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{
+                Message: "Customer not found.",
+            })
+        }
+        
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+            Message: "Failed to delete customer due to an internal error.",
+            Details: err.Error(),
+        })
+    }
+
+    utils.Log.Info("Customer deleted successfully.", zap.String("customer_id", customerID))
+    return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *CrmHandler) HandleGetCustomerTypes(c *fiber.Ctx) error {
+	
+	utils.Log.Info("Handling request to get customer types.")
+	cusTypes, err := h.crmSvc.GetCustomerTypes(c.Context())
+	if err != nil {
+		utils.Log.Error("Failed to get customer types via service layer", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Failed to get customer types due to an internal error.",
+			Details: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(cusTypes)
 }
