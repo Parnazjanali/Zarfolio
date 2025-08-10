@@ -6,7 +6,7 @@ import {
 import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
 import ImageGalleryModal from '../../components/ImageGalleryModal'; // وارد کردن کامپوننت جدید
-import config from '../../config';
+
 const { Title, Paragraph, Text } = Typography;
 
 const colorPalettes = [
