@@ -146,3 +146,38 @@ func (h *CrmHandler) HandleGetCustomerTypes(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(cusTypes)
 }
+
+func (h *CrmHandler) HandleCreateCustomerTypes (c *fiber.Ctx) error{
+	return  nil
+}
+
+func (h *CrmHandler) HandleDeleteCustomerTypes (c *fiber.Ctx)error{
+
+	cusCode := c.Params("cusType_code")
+    if cusCode == "" {
+        utils.Log.Error("Custype Code  is missing in Delete request.")
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "cusType Code  is required."})
+    }
+    
+    utils.Log.Info("Handling request to delete cusType", zap.String("cusType_code", cusCode))
+    
+    err := h.crmSvc.DeleteCustomerTypes(c.Context(), cusCode)
+    if err != nil {
+        utils.Log.Error("Failed to delete cusType via service layer", zap.Error(err))
+        
+        if strings.Contains(err.Error(), "not found") {
+            return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{
+                Message: "cusType not found.",
+            })
+        }
+        
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+            Message: "Failed to delete cusType due to an internal error.",
+            Details: err.Error(),
+        })
+    }
+
+    utils.Log.Info("cusType deleted successfully.", zap.String("cusType_code", cusCode))
+    return c.SendStatus(fiber.StatusNoContent)
+
+}

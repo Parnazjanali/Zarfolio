@@ -21,6 +21,8 @@ type CusService interface {
 	UpdateCustomer(ctx context.Context, id string, customer *model.UpdateCustomerRequest) (*model.Customer, error)
 	DeleteCustomer(ctx context.Context, id string) error
 	GetCustomerTypes(ctx context.Context) ([]model.CusType, error)
+	//CreateCustomerTypes(ctx context.Context, label string) (*model.CusType, error)
+	DeleteCustomerTypes(ctx context.Context, code string) error
 }
 
 type customerServiceImpl struct {
@@ -216,3 +218,12 @@ func (s *customerServiceImpl) GetCustomerTypes(ctx context.Context) ([]model.Cus
 	}
 	return customerTypes, nil
 }
+
+func (s *customerServiceImpl) DeleteCustomerTypes(ctx context.Context, code string) error {
+	return nil
+
+}
+
+/*func (s *customerServiceImpl) CreateCustomerTypes(ctx context.Context, label string) (*model.CusType,error) {
+
+}*/

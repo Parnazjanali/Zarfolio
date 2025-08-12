@@ -12,4 +12,5 @@ var (
 	ErrInvalidToken       = errors.New("invalid or expired token")
 	ErrInvalidTwoFACode   = errors.New("invalid two-factor authentication code")
 	ErrCustomerNotFound   = errors.New("customer not found")
+	ErrCustomerTypesNotFound= errors.New("CustomerTypes Not Found")
 )

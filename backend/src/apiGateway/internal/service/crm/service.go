@@ -7,6 +7,7 @@ import (
 	"gold-api/internal/model"
 	service "gold-api/internal/service/common"
 	crmmanager "gold-api/internal/service/crmManager"
+
 	"go.uber.org/zap"
 )
 
@@ -15,11 +16,14 @@ type CrmService interface {
 	CreateCustomer(ctx context.Context, req *model.CreateCustomerRequest) (*model.Customer, error)
 	UpdateCustomer(ctx context.Context, customerID string, req *model.UpdateCustomerRequest) (*model.Customer, error)
 	DeleteCustomer(ctx context.Context, customerID string) error
+	CreateCustomerTypes(ctx context.Context, label string) (*model.CusType, error)
+	GetCustomerTypes(ctx context.Context) ([]model.CusType, error)
+	DeleteCustomerTypes(ctx context.Context, code string) error
 }
 
 type CrmServiceImpl struct {
 	crmManagerClient crmmanager.CrmManagerClient
-	logger           *zap.Logger 
+	logger           *zap.Logger
 }
 
 func NewCrmService(client crmmanager.CrmManagerClient, logger *zap.Logger) (CrmService, error) {
@@ -81,4 +85,45 @@ func (s *CrmServiceImpl) DeleteCustomer(ctx context.Context, customerID string) 
 
 	s.logger.Debug("Customer deleted successfully", zap.String("customer_id", customerID))
 	return nil
+}
+
+func (s *CrmServiceImpl) GetCustomerTypes(ctx context.Context) ([]model.CusType, error) {
+
+	s.logger.Debug("Fetching all customers from service layer")
+
+	cusTypes, err := s.crmManagerClient.GetCustomerTypes(ctx)
+	if err != nil {
+
+		return nil, fmt.Errorf("failed to fetch CusTypes: %w", err)
+	}
+	return cusTypes, nil
+
+}
+
+func (s *CrmServiceImpl) CreateCustomerTypes(ctx context.Context, lable string) (*model.CusType, error) {
+
+	cusTypes, err := s.crmManagerClient.CreateCustomerTypes(ctx, lable)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create CusType:%w", err)
+	}
+
+	s.logger.Debug("CusType Updated Successfully ", zap.String("Cus_label", lable))
+
+	return cusTypes, nil
+
+}
+
+func (s *CrmServiceImpl) DeleteCustomerTypes(ctx context.Context, code string) error {
+	if err := s.crmManagerClient.DeleteCustomerTypes(ctx, code); err != nil {
+
+		if errors.Is(err, service.ErrCustomerTypesNotFound) {
+			return fmt.Errorf("%w: cusType not found", service.ErrCustomerTypesNotFound)
+		}
+		return fmt.Errorf("failed to delete cusType: %w", err)
+	}
+
+	s.logger.Debug("CusType deleted successfully", zap.String("cusType_Code", code))
+	return nil
+
 }

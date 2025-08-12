@@ -26,6 +26,9 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMi
 	crmGroup.Delete("/customers/:id", crmHandler.HandleDeleteCustomer)
 
 	crmGroup.Get("/customer-types", crmHandler.HandleGetCustomerTypes)
+	crmGroup.Post("/customer-types", crmHandler.HandleCreateCustomerTypes)
+	crmGroup.Delete("customer-types", crmHandler.HandleDeleteCustomerTypes)
+
 	/*crmGroup.Get("/customers/:code", crmHandler.HandleGetCustomerInfoByCode)
 	crmGroup.Get("/customer-prelabels", crmHandler.HandleGetCustomerPrelabels)
 

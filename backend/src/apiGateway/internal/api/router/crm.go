@@ -7,16 +7,16 @@ import (
 	"gold-api/internal/model"
 
 	"github.com/gofiber/fiber/v2"
-	"go.uber.org/zap" 
+	"go.uber.org/zap"
 )
 
 func SetUpCrmRoutes(
 	apiGroup fiber.Router,
 	crmHandlerAG *handler.CrmHandler,
 	authMiddleware *middleware.AuthMiddleware,
-	logger *zap.Logger, 
+	logger *zap.Logger,
 ) error {
-	defer logger.Sync() 
+	defer logger.Sync()
 
 	if crmHandlerAG == nil {
 		logger.Error("CrmHandlerAG is nil",
@@ -44,6 +44,7 @@ func SetUpCrmRoutes(
 	// روت‌های اطلاعات/جستجو و فیلترهای پیشرفته
 	crmGroup.Get("/customer-types", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerTypes)
 	crmGroup.Post("/customer-types", authMiddleware.AuthorizeMiddleware(model.PermCRMCreateCustomer), crmHandlerAG.HandleCreateCustomerType)
+	crmGroup.Delete("/custome-types", authMiddleware.AuthorizeMiddleware(model.PermCRMDeleteCustomer), crmHandlerAG.HandleDeleteCustomerTypes)
 	crmGroup.Get("/customers/:code", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerInfoByCode)
 	crmGroup.Get("/customer-prelabels", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerPrelabels)
 

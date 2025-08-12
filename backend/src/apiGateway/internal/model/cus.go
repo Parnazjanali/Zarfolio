@@ -176,3 +176,4 @@ type UpdateCustomerRequest struct {
 	BankAccounts *[]CusCard `json:"bankAccounts,omitempty"`
 	CustomerTypes *[]CusType `json:"customerTypes,omitempty"`
 }
+

@@ -6,14 +6,12 @@ import { FaPlus, FaSearch } from 'react-icons/fa';
 
 const { Title } = Typography;
 
-// ۱. تابع دریافت داده‌ها از بک‌اند شما
 const fetchCustomers = async () => {
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         throw new Error('برای دسترسی به این بخش، لطفا ابتدا وارد شوید.');
     }
     
-    // ⭐ آدرس API Gateway برای دریافت لیست مشتریان
     const API_BASE_URL = 'http://localhost:8080'; 
     const response = await fetch(`${API_BASE_URL}/api/v1/crm/customers`, {
         headers: {
@@ -30,7 +28,7 @@ const fetchCustomers = async () => {
 };
 
 function CustomersPage() {
-    // ۲. استفاده از useQuery برای مدیریت داده‌ها
+
     const { data: customers = [], error, isLoading } = useQuery({
         queryKey: ['customers'],
         queryFn: fetchCustomers,
@@ -39,7 +37,6 @@ function CustomersPage() {
 
     const [searchText, setSearchText] = useState('');
 
-    // ⭐ ۳. فیلتر کردن داده‌ها با استفاده از فیلدهای جدید
     const filteredData = customers.filter(customer =>
         (customer.name?.toLowerCase() || '').includes(searchText.toLowerCase()) ||
         (customer.familyName?.toLowerCase() || '').includes(searchText.toLowerCase()) ||
@@ -47,7 +44,6 @@ function CustomersPage() {
         (customer.code?.toLowerCase() || '').includes(searchText.toLowerCase())
     );
 
-    // ⭐ ۴. ستون‌های جدول با نام فیلدهای جدید
     const columns = [
         { title: 'شناسه', dataIndex: 'ID', key: 'ID', sorter: (a, b) => a.ID - b.ID },
         { title: 'کد مشتری', dataIndex: 'code', key: 'code' },

@@ -10,9 +10,10 @@ type CrmManagerClient interface {
 	CreateCustomer(ctx context.Context, customer *model.CreateCustomerRequest) (*model.Customer, error)
 	UpdateCustomer(ctx context.Context, id string, req *model.UpdateCustomerRequest) (*model.Customer, error)
 	DeleteCustomer(ctx context.Context, id string) error
-	/*GetCustomerTypes() ([]model.CustomerType, error)
-	CreateCustomerTypes(req model.CreateCustomerTypeRequest) (*model.CustomerType, error)
-		GetCustomerInfoByCode(code string) (*model.Customer, error)
+	GetCustomerTypes(ctx context.Context) ([]model.CusType, error)
+	CreateCustomerTypes(ctx context.Context, label string) (*model.CusType, error)
+	DeleteCustomerTypes(ctx context.Context, code string)error
+	/*	GetCustomerInfoByCode(code string) (*model.Customer, error)
 		GetCustomerPrelabels() ([]model.CustomerPrelabel, error)
 		SearchCustomers(req model.SearchCustomersRequest) ([]model.Customer, error)
 		FilterCustomers(req model.FilterCustomersRequest) ([]model.Customer, error)

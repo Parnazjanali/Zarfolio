@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
@@ -11,8 +10,8 @@ import {
   FaStore, FaUsersCog, FaPrint, FaFileContract, FaIdBadge, FaHistory, FaMoneyBillWave,
   FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList
 } from 'react-icons/fa';
-
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
+import axios from 'axios'; // Import axios for API calls
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -21,7 +20,31 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
-  const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
+  
+  const handleLogout = async () => {
+    if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+
+          await axios.post('http://localhost:8080/api/v1/auth/logout', null, {
+            headers: {
+              Authorization: `Bearer ${authToken}`
+            }
+          });
+        }
+        
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        navigate('/login');
+      } catch (error) {
+        console.error("Error during logout", error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        navigate('/login');
+      }
+    }
+  };
 
   const getSelectedKeys = () => {
     const path = location.pathname;
@@ -58,13 +81,12 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
         { key: '/bank-accounts', icon: <FaUniversity />, label: <Link to="/bank-accounts">لیست حساب‌ها</Link> },
         { key: '/bank-cards', icon: <FaCreditCard />, label: <Link to="/bank-cards">کارت‌های بانکی</Link> },
         { key: '/funds', icon: <FaPiggyBank />, label: <Link to="/funds">صندوق‌ها</Link> },
-        // تنخواه گردان از اینجا حذف شد
         { key: '/cheques', icon: <FaMoneyCheckAlt />, label: <Link to="/cheques">چک‌ها</Link> },
         { key: '/transfers', icon: <FaExchangeAlt />, label: <Link to="/transfers">انتقال‌ها</Link> },
       ]
     },
     { key: '/customers/new', icon: <FaUserPlus />, label: <Link to="/customers/new">مشتری جدید</Link> },
-    { key: '/etiket', icon: <FaTags />, label: <Link to="/etiket">اتیکت <Text type="warning" style={{ fontSize: '0.8em' }}>(beta)</Text></Link> },
+    { key: '/etiket', icon: <FaTags />, label: <Text type="warning" style={{ fontSize: '0.8em' }}>اتیکت (beta)</Text> },
     { key: '/reports', icon: <FaChartBar />, label: <Link to="/reports">گزارشات</Link> },
     {
       key: 'settingsSubmenu',
