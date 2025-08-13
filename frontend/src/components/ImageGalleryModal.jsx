@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Upload, message, List, Checkbox, Row, Col, Empty, App } from 'antd';
+import { Modal, Button, Upload, List, Checkbox, Row, Col, Empty, App, Popconfirm } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConfirm, onImageUpload }) => {
+const ImageGalleryModal = ({ open, allImages, selectedImages, onClose, onConfirm, onImageUpload, onImageDelete }) => {
     const [internalSelected, setInternalSelected] = useState(selectedImages);
-    const [fileList, setFileList] = useState([]); // --- State جدید برای مدیریت فایل‌های در حال آپلود
+    const [fileList, setFileList] = useState([]);
     const { message: messageApi } = App.useApp();
 
-
     useEffect(() => {
-        if (visible) {
+        if (open) {
             setInternalSelected(selectedImages);
         }
-    }, [visible, selectedImages]);
+    }, [open, selectedImages]);
 
     const handleSelectImage = (imgUrl) => {
         setInternalSelected(prev =>
@@ -36,69 +35,62 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
         const token = localStorage.getItem('authToken');
 
         try {
-            const response = await axios.post('/api/v1/upload-image', formData, {
+            const response = await axios.post('/api/v1/slider/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`
                 },
             });
-            // پاسخ سرور باید حاوی آدرس عکس باشد
-            const imageUrl = response.data.data.imageUrl;
-            onImageUpload(imageUrl); // اطلاع‌رسانی به والد برای افزودن به لیست کلی
-            onSuccess(response.data, file); //  اطلاع‌رسانی به کامپوننت آپلود که موفقیت‌آمیز بود
+            const imageUrl = response.data.url;
+            onImageUpload(imageUrl);
+            onSuccess(response.data, file);
             messageApi.success(`${file.name} با موفقیت آپلود شد.`);
         } catch (error) {
             console.error('Upload Error:', error);
-            const errorMsg = error.response?.data?.message || 'خطا در آپلود فایل';
+            const errorMsg = error.response?.data?.error || 'خطا در آپلود فایل';
             messageApi.error(errorMsg);
             onError(error);
         }
     };
 
-    // --- تابع مدیریت تغییرات در لیست آپلود ---
     const handleUploadChange = ({ file, fileList: newFileList }) => {
-        // فقط فایل‌هایی با وضعیت 'done' یا 'uploading' را نمایش بده
         const filteredList = newFileList.map(f => {
             if (f.response) {
-                // اگر آپلود تمام شده، URL را از پاسخ سرور بگیر
-                f.url = f.response.data.imageUrl;
-                f.thumbUrl = f.response.data.imageUrl; // مهم برای نمایش تامبنیل
+                f.url = f.response.url;
+                f.thumbUrl = f.response.url;
             }
             return f;
         });
         setFileList(filteredList);
 
-        // اگر فایل با موفقیت آپلود شده و وضعیت 'done' است، لیست را خالی کن تا برای آپلود بعدی آماده باشد
         if (file.status === 'done') {
             setTimeout(() => {
                  setFileList(prevList => prevList.filter(item => item.uid !== file.uid));
-            }, 1500); // پس از ۱.۵ ثانیه فایل را از لیست حذف کن
+            }, 1500);
         } else if (file.status === 'error') {
-            // در صورت خطا نیز فایل را پس از مدتی از لیست حذف کن
              setTimeout(() => {
                  setFileList(prevList => prevList.filter(item => item.uid !== file.uid));
             }, 2000);
         }
     };
 
-
     return (
         <Modal
             title="مدیریت گالری تصاویر"
-            visible={visible}
+            open={open}
             onCancel={onClose}
             onOk={handleConfirm}
             okText="تایید و ذخیره"
             cancelText="انصراف"
             width={800}
-            destroyOnClose
+            destroyOnHidden
         >
             <Row gutter={16}>
                 <Col span={24}>
                     <Upload
                         customRequest={customRequest}
-                        fileList={fileList} // --- استفاده از state داخلی
-                        onChange={handleUploadChange} // --- استفاده از handler جدید
+                        fileList={fileList}
+                        onChange={handleUploadChange}
                         listType="picture"
                         multiple
                         accept="image/png, image/jpeg, image/gif, image/webp"
@@ -119,14 +111,32 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                         dataSource={allImages}
                         renderItem={imgUrl => (
                             <List.Item>
-                                <div
-                                    className={`gallery-item ${internalSelected.includes(imgUrl) ? 'selected' : ''}`}
-                                    onClick={() => handleSelectImage(imgUrl)}
-                                >
-                                    <img src={imgUrl} alt="gallery thumbnail" style={{ width: '100%', height: '100px', objectFit: 'cover' }} />
-                                    <div className="gallery-item-overlay">
-                                        <Checkbox checked={internalSelected.includes(imgUrl)} />
+                                <div className="gallery-item-container">
+                                    <div
+                                        className={`gallery-item ${internalSelected.includes(imgUrl) ? 'selected' : ''}`}
+                                        onClick={() => handleSelectImage(imgUrl)}
+                                    >
+                                        <img src={imgUrl} alt="gallery thumbnail" style={{ width: '100%', height: '100px', objectFit: 'cover' }} />
+                                        <div className="gallery-item-overlay">
+                                            <Checkbox checked={internalSelected.includes(imgUrl)} />
+                                        </div>
                                     </div>
+                                    <Popconfirm
+                                        title="حذف تصویر"
+                                        description="آیا از حذف این تصویر مطمئن هستید؟ این عمل قابل بازگشت نیست."
+                                        onConfirm={() => onImageDelete(imgUrl)}
+                                        okText="بله، حذف کن"
+                                        cancelText="خیر"
+                                    >
+                                        <Button
+                                            className="delete-btn"
+                                            type="primary"
+                                            danger
+                                            shape="circle"
+                                            icon={<DeleteOutlined />}
+                                            size="small"
+                                        />
+                                    </Popconfirm>
                                 </div>
                             </List.Item>
                         )}
@@ -135,7 +145,10 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                     <Empty description="هنوز عکسی آپلود نشده است." />
                 )}
             </div>
-             <style jsx>{`
+             <style>{`
+                .gallery-item-container {
+                    position: relative;
+                }
                 .gallery-item {
                     position: relative;
                     cursor: pointer;
@@ -155,6 +168,16 @@ const ImageGalleryModal = ({ visible, allImages, selectedImages, onClose, onConf
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                }
+                .delete-btn {
+                    position: absolute;
+                    bottom: 5px;
+                    left: 5px;
+                    opacity: 0.8;
+                    transition: opacity 0.3s;
+                }
+                .gallery-item-container:hover .delete-btn {
+                    opacity: 1;
                 }
             `}</style>
         </Modal>

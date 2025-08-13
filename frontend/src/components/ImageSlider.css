@@ -1,3 +1,23 @@
+
+.image-slider-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.slider-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0; /* Start with the image being invisible */
+}
+
+
 /* --- Transition Effects --- */
 
 /* 1. Fade (Default) */

@@ -90,6 +90,12 @@ func StartServer(port string) {
 	proxyHandler := proxy.NewProxyHandler(utils.Log)
 	utils.Log.Info("ProxyHandler initialized successfully.")
 
+	sliderHandler, err := handler.NewSliderHandler(utils.Log)
+	if err != nil {
+		utils.Log.Fatal("Failed to initialize SliderHandler. Exiting application.", zap.Error(err))
+	}
+	utils.Log.Info("SliderHandler initialized successfully.")
+
 	utils.Log.Info("All core dependencies initialized successfully.")
 	utils.Log.Info("Setting up API routes for API Gateway...")
 
@@ -101,6 +107,7 @@ func StartServer(port string) {
 		permissionService,
 		profileHandlerAG,
 		proxyHandler,
+		sliderHandler,
 	); err != nil {
 		utils.Log.Fatal("ERROR: Failed to set up API routes: %v. Exiting application.", zap.Error(err))
 	}
