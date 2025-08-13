@@ -123,9 +123,22 @@ function App() {
   const isAuthenticated = !!localStorage.getItem('authToken');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => { const savedState = localStorage.getItem('sidebarCollapsed'); return savedState !== null ? JSON.parse(savedState) : false; });
   const [currentTheme, setCurrentTheme] = useState(() => { return localStorage.getItem('appTheme') || 'light'; });
+  const [publicBoardPath, setPublicBoardPath] = useState(null);
 
   useEffect(() => { localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed)); }, [isSidebarCollapsed]);
   useEffect(() => { localStorage.setItem('appTheme', currentTheme); document.body.setAttribute('data-theme', currentTheme); }, [currentTheme]);
+
+  useEffect(() => {
+    const config = JSON.parse(localStorage.getItem('priceBoardConfig'));
+    const savedPath = config ? config.publicBoardUrl : null;
+    const defaultPath = 'b/:vanityUrl/prices'; 
+    
+    let routePath = savedPath || defaultPath;
+    if (!routePath.startsWith('/')) {
+      routePath = '/' + routePath;
+    }
+    setPublicBoardPath(routePath);
+  }, []);
 
   const antdAppTheme = { algorithm: currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm, };
 
@@ -140,7 +153,7 @@ function App() {
               <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
               <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/b/:vanityUrl/prices" element={<PublicPriceBoard />} />
+              {publicBoardPath && <Route path={publicBoardPath} element={<PublicPriceBoard />} />}
               <Route path="/*" element={
                 <ProtectedRoute>
                   <MainLayout isSidebarCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} onThemeChange={setCurrentTheme} currentTheme={currentTheme} >

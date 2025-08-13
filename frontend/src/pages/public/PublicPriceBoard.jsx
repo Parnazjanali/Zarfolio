@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Spin, Alert } from 'antd';
 import { ClockCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { FaSun, FaMoon, FaCloud, FaCloudShowersHeavy, FaWind, FaSmog, FaSnowflake } from 'react-icons/fa';
-// ایمپورت کتابخانه جدید
 import {
     Panel,
     PanelGroup,
@@ -13,7 +12,7 @@ import './PublicPriceBoard.css';
 
 const MAX_VISIBLE_POPUPS = 3;
 
-const weatherTranslations = { "Sunny": "آفتابی", "Clear": "صاف", "Partly cloudy": "کمی ابری", "Cloudy": "ابری", "Overcast": "تمام ابری", "Mist": "مه‌آلود", "Patchy rain possible": "احتمال بارش پراکنده", "Patchy snow possible": "احتمال برف پراکنده", "Patchy sleet possible": "احتمال باران و برف", "Patchy freezing drizzle possible": "احتمال نم‌نم باران یخ‌زده", "Thundery outbreaks possible": "احتمال رگبار و رعد و برق", "Blowing snow": "بوران برف", "Blizzard": "کولاک", "Fog": "مه", "Freezing fog": "مه یخ‌زده", "Patchy light drizzle": "نم‌نم باران سبک", "Light drizzle": "نم‌نم باران", "Freezing drizzle": "نم‌نم باران یخ‌زده", "Heavy freezing drizzle": "نم‌نم باران یخ‌زده شدید", "Patchy light rain": "باران سبک پراکنده", "Light rain": "باران سبک", "Moderate rain at times": "باران متوسط در برخی ساعات", "Moderate rain": "باران متوسط", "Heavy rain at times": "باران شدید در برخی ساعات", "Heavy rain": "باران شدید", "Light freezing rain": "باران یخ‌زده سبک", "Moderate or heavy freezing rain": "باران یخ‌زده متوسط یا شدید", "Light sleet": "باران و برف سبک", "Moderate or heavy sleet": "باران و برف متوسط یا شدید", "Patchy light snow": "برف سبک پراکنده", "Light snow": "برف سبک", "Patchy moderate snow": "برف متوسط پراکنده", "Moderate snow": "برف متوسط", "Patchy heavy snow": "برف سنگین پراکنده", "Heavy snow": "برف سنگین", "Ice pellets": "تگرگ", "Light rain shower": "رگبار باران سبک", "Moderate or heavy rain shower": "رگبار باران متوسط یا شدید", "Torrential rain shower": "رگبار سیل‌آسا", "Light sleet showers": "رگبار باران و برف سبک", "Moderate or heavy sleet showers": "رگبار باران و برف متوسط یا شدید", "Light snow showers": "رگبار برف سبک", "Moderate or heavy snow showers": "رگبار برف متوسط یا شدید", "Light showers of ice pellets": "رگبار تگرگ سبک", "Moderate or heavy showers of ice pellets": "رگبار تگرگ متوسط یا شدید", "Patchy light rain with thunder": "باران پراکنده و رعد و برق", "Moderate or heavy rain with thunder": "باران متوسط یا شدید با رعد و برق", "Patchy light snow with thunder": "برف پراکنده و رعد و برق", "Moderate or heavy snow with thunder": "برف متوسط یا شدید با رعد و برق",};
+const weatherTranslations = { "Sunny": "آفتابی", "Clear": "صاف", "Partly cloudy": "کمی ابری", "Cloudy": "ابری", "Overcast": "تمام ابری", "Mist": "مه‌آلود", "Patchy rain possible": "احتمال بارش پراکنده", "Patchy snow possible": "احتمال برف پراکنده", "Patchy sleet possible": "احتمال باران و برف", "Patchy freezing drizzle possible": "احتمال نم‌نم باران یخ‌زده", "Thundery outbreaks possible": "احتمال رگبار و رعد و برق", "Blowing snow": "بوران برف", "Blizzard": "کولاک", "Fog": "مه", "Freezing fog": "مه یخ‌زده", "Patchy light drizzle": "نم‌نم باران سبک", "Light drizzle": "نم‌نم باران", "Freezing drizzle": "نم‌نم باران یخ‌زده", "Heavy freezing drizzle": "نم‌نم باران یخ‌زده شدید", "Patchy light rain": "باران سبک پراکنده", "Light rain": "باران سبک", "Moderate rain at times": "باران متوسط در برخی ساعات", "Moderate rain": "باران متوسط", "Heavy rain at times": "باران شدید در برخی ساعات", "Heavy rain": "باران شدید", "Light freezing rain": "باران یخ‌زده سبک", "Moderate or heavy freezing rain": "باران یخ‌زده متوسط یا شدید", "Light sleet": "باران و برف سبک", "Moderate or heavy sleet": "باران و برف متوسط یا شدید", "Patchy light snow": "برف سبک پراکنده", "Light snow": "برف سبک", "Patchy moderate snow": "برف متوسط پراکنده", "Moderate snow": "برف متوسط", "Patchy heavy snow": "برف سنگین پراکنده", "Heavy snow": "برف سنگین", "Ice pellets": "تگرگ", "Light rain shower": "رگبار باران سبک", "Moderate or heavy rain shower": "رگبار باران متوسط یا شدید", "Torrential rain shower": "رگبار سیل‌آسا", "Light sleet showers": "رگبار باران و برف سبک", "Moderate or heavy sleet showers": "رگبار باران و برف متوسط یا شدید", "Light snow showers": "رگبار برف سبک", "Moderate or heavy snow showers": "رگبار برف متوسط یا شدید", "Light showers of ice pellets": "رگبار تگرگ سبک", "Moderate or heavy showers of ice pellets": "رگبار تگرگ متوسط یا شدید", "Patchy light rain with thunder": "باران پراکنده و رعد و برق", "Moderate or heavy rain with thunder": "باران متوسط یا شدید با رعد و برق", "Patchy light snow with thunder": "برف پراکنده و رعد و برق", "Moderate or heavy snow with thunder": "برف متوسط یا شدید با رعد و برق" };
 
 const formatPrice = (num, unit = '') => {
     const roundedNum = Math.round(num);
@@ -129,7 +128,7 @@ const PublicPriceBoard = () => {
         const lastApiData = JSON.parse(localStorage.getItem('lastApiData'));
         const savedTimestamp = localStorage.getItem('lastApiUpdateTimestamp');
 
-        if (savedTimestamp) { const date = new Date(savedTimestamp); const newFormat = date.toLocaleString('fa-IR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).replace('،', ' -'); setLastUpdateTime(newFormat); }
+        if (savedTimestamp) { const date = new Date(savedTimestamp); const newFormat = date.toLocaleString('fa-IR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' -'); setLastUpdateTime(newFormat); }
         if (!savedConfig) { setError("تنظیمات تابلو هنوز پیکربندی نشده است."); setLoading(false); return; }
         if (!lastApiData) { setError("داده‌ای از سرور دریافت نشده است."); setLoading(false); return; }
 
@@ -205,7 +204,7 @@ const PublicPriceBoard = () => {
                     <div className="right-section-container">
                         {config?.imageSliderEnabled && (
                             <div className="background-slider-wrapper">
-                                <ImageSlider />
+                                <ImageSlider images={config.sliderImages || []} />
                             </div>
                         )}
 

@@ -22,6 +22,7 @@ func SetupAllRoutes(
 	permissionService authz.PermissionService,
 	profileHandlerAG *handler.ProfileHandler,
 	proxyHandler *proxy.ProxyHandler,
+	sliderHandler *handler.SliderHandler,
 ) error {
 	if app == nil {
 		return fmt.Errorf("fiber app instance is nil in SetupAllRoutes")
@@ -44,6 +45,9 @@ func SetupAllRoutes(
 	if proxyHandler == nil {
 		return fmt.Errorf("ProxyHandler is nil in SetupAllRoutes")
 	}
+	if sliderHandler == nil {
+		return fmt.Errorf("SliderHandler is nil in SetupAllRoutes")
+	}
 
 	apiV1 := app.Group("/api/v1")
 	utils.Log.Info("Base API group /api/v1 created.")
@@ -52,7 +56,6 @@ func SetupAllRoutes(
 	
 	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, utils.Log, jwtValidator)
 	if err != nil {
-		// This check is important because NewAuthMiddleware returns an error
 		utils.Log.Error("Failed to initialize AuthMiddleware", zap.Error(err))
 		return fmt.Errorf("failed to initialize auth middleware: %w", err)
 	}
@@ -68,6 +71,10 @@ func SetupAllRoutes(
 
 	if err := SetUpCrmRoutes(apiV1, crmHandlerAG, authMiddleware); err != nil {
 		return fmt.Errorf("failed to set up CRM routes: %w", err)
+	}
+
+	if err := SetUpSliderRoutes(apiV1, sliderHandler, authMiddleware); err != nil {
+		return fmt.Errorf("failed to set up slider routes: %w", err)
 	}
 
 	// Proxy routes

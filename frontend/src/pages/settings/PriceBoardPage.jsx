@@ -3,9 +3,10 @@ import {
     Form, Input, Button, Card, Typography, Select, Row, Col, Spin,
     Alert, Divider, App, Statistic, InputNumber, Popconfirm, Switch, Tabs
 } from 'antd';
-import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
+import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined, LinkOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
-import ImageGalleryModal from '../../components/ImageGalleryModal'; // وارد کردن کامپوننت جدید
+import ImageGalleryModal from '../../components/ImageGalleryModal';
+import axios from 'axios';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -23,7 +24,6 @@ const transitionOptions = [
     { label: 'زوم (Zoom)', value: 'zoom' },
 ];
 
-
 const PriceBoardPage = () => {
     const [form] = Form.useForm();
     const { apiData, loading, error, lastUpdated, countdown, forceFetch } = useApiData();
@@ -32,11 +32,10 @@ const PriceBoardPage = () => {
     const [editingName, setEditingName] = useState('');
     const { message } = App.useApp();
     
-    // --- State های جدید برای مدیریت گالری ---
     const [imageSliderEnabled, setImageSliderEnabled] = useState(false);
     const [isGalleryModalVisible, setIsGalleryModalVisible] = useState(false);
-    const [allUploadedImages, setAllUploadedImages] = useState([]); //  لیست تمام عکس‌های موجود
-    const [sliderImages, setSliderImages] = useState([]); // لیست عکس‌های منتخب برای اسلایدر
+    const [allUploadedImages, setAllUploadedImages] = useState([]);
+    const [sliderImages, setSliderImages] = useState([]);
 
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig')) || {};
@@ -44,6 +43,7 @@ const PriceBoardPage = () => {
             apiUrl: savedConfig.apiUrl || "https://brsapi.ir/Api/Market/Gold_Currency.php?key=FreeTB2jJTDzANcCGSnLsaxPZxmWoj7C",
             weatherApiUrl: savedConfig.weatherApiUrl || "https://api.weatherapi.com/v1/current.json?key=352696f4a53a4545aa9104158253107&q=tehran",
             galleryName: savedConfig.galleryName || 'گالری شما',
+            publicBoardUrl: savedConfig.publicBoardUrl || 'b/your-business-name/prices',
             showAnalogClock: savedConfig.showAnalogClock !== false,
             showWeatherWidget: savedConfig.showWeatherWidget !== false,
             showPriceChangePopup: savedConfig.showPriceChangePopup !== false,
@@ -55,8 +55,6 @@ const PriceBoardPage = () => {
         });
 
         setImageSliderEnabled(savedConfig.imageSliderEnabled === true);
-        
-        // خواندن لیست عکس‌ها از localStorage
         setAllUploadedImages(savedConfig.allUploadedImages || []);
         setSliderImages(savedConfig.sliderImages || []);
 
@@ -75,7 +73,6 @@ const PriceBoardPage = () => {
         const configToSave = {
             ...form.getFieldsValue(),
             activeItems: activeItems,
-            // ذخیره لیست‌های جدید عکس در localStorage
             allUploadedImages: allUploadedImages,
             sliderImages: sliderImages,
         };
@@ -83,7 +80,17 @@ const PriceBoardPage = () => {
         message.success('تنظیمات تابلو با موفقیت ذخیره شد و در تابلوی عمومی اعمال گردید!');
     };
 
-    // ... (بقیه توابع مثل handleAddItem، handleRemoveItem و ... بدون تغییر باقی می‌مانند)
+    const handleOpenPublicBoard = () => {
+        let publicBoardUrl = form.getFieldValue('publicBoardUrl');
+        if (publicBoardUrl) {
+            publicBoardUrl = publicBoardUrl.replace(/^\//, '');
+            const url = `${window.location.origin}/${publicBoardUrl}`;
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+            message.error('لطفا ابتدا یک آدرس برای تابلوی عمومی مشخص کنید.');
+        }
+    };
+
     const allApiOptions = apiData ?
     [...apiData.gold, ...apiData.currency, ...apiData.cryptocurrency].map(item => ({
         label: `${item.name} (${item.symbol})`,
@@ -139,9 +146,7 @@ const PriceBoardPage = () => {
         return item ? item.price : 'N/A';
     };
     
-    // --- توابع جدید برای مدیریت گالری ---
     const handleImageUpload = (newImageUrl) => {
-        // افزودن عکس جدید به لیست کلی عکس‌ها (بدون تکرار)
         setAllUploadedImages(prev => {
             if (prev.includes(newImageUrl)) {
                 return prev;
@@ -154,7 +159,31 @@ const PriceBoardPage = () => {
         setSliderImages(newSelectedImages);
         message.info(`${newSelectedImages.length} عکس برای اسلایدر انتخاب شد.`);
     };
-    // --- پایان توابع جدید ---
+
+    const handleImageDelete = async (imgUrl) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const filename = imgUrl.split('/').pop();
+
+            await axios.delete('/api/v1/slider/image', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                data: {
+                    filename: filename
+                }
+            });
+
+            setAllUploadedImages(prev => prev.filter(url => url !== imgUrl));
+            setSliderImages(prev => prev.filter(url => url !== imgUrl));
+
+            message.success('عکس با موفقیت حذف شد.');
+        } catch (error) {
+            console.error('Delete Error:', error);
+            message.error(error.response?.data?.error || 'خطا در حذف عکس');
+        }
+    };
+
     const sellTabPane = (item) => (
         <Row gutter={[8, 8]}>
             <Col span={24}><InputNumber addonAfter="%" value={item.sellAdjustmentPercent} onChange={(val) => handleItemChange(item.symbol, 'sellAdjustmentPercent', val)} style={{ width: '100%' }} placeholder="سود درصدی" /></Col>
@@ -183,7 +212,6 @@ const PriceBoardPage = () => {
 
     return (
         <Card>
-            {/* ... (بخش بالایی فرم بدون تغییر) ... */}
             <Title level={2}>پنل مدیریت حرفه‌ای تابلو</Title>
             <Paragraph type="secondary">تغییرات در این بخش به صورت آنی در تابلوی قیمت عمومی (در صورت باز بودن در تب دیگر) اعمال خواهد شد.</Paragraph>
             <Divider />
@@ -209,6 +237,22 @@ const PriceBoardPage = () => {
                     <Col xs={24} md={12}>
                         <Form.Item label="آدرس API هواشناسی" name="weatherApiUrl">
                             <Input />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24}>
+                        <Form.Item
+                            label="لینک صفحه تابلوی عمومی"
+                            name="publicBoardUrl"
+                            tooltip="این لینک برای دسترسی عمومی به تابلو استفاده می‌شود. می‌توانید آن را به دلخواه تغییر دهید."
+                        >
+                            <Input
+                                addonBefore={`${window.location.origin}/`}
+                                addonAfter={
+                                    <Button icon={<LinkOutlined />} onClick={handleOpenPublicBoard}>
+                                        باز کردن تابلو
+                                    </Button>
+                                }
+                            />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -260,7 +304,6 @@ const PriceBoardPage = () => {
                     </Card>
                 )}
 
-                {/* ... (بقیه فرم بدون تغییر) ... */}
                 <Row gutter={16} style={{marginBottom: '24px', marginTop: '24px'}}>
                     <Col><Statistic title="زمان به‌روزرسانی بعدی" value={countdown} formatter={(val) => `${String(Math.floor(val/60)).padStart(2, '0')}:${String(val%60).padStart(2, '0')}`} /></Col>
                     <Col><Text type="secondary">آخرین دریافت موفق:</Text><br/><Text strong>{lastUpdated ? lastUpdated.toLocaleTimeString('fa-IR') : 'در انتظار...'}</Text></Col>
@@ -341,14 +384,14 @@ const PriceBoardPage = () => {
                 <Button type="primary" size="large" block onClick={handleSaveConfig}>ذخیره نهایی تنظیمات تابلو</Button>
             </Form>
 
-            {/* --- مدال گالری --- */}
             <ImageGalleryModal
-                visible={isGalleryModalVisible}
+                open={isGalleryModalVisible}
                 allImages={allUploadedImages}
                 selectedImages={sliderImages}
                 onClose={() => setIsGalleryModalVisible(false)}
                 onConfirm={handleGalleryConfirm}
                 onImageUpload={handleImageUpload}
+                onImageDelete={handleImageDelete}
             />
         </Card>
     );
