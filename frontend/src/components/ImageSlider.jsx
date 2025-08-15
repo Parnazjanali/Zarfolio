@@ -1,22 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './ImageSlider.css';
-
-// یک تصویر پیش‌فرض در صورت نبودن عکس‌های آپلود شده
-import defaultImage from '../assets/images/dashboard-backgrounds/nasirolmolk.webp';
-
 const ImageSlider = ({ images: uploadedImages, interval = 5000, randomOrder = false, transition = 'fade' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // از useMemo برای اعمال ترتیب تصادفی فقط یک بار (یا در صورت تغییر props) استفاده می‌کنیم
     const images = useMemo(() => {
-        const imageList = uploadedImages && uploadedImages.length > 0 ? uploadedImages : [defaultImage];
-        
+        const imageList = uploadedImages && uploadedImages.length > 0 ? uploadedImages : []; // No default image
+
         if (randomOrder) {
-            // الگوریتم Fisher-Yates برای به هم ریختن آرایه
+            // Fisher-Yates shuffle algorithm
             const shuffled = [...imageList];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Swap elements
             }
             return shuffled;
         }
@@ -32,10 +28,6 @@ const ImageSlider = ({ images: uploadedImages, interval = 5000, randomOrder = fa
 
         return () => clearInterval(timer);
     }, [images.length, interval]);
-
-    if (!images || images.length === 0) {
-        return <div className="image-slider-container empty"></div>;
-    }
 
     // اضافه کردن کلاس مربوط به ترنزیشن به کانتینر اصلی
     return (

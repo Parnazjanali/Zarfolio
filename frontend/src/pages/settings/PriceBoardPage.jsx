@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Form, Input, Button, Card, Typography, Select, Row, Col, Spin,
-    Alert, Divider, App, Statistic, InputNumber, Popconfirm, Switch, Tabs
+    Alert, Divider, App, Statistic, InputNumber, Popconfirm, Switch, Tabs, QRCode
 } from 'antd';
 import { SyncOutlined, DeleteOutlined, EditOutlined, CameraOutlined, PictureOutlined, LinkOutlined } from '@ant-design/icons';
 import { useApiData } from '../../context/ApiDataProvider';
@@ -31,6 +31,7 @@ const PriceBoardPage = () => {
     const [editingItemSymbol, setEditingItemSymbol] = useState(null);
     const [editingName, setEditingName] = useState('');
     const { message } = App.useApp();
+    const [qrCodePreview, setQrCodePreview] = useState('');
     
     const [imageSliderEnabled, setImageSliderEnabled] = useState(false);
     const [isGalleryModalVisible, setIsGalleryModalVisible] = useState(false);
@@ -44,6 +45,7 @@ const PriceBoardPage = () => {
             weatherApiUrl: savedConfig.weatherApiUrl || "https://api.weatherapi.com/v1/current.json?key=352696f4a53a4545aa9104158253107&q=tehran",
             galleryName: savedConfig.galleryName || 'گالری شما',
             publicBoardUrl: savedConfig.publicBoardUrl || 'b/your-business-name/prices',
+            qrCodeContent: savedConfig.qrCodeContent || '',
             showAnalogClock: savedConfig.showAnalogClock !== false,
             showWeatherWidget: savedConfig.showWeatherWidget !== false,
             showPriceChangePopup: savedConfig.showPriceChangePopup !== false,
@@ -52,7 +54,9 @@ const PriceBoardPage = () => {
             imageSliderEnabled: savedConfig.imageSliderEnabled === true,
             randomImageOrder: savedConfig.randomImageOrder === true,
             imageTransition: savedConfig.imageTransition || 'fade',
+            imageSliderDuration: savedConfig.imageSliderDuration || 7,
         });
+        setQrCodePreview(savedConfig.qrCodeContent || '');
 
         setImageSliderEnabled(savedConfig.imageSliderEnabled === true);
         setAllUploadedImages(savedConfig.allUploadedImages || []);
@@ -141,6 +145,12 @@ const PriceBoardPage = () => {
         setEditingItemSymbol(null);
     };
 
+    const onFormValuesChange = (changedValues) => {
+        if (changedValues.qrCodeContent !== undefined) {
+            setQrCodePreview(changedValues.qrCodeContent);
+        }
+    };
+
     const findRawPrice = (symbol) => {
         const item = apiData ? [...apiData.gold, ...apiData.currency, ...apiData.cryptocurrency].find(i => i.symbol === symbol) : null;
         return item ? item.price : 'N/A';
@@ -216,7 +226,7 @@ const PriceBoardPage = () => {
             <Paragraph type="secondary">تغییرات در این بخش به صورت آنی در تابلوی قیمت عمومی (در صورت باز بودن در تب دیگر) اعمال خواهد شد.</Paragraph>
             <Divider />
             
-            <Form form={form} layout="vertical">
+            <Form form={form} layout="vertical" onValuesChange={onFormValuesChange}>
                 <Title level={4}>۱. تنظیمات کلی و ظاهری</Title>
                 <Row gutter={16}>
                     <Col xs={24} md={12}>
@@ -238,6 +248,21 @@ const PriceBoardPage = () => {
                         <Form.Item label="آدرس API هواشناسی" name="weatherApiUrl">
                             <Input />
                         </Form.Item>
+                    </Col>
+                    <Col xs={24}>
+                        <Form.Item
+                            label="محتوای QR Code"
+                            name="qrCodeContent"
+                            tooltip="متن یا لینکی که می‌خواهید به صورت QR Code در تابلوی عمومی نمایش داده شود را اینجا وارد کنید. خالی گذاشتن این فیلد به معنی عدم نمایش QR Code است."
+                        >
+                            <Input placeholder="مثلا: https://instagram.com/your-page" />
+                        </Form.Item>
+                        {qrCodePreview && (
+                            <div style={{ textAlign: 'center', marginBottom: '16px', background: '#f0f2f5', padding: '16px', borderRadius: '8px' }}>
+                                <QRCode value={qrCodePreview} />
+                                <Text type="secondary" style={{ display: 'block', marginTop: '8px' }}>پیش‌نمایش QR Code</Text>
+                            </div>
+                        )}
                     </Col>
                     <Col xs={24}>
                         <Form.Item
@@ -290,6 +315,9 @@ const PriceBoardPage = () => {
                                 </Paragraph>
                             </Col>
                             <Col xs={24} md={12}>
+                                <Form.Item label="مدت زمان نمایش هر اسلاید (ثانیه)" name="imageSliderDuration">
+                                    <InputNumber min={1} max={60} style={{ width: '100%' }} />
+                                </Form.Item>
                                 <Form.Item label="افکت ترنزیشن" name="imageTransition">
                                     <Select options={transitionOptions} placeholder="یک افکت را انتخاب کنید" />
                                 </Form.Item>
