@@ -66,170 +66,154 @@ const PluginInvoicesPage = lazy(() => import('./pages/PluginInvoicesPage.jsx'));
 // +++ پایان بخش افزونه +++
 
 function BackgroundManager() {
-  const location = useLocation();
-  useEffect(() => {
-    const authPaths = ['/login', '/request-password-reset', '/reset-password', '/2fa-verify'];
-    if (authPaths.includes(location.pathname)) { document.body.classList.add('login-page-background'); }
-    else { document.body.classList.remove('login-page-background'); }
-    return () => { document.body.classList.remove('login-page-background'); };
-  }, [location.pathname]);
-  return null;
+  const location = useLocation();
+  useEffect(() => {
+    const authPaths = ['/login', '/request-password-reset', '/reset-password', '/2fa-verify'];
+    if (authPaths.includes(location.pathname)) { document.body.classList.add('login-page-background'); }
+    else { document.body.classList.remove('login-page-background'); }
+    return () => { document.body.classList.remove('login-page-background'); };
+  }, [location.pathname]);
+  return null;
 }
 
 function MainLayout({ children, isSidebarCollapsed, setIsSidebarCollapsed, onThemeChange, currentTheme }) {
-  const navigate = useNavigate();
-  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+  const navigate = useNavigate();
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
-  const speedDialBaseBottom = 30;
-  const mainFabHeight = 56;
-  const spacingBetweenButtons = 16;
-  const closedPosition = speedDialBaseBottom + mainFabHeight + spacingBetweenButtons;
-  const openPosition = closedPosition + (3 * 40) + (2 * 16);
-  const aiButtonBottom = isSpeedDialOpen ? openPosition : closedPosition;
+  const speedDialBaseBottom = 30;
+  const mainFabHeight = 56;
+  const spacingBetweenButtons = 16;
+  const closedPosition = speedDialBaseBottom + mainFabHeight + spacingBetweenButtons;
+  const openPosition = closedPosition + (3 * 40) + (2 * 16);
+  const aiButtonBottom = isSpeedDialOpen ? openPosition : closedPosition;
 
-  return (
-    <Layout style={{ minHeight: '100vh', direction: 'rtl' }}>
-      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
-      <Layout className="site-layout">
-        <Layout.Header style={{ padding: '0 24px', background: currentTheme === 'dark' ? '#141414' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderBottom: '1px solid', borderColor: currentTheme === 'dark' ? '#303030' : '#f0f0f0' }}>
-            <Switch checkedChildren={<SunOutlined />} unCheckedChildren={<MoonOutlined />} onChange={(checked) => onThemeChange(checked ? 'light' : 'dark')} checked={currentTheme === 'light'} />
-        </Layout.Header>
-        <Layout.Content style={{ margin: '16px', overflow: 'initial' }}> {children} </Layout.Content>
-      </Layout>
-      
-      <FloatButton
-        icon={<FaRobot />}
-        tooltip={{ title: "دستیار هوشمند", placement: "right" }}
-        onClick={() => navigate('/ai-assistant')}
-        style={{
-          bottom: aiButtonBottom,
-          left: 30,
-          transition: 'bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
-        }}
-      />
-      
-      <FloatButton.Group
-        trigger="click"
-        type="primary"
-        style={{ bottom: 30, left: 30 }}
-        icon={<PlusOutlined />}
-        tooltip={{ title: "ثبت جدید", placement: "right" }}
-        onOpenChange={setIsSpeedDialOpen}
-      >
-        <FloatButton icon={<FaTags />} tooltip={{ title: "افزودن اتیکت", placement: "right" }} onClick={() => navigate('/etiket')} />
-        <FloatButton icon={<FaFileInvoiceDollar />} tooltip={{ title: "فاکتور جدید", placement: "right" }} onClick={() => navigate('/invoices/new')} />
-        <FloatButton icon={<FaUserPlus />} tooltip={{ title: "مخاطب جدید", placement: "right" }} onClick={() => navigate('/customers/new')} />
-      </FloatButton.Group>
-    </Layout>
-  );
+  return (
+    <Layout style={{ minHeight: '100vh', direction: 'rtl' }}>
+      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
+      <Layout className="site-layout">
+        <Layout.Header style={{ padding: '0 24px', background: currentTheme === 'dark' ? '#141414' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderBottom: '1px solid', borderColor: currentTheme === 'dark' ? '#303030' : '#f0f0f0' }}>
+            <Switch checkedChildren={<SunOutlined />} unCheckedChildren={<MoonOutlined />} onChange={(checked) => onThemeChange(checked ? 'light' : 'dark')} checked={currentTheme === 'light'} />
+        </Layout.Header>
+        <Layout.Content style={{ margin: '16px', overflow: 'initial' }}> {children} </Layout.Content>
+      </Layout>
+      
+      <FloatButton
+        icon={<FaRobot />}
+        tooltip={{ title: "دستیار هوشمند", placement: "right" }}
+        onClick={() => navigate('/ai-assistant')}
+        style={{
+          bottom: aiButtonBottom,
+          left: 30,
+          transition: 'bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
+        }}
+      />
+      
+      <FloatButton.Group
+        trigger="click"
+        type="primary"
+        style={{ bottom: 30, left: 30 }}
+        icon={<PlusOutlined />}
+        tooltip={{ title: "ثبت جدید", placement: "right" }}
+        onOpenChange={setIsSpeedDialOpen}
+      >
+        <FloatButton icon={<FaTags />} tooltip={{ title: "افزودن اتیکت", placement: "right" }} onClick={() => navigate('/etiket')} />
+        <FloatButton icon={<FaFileInvoiceDollar />} tooltip={{ title: "فاکتور جدید", placement: "right" }} onClick={() => navigate('/invoices/new')} />
+        <FloatButton icon={<FaUserPlus />} tooltip={{ title: "مخاطب جدید", placement: "right" }} onClick={() => navigate('/customers/new')} />
+      </FloatButton.Group>
+    </Layout>
+  );
 }
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem('authToken');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => { const savedState = localStorage.getItem('sidebarCollapsed'); return savedState !== null ? JSON.parse(savedState) : false; });
-  const [currentTheme, setCurrentTheme] = useState(() => { return localStorage.getItem('appTheme') || 'light'; });
-  const [publicBoardPath, setPublicBoardPath] = useState(null);
+  const isAuthenticated = !!localStorage.getItem('authToken');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => { const savedState = localStorage.getItem('sidebarCollapsed'); return savedState !== null ? JSON.parse(savedState) : false; });
+  const [currentTheme, setCurrentTheme] = useState(() => { return localStorage.getItem('appTheme') || 'light'; });
+  
+  // مسیر تابلوی عمومی را به صورت استاتیک و با پارامتر تعریف می‌کنیم
+  const publicBoardPath = "/pb/:vanityUrl";
 
-  useEffect(() => { localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed)); }, [isSidebarCollapsed]);
-  useEffect(() => { localStorage.setItem('appTheme', currentTheme); document.body.setAttribute('data-theme', currentTheme); }, [currentTheme]);
+  const antdAppTheme = { algorithm: currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm, };
 
-  useEffect(() => {
-    const config = JSON.parse(localStorage.getItem('priceBoardConfig'));
-    const savedPath = config ? config.publicBoardUrl : null;
-    const defaultPath = 'b/:vanityUrl/prices'; 
-    
-    let routePath = savedPath || defaultPath;
-    if (!routePath.startsWith('/')) {
-      routePath = '/' + routePath;
-    }
-    setPublicBoardPath(routePath);
-  }, []);
-
-  const antdAppTheme = { algorithm: currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm, };
-
-  return (
-    <ConfigProvider theme={antdAppTheme} direction="rtl">
-      <AntApp>
-        <ApiDataProvider>
-          <BackgroundManager />
-          <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
-              <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              {publicBoardPath && <Route path={publicBoardPath} element={<PublicPriceBoard />} />}
-              <Route path="/*" element={
-                <ProtectedRoute>
-                  <MainLayout isSidebarCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} onThemeChange={setCurrentTheme} currentTheme={currentTheme} >
-                    <Routes>
-                      <Route path="dashboard" element={<DashboardPage />} />
-                      <Route path="customers" element={<CustomersPage />} />
-                      <Route path="customers/new" element={<NewCustomerPage />} />
-                      <Route path="customer/:customerId" element={<CustomerDetailPage />} />
-                      <Route path="invoices" element={<InvoicesPage />} />
-                      <Route path="invoices/new" element={<NewInvoicePage />} />
-                      <Route path="inventory" element={<InventoryPage />} />
-                      <Route path="etiket" element={<EtiketPage />} />
-                      <Route path="reports" element={<ReportsPage />} />
-                      <Route path="tasks" element={<TasksBoardPage />} />
-                      <Route path="account/settings" element={<AccountManagementPage />} />
-                      <Route path="settings/system" element={<SystemSettingsPage />} />
-                      <Route path="settings/business" element={<BusinessSettings />} />
-                      <Route path="settings/users" element={<UserRolls />} />
-                      <Route path="settings/users/permissions/:email" element={<UserPermissions />} />
-                      <Route path="settings/print" element={<PrintSettings />} />
-                      <Route path="settings/tax" element={<TaxSettings />} />
-                      <Route path="settings/avatar" element={<AvatarSettings />} />
-                      <Route path="settings/logs" element={<LogsViewer />} />
-                      <Route path="settings/currencies" element={<ExtraCurrencies />} />
-                      <Route path="settings/price-board" element={<PriceBoardPage />} />
-                      <Route path="bank-accounts" element={<BankAccountsPage />} />
-                      <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
-                      <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
-                      <Route path="bank-accounts/detail/:id" element={<BankAccountDetailPage />} />
-                      <Route path="bank-cards" element={<BankCardsPage />} />
-                      
-                      <Route path="funds" element={<FundsPage />} />
-                      <Route path="funds/new" element={<NewFundPage />} />
-                      <Route path="funds/edit/:id" element={<NewFundPage />} />
-                      <Route path="funds/statement/:code" element={<FundStatementPage />} />
-                      
-                      <Route path="cheques" element={<ChequesPage />} />
-                      <Route path="cheques/received/new" element={<NewReceivedChequePage />} />
-                      <Route path="cheques/received/edit/:id" element={<NewReceivedChequePage />} />
-                      <Route path="cheques/issued/new" element={<NewIssuedChequePage />} />
-                      <Route path="cheques/issued/edit/:id" element={<NewIssuedChequePage />} />
-                      <Route path="cheques/transfer/:id" element={<ChequeTransferPage />} />
-
-                      <Route path="transfers" element={<TransfersPage />} />
-                      <Route path="transfers/new" element={<NewTransferPage />} />
-                      <Route path="transfers/edit/:id" element={<NewTransferPage />} />
-
-                      <Route path="ai-assistant" element={<AiAssistantPage />} />
-                      
-                      <Route path="reports/bank-statement" element={<BankAccountStatementPage />} />
-                      <Route path="reports/bank-statement/:code" element={<BankAccountStatementPage />} />
-                      
-                        {/* +++ اضافه کردن مسیرهای جدید افزونه +++ */}
-                        <Route path="plugins" element={<PluginMarketplacePage />} />
-                        <Route path="plugins/my" element={<MyPluginsPage />} />
-                        <Route path="plugins/invoices" element={<PluginInvoicesPage />} />
-                        <Route path="purchase-plugin/:id" element={<PluginPurchasePage />} />
-                        {/* +++ پایان بخش افزونه +++ */}
-                      
-                      <Route index element={<Navigate to="dashboard" replace />} />
-                    </Routes>
-                  </MainLayout>
-                </ProtectedRoute>
-              }/>
-              <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-            </Routes>
-          </Suspense>
-        </ApiDataProvider>
-      </AntApp>
-    </ConfigProvider>
-  );
+  return (
+    <ConfigProvider theme={antdAppTheme} direction="rtl">
+      <AntApp>
+        <ApiDataProvider>
+          <BackgroundManager />
+          <Suspense fallback={<div className="page-loading-fallback">در حال بارگذاری...</div>}>
+            <Routes>
+              {/* بخش اول: آدرس‌های عمومی که نیاز به لاگین ندارند */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/2fa-verify" element={<TwoFAVerifyPage />} />
+              <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              
+              {/* آدرس تابلوی عمومی در اینجا به صورت ثابت تعریف شده است */}
+              <Route path={publicBoardPath} element={<PublicPriceBoard />} />
+              
+              {/* بخش دوم: تمام آدرس‌های دیگر که نیاز به لاگین دارند */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <MainLayout isSidebarCollapsed={isSidebarCollapsed} setIsSidebarCollapsed={setIsSidebarCollapsed} onThemeChange={setCurrentTheme} currentTheme={currentTheme} >
+                    <Routes>
+                      <Route path="dashboard" element={<DashboardPage />} />
+                      <Route path="customers" element={<CustomersPage />} />
+                      <Route path="customers/new" element={<NewCustomerPage />} />
+                      <Route path="customer/:customerId" element={<CustomerDetailPage />} />
+                      <Route path="invoices" element={<InvoicesPage />} />
+                      <Route path="invoices/new" element={<NewInvoicePage />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="etiket" element={<EtiketPage />} />
+                      <Route path="reports" element={<ReportsPage />} />
+                      <Route path="tasks" element={<TasksBoardPage />} />
+                      <Route path="account/settings" element={<AccountManagementPage />} />
+                      <Route path="settings/system" element={<SystemSettingsPage />} />
+                      <Route path="settings/business" element={<BusinessSettings />} />
+                      <Route path="settings/users" element={<UserRolls />} />
+                      <Route path="settings/users/permissions/:email" element={<UserPermissions />} />
+                      <Route path="settings/print" element={<PrintSettings />} />
+                      <Route path="settings/tax" element={<TaxSettings />} />
+                      <Route path="settings/avatar" element={<AvatarSettings />} />
+                      <Route path="settings/logs" element={<LogsViewer />} />
+                      <Route path="settings/currencies" element={<ExtraCurrencies />} />
+                      <Route path="settings/price-board" element={<PriceBoardPage />} />
+                      <Route path="bank-accounts" element={<BankAccountsPage />} />
+                      <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
+                      <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
+                      <Route path="bank-accounts/detail/:id" element={<BankAccountDetailPage />} />
+                      <Route path="bank-cards" element={<BankCardsPage />} />
+                      <Route path="funds" element={<FundsPage />} />
+                      <Route path="funds/new" element={<NewFundPage />} />
+                      <Route path="funds/edit/:id" element={<NewFundPage />} />
+                      <Route path="funds/statement/:code" element={<FundStatementPage />} />
+                      <Route path="cheques" element={<ChequesPage />} />
+                      <Route path="cheques/received/new" element={<NewReceivedChequePage />} />
+                      <Route path="cheques/received/edit/:id" element={<NewReceivedChequePage />} />
+                      <Route path="cheques/issued/new" element={<NewIssuedChequePage />} />
+                      <Route path="cheques/issued/edit/:id" element={<NewIssuedChequePage />} />
+                      <Route path="cheques/transfer/:id" element={<ChequeTransferPage />} />
+                      <Route path="transfers" element={<TransfersPage />} />
+                      <Route path="transfers/new" element={<NewTransferPage />} />
+                      <Route path="transfers/edit/:id" element={<NewTransferPage />} />
+                      <Route path="ai-assistant" element={<AiAssistantPage />} />
+                      <Route path="reports/bank-statement" element={<BankAccountStatementPage />} />
+                      <Route path="reports/bank-statement/:code" element={<BankAccountStatementPage />} />
+                      <Route path="plugins" element={<PluginMarketplacePage />} />
+                      <Route path="plugins/my" element={<MyPluginsPage />} />
+                      <Route path="plugins/invoices" element={<PluginInvoicesPage />} />
+                      <Route path="purchase-plugin/:id" element={<PluginPurchasePage />} />
+                      <Route index element={<Navigate to="dashboard" replace />} />
+                    </Routes>
+                  </MainLayout>
+                </ProtectedRoute>
+              }/>
+              
+              <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+            </Routes>
+          </Suspense>
+        </ApiDataProvider>
+      </AntApp>
+    </ConfigProvider>
+  );
 }
 
 function AppWrapper() { return ( <Router> <App /> </Router> ); }

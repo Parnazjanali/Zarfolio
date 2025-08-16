@@ -1,65 +1,113 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
-import './PluginMarketplacePage.css'; // استایل‌های این صفحه
+// frontend/src/pages/PluginMarketplacePage.jsx
+
+import React from 'react';
+import { Card, Row, Col, Typography, Button, Tag, Divider } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { FaClipboardList, FaCalculator, FaRobot } from 'react-icons/fa'; // آیکون تابلوی قیمت
+import './PluginMarketplacePage.css';
+
+const { Title, Paragraph } = Typography;
+const { Meta } = Card;
+
+const availablePlugins = [
+  {
+    id: 'price-board-pro', // شناسه جدید
+    title: 'افزونه تابلوی قیمت پیشرفته',
+    description: 'تابلوی قیمت خود را حرفه‌ای‌تر کنید! با قالب‌های متنوع، سفارشی‌سازی کامل و اتصال به دامنه شخصی، مشتریان خود را تحت تاثیر قرار دهید.',
+    version: '2.0.0',
+    author: 'تیم زرفولیو',
+    price: '3,450,000 تومان',
+    icon: <FaClipboardList style={{ fontSize: '48px', color: '#1890ff' }} />,
+    tags: ['قیمت', 'نمایش آنلاین', 'سفارشی‌سازی'],
+    features: [
+      'قالب‌های نمایش متنوع و زیبا',
+      'بارگذاری لوگو و بنر اختصاصی',
+      'ایجاد QR Code برای دسترسی سریع',
+      'اتصال به دامنه شخصی (White-labeling)'
+    ]
+  },
+  {
+    id: 'advanced-accounting',
+    title: 'حسابداری پیشرفته',
+    description: 'ابزارهای پیشرفته برای مدیریت اسناد حسابداری، گزارشات مالی و دفاتر قانونی.',
+    version: '1.2.0',
+    author: 'توسعه‌دهنده ثالث',
+    price: '850,000 تومان',
+    icon: <FaCalculator style={{ fontSize: '48px', color: '#52c41a' }} />,
+    tags: ['حسابداری', 'مالی', 'گزارش'],
+    features: [
+        'صدور سند دستی و خودکار',
+        'گزارش تراز آزمایشی',
+        'مدیریت دفاتر کل، معین و تفصیلی'
+    ]
+  },
+  {
+    id: 'ai-assistant-pro',
+    title: 'دستیار هوشمند پرو',
+    description: 'نسخه پیشرفته دستیار هوشمند با قابلیت‌های تحلیل داده و پیش‌بینی فروش.',
+    version: '1.5.0',
+    author: 'تیم زرفولیو',
+    price: 'تماس بگیرید',
+    icon: <FaRobot style={{ fontSize: '48px', color: '#faad14' }} />,
+    tags: ['هوش مصنوعی', 'تحلیل داده', 'پیش‌بینی'],
+    features: [
+      'تحلیل رفتار مشتریان',
+      'پیش‌بینی روند فروش',
+      'تولید گزارشات مدیریتی هوشمند'
+    ]
+  }
+];
 
 const PluginMarketplacePage = () => {
-  const [plugins, setPlugins] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // اطلاعات افزونه‌ها از سرور گرفته می‌شود
-    axios.post('/api/plugin/get/all')
-      .then(response => {
-        setPlugins(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching plugins:", error);
-        setLoading(false);
-      });
-  }, []); // [] باعث می‌شود این تابع فقط یک بار بعد از رندر اولیه اجرا شود
-
-  if (loading) {
-    return <div className="loading-container">در حال بارگذاری افزونه‌ها...</div>;
-  }
+  const handlePurchase = (pluginId) => {
+    navigate(`/purchase-plugin/${pluginId}`);
+  };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title">فروشگاه افزونه‌ها</h1>
-        <button onClick={() => navigate(-1)} className="back-button">بازگشت</button>
-      </div>
+    <div className="plugin-marketplace-container">
+      <Title level={2} style={{ marginBottom: '24px', textAlign: 'center' }}>
+        فروشگاه افزونه‌های زرفولیو
+      </Title>
+      <Paragraph style={{ textAlign: 'center', marginBottom: '40px' }}>
+        با نصب افزونه‌های قدرتمند، امکانات جدیدی به نرم‌افزار خود اضافه کرده و کسب و کارتان را توسعه دهید.
+      </Paragraph>
 
-      <div className="plugin-grid">
-        {plugins.map(plugin => (
-          <div key={plugin.code} className="plugin-card">
-            <img src={`/u/img/plugins/${plugin.icon}`} alt={plugin.name} className="plugin-image" />
-            <div className="plugin-card-body">
-              <h3 className="plugin-name">{plugin.name}</h3>
-              <div className="plugin-details">
-                <span className="plugin-price">
-                  {new Intl.NumberFormat('fa-IR').format(plugin.price)} تومان
-                </span>
-                <span className="plugin-duration">{plugin.timelabel}</span>
+      <Row gutter={[32, 32]}>
+        {availablePlugins.map((plugin) => (
+          <Col key={plugin.id} xs={24} sm={24} md={12} lg={8}>
+            <Card
+              hoverable
+              className="plugin-card"
+              actions={[
+                <Button type="primary" key="purchase" onClick={() => handlePurchase(plugin.id)}>
+                  مشاهده و خرید
+                </Button>,
+              ]}
+            >
+              <Meta
+                avatar={plugin.icon}
+                title={<Title level={4}>{plugin.title}</Title>}
+                description={
+                  <Paragraph ellipsis={{ rows: 2 }}>{plugin.description}</Paragraph>
+                }
+              />
+              <Divider />
+              <div className="plugin-card-body">
+                <Paragraph><strong>ویژگی‌های کلیدی:</strong></Paragraph>
+                <ul>
+                  {plugin.features.map(feature => <li key={feature}>{feature}</li>)}
+                </ul>
               </div>
-              <div className="plugin-features">
-                <span><i className="fa fa-ticket"></i> پشتیبانی دارد</span>
-                <span><i className="fa fa-users"></i> کاربر نامحدود</span>
+              <div className="plugin-card-footer">
+                <Tag color="blue">نسخه {plugin.version}</Tag>
+                <Paragraph style={{ margin: 0 }}><strong>قیمت: {plugin.price}</strong></Paragraph>
               </div>
-              <div className="plugin-actions">
-                <Link to={`/acc/plugin-center/view-end/${plugin.code}`} className="btn btn-buy">
-                  <i className="fa fa-shopping-cart"></i> خرید
-                </Link>
-                <Link to={`/acc/plugins/${plugin.code}/intro`} className="btn btn-details">
-                  <i className="fa fa-book"></i> کاتالوگ
-                </Link>
-              </div>
-            </div>
-          </div>
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
     </div>
   );
 };
