@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Spin, Alert } from 'antd';
+import { Card, Spin, Alert, QRCode } from 'antd';
 import { ClockCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { FaSun, FaMoon, FaCloud, FaCloudShowersHeavy, FaWind, FaSmog, FaSnowflake } from 'react-icons/fa';
 import {
@@ -204,7 +204,14 @@ const PublicPriceBoard = () => {
                     <div className="right-section-container">
                         {config?.imageSliderEnabled && (
                             <div className="background-slider-wrapper">
-                                <ImageSlider images={config.sliderImages || []} />
+                                {/* START: این بخش مهم‌ترین تغییر است */}
+                                <ImageSlider
+                                    images={config.sliderImages || []}
+                                    interval={(config.imageSliderDuration || 7) * 1000}
+                                    randomOrder={config.randomImageOrder}
+                                    transition={config.imageTransition}
+                                />
+                                {/* END: پایان بخش اصلاح شده */}
                             </div>
                         )}
 
@@ -215,6 +222,14 @@ const PublicPriceBoard = () => {
 
                         <aside className="info-sidebar">
                             <div className="right-corner-widgets">
+                                {config?.qrCodeContent && (
+                                    <div className="qr-code-container">
+                                        <Card bordered={false} className="info-card">
+                                            <QRCode value={config.qrCodeContent} bordered={false} size={120} />
+                                        </Card>
+                                    </div>
+                                )}
+                                
                                 {config?.showWeatherWidget && (
                                    <div className="weather-widget-container">
                                        <Card bordered={false} className="info-card">

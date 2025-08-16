@@ -37,6 +37,8 @@ const PriceBoardPage = () => {
     const [isGalleryModalVisible, setIsGalleryModalVisible] = useState(false);
     const [allUploadedImages, setAllUploadedImages] = useState([]);
     const [sliderImages, setSliderImages] = useState([]);
+    
+    const baseUrl = `${window.location.origin}/pb/`;
 
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem('priceBoardConfig')) || {};
@@ -44,7 +46,7 @@ const PriceBoardPage = () => {
             apiUrl: savedConfig.apiUrl || "https://brsapi.ir/Api/Market/Gold_Currency.php?key=FreeTB2jJTDzANcCGSnLsaxPZxmWoj7C",
             weatherApiUrl: savedConfig.weatherApiUrl || "https://api.weatherapi.com/v1/current.json?key=352696f4a53a4545aa9104158253107&q=tehran",
             galleryName: savedConfig.galleryName || 'گالری شما',
-            publicBoardUrl: savedConfig.publicBoardUrl || 'b/your-business-name/prices',
+            publicBoardUrl: savedConfig.publicBoardUrl || 'my-gallery',
             qrCodeContent: savedConfig.qrCodeContent || '',
             showAnalogClock: savedConfig.showAnalogClock !== false,
             showWeatherWidget: savedConfig.showWeatherWidget !== false,
@@ -85,11 +87,10 @@ const PriceBoardPage = () => {
     };
 
     const handleOpenPublicBoard = () => {
-        let publicBoardUrl = form.getFieldValue('publicBoardUrl');
-        if (publicBoardUrl) {
-            publicBoardUrl = publicBoardUrl.replace(/^\//, '');
-            const url = `${window.location.origin}/${publicBoardUrl}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+        let vanityUrl = form.getFieldValue('publicBoardUrl');
+        if (vanityUrl) {
+            const finalUrl = `${baseUrl}${vanityUrl}`;
+            window.open(finalUrl, '_blank', 'noopener,noreferrer');
         } else {
             message.error('لطفا ابتدا یک آدرس برای تابلوی عمومی مشخص کنید.');
         }
@@ -271,12 +272,15 @@ const PriceBoardPage = () => {
                             tooltip="این لینک برای دسترسی عمومی به تابلو استفاده می‌شود. می‌توانید آن را به دلخواه تغییر دهید."
                         >
                             <Input
-                                addonBefore={`${window.location.origin}/`}
-                                addonAfter={
+                                // START: تغییرات در این بخش اعمال شد
+                                addonBefore={
                                     <Button icon={<LinkOutlined />} onClick={handleOpenPublicBoard}>
                                         باز کردن تابلو
                                     </Button>
                                 }
+                                addonAfter={<span style={{direction: 'ltr'}}>{baseUrl}</span>}
+                                style={{ textAlign: 'left', direction: 'ltr' }}
+                                // END: پایان تغییرات
                             />
                         </Form.Item>
                     </Col>
