@@ -3,51 +3,63 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
   FaCube, FaUserCog, FaAngleLeft, FaAngleRight, FaUserCircle,
   FaStore, FaUsersCog, FaPrint, FaFileContract, FaIdBadge, FaHistory, FaMoneyBillWave,
-  FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList
+  FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList,
+  FaPlug,
+  // +++ آیکون‌های جدید برای افزونه انبارداری +++
+  FaWarehouse, FaDolly, FaTruckLoading
 } from 'react-icons/fa';
+
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
-import axios from 'axios'; // Import axios for API calls
 
 const { Sider } = Layout;
 const { Text } = Typography;
+
+// +++ تابع جدید برای ساخت منوی افزونه انبارداری +++
+const getInventoryPluginMenu = () => {
+  try {
+    const savedPlugins = JSON.parse(localStorage.getItem('installedPlugins') || '[]');
+    const inventoryPlugin = savedPlugins.find(p => p.id === 'inventory' && p.active);
+
+    if (inventoryPlugin) {
+      return {
+        key: 'inventoryPluginSubmenu',
+        icon: <FaWarehouse />,
+        label: 'انبارداری',
+        children: [
+          { key: '/storeroom/tickets', icon: <FaDolly />, label: <Link to="/storeroom/tickets">حواله‌ها</Link> },
+          { key: '/storeroom/list', icon: <FaTruckLoading />, label: <Link to="/storeroom/list">مدیریت انبارها</Link> },
+        ]
+      };
+    }
+  } catch (error) {
+    console.error("Error reading plugin data from localStorage", error);
+  }
+  return null;
+};
+
 
 function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
-  
-  const handleLogout = async () => {
-    if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
-      try {
-        const authToken = localStorage.getItem('authToken');
-        if (authToken) {
-
-          await axios.post('http://localhost:8080/api/v1/auth/logout', null, {
-            headers: {
-              Authorization: `Bearer ${authToken}`
-            }
-          });
-        }
-        
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        navigate('/login');
-      } catch (error) {
-        console.error("Error during logout", error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        navigate('/login');
-      }
-    }
-  };
+  const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
 
   const getSelectedKeys = () => {
     const path = location.pathname;
+    
+    if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin')) {
+        return [path]; 
+    }
+    // +++ بروزرسانی برای منوی انبارداری +++
+    if (path.startsWith('/storeroom/')) {
+        return [path];
+    }
     if (path.startsWith('/invoices/')) return ['/invoices'];
     if (path.startsWith('/settings/')) return ['settingsSubmenu'];
     if (['/bank-accounts', '/bank-cards', '/funds', '/cheques', '/transfers'].some(p => path.startsWith(p))) {
@@ -64,15 +76,37 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     else if (['/bank-accounts', '/bank-cards', '/funds', '/cheques', '/transfers'].some(p => path.startsWith(p))) {
         setOpenKeys(['bankingSubmenu']);
     }
+    else if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin')) {
+        setOpenKeys(['pluginsSubmenu']);
+    }
+    // +++ باز نگه داشتن منوی انبارداری +++
+    else if (path.startsWith('/storeroom/')) {
+        setOpenKeys(['inventoryPluginSubmenu']);
+    }
   }, [location.pathname, isCollapsed]);
 
   const onOpenChange = (keys) => { setOpenKeys(keys); };
 
+  // +++ منوی افزونه انبارداری به صورت پویا اضافه می‌شود +++
+  const inventoryMenu = getInventoryPluginMenu();
+
   const menuItems = [
     { key: '/dashboard', icon: <FaTachometerAlt />, label: <Link to="/dashboard">داشبورد</Link> },
     { key: 'invoicesSubmenu', icon: <FaFileInvoice />, label: 'فاکتورها', children: [ { key: '/invoices/new', icon: <FaPlusSquare />, label: <Link to="/invoices/new">فاکتور جدید</Link> }, { key: '/invoices', icon: <FaFileInvoiceDollar />, label: <Link to="/invoices">لیست فاکتورها</Link> }, ] },
+    // +++ اضافه کردن منوی انبارداری در صورت وجود +++
+    ...(inventoryMenu ? [inventoryMenu] : []),
     { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> },
     { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> },
+    {
+      key: 'pluginsSubmenu',
+      icon: <FaPlug />,
+      label: 'افزونه‌ها',
+      children: [
+        { key: '/plugins', label: <Link to="/plugins">فروشگاه افزونه</Link> },
+        { key: '/plugins/my', label: <Link to="/plugins/my">افزونه‌های من</Link> },
+        { key: '/plugins/invoices', label: <Link to="/plugins/invoices">تاریخچه خرید</Link> },
+      ]
+    },
     {
       key: 'bankingSubmenu',
       icon: <FaUniversity />,
@@ -86,7 +120,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       ]
     },
     { key: '/customers/new', icon: <FaUserPlus />, label: <Link to="/customers/new">مشتری جدید</Link> },
-    { key: '/etiket', icon: <FaTags />, label: <Text type="warning" style={{ fontSize: '0.8em' }}>اتیکت (beta)</Text> },
+    { key: '/etiket', icon: <FaTags />, label: <Link to="/etiket">اتیکت <Text type="warning" style={{ fontSize: '0.8em' }}>(beta)</Text></Link> },
     { key: '/reports', icon: <FaChartBar />, label: <Link to="/reports">گزارشات</Link> },
     {
       key: 'settingsSubmenu',

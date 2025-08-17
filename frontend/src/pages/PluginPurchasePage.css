@@ -1,0 +1,50 @@
+/* frontend/src/pages/PluginPurchasePage.css */
+
+.plugin-purchase-page {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.hero-section {
+  background-color: #f0f2f5;
+  padding: 48px 32px;
+  margin-bottom: 32px;
+  border-radius: 8px;
+}
+
+[data-theme='dark'] .hero-section {
+    background-color: #141414;
+}
+
+.plugin-icon {
+  font-size: 80px;
+  color: #1890ff;
+}
+
+.hero-paragraph {
+  font-size: 16px;
+  color: #595959;
+}
+
+[data-theme='dark'] .hero-paragraph {
+    color: #a6a6a6;
+}
+
+.purchase-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .price-section {
+    background-color: #1f1f1f;
+}

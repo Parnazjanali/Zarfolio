@@ -1,0 +1,69 @@
+
+.image-slider-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.slider-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0; /* Start with the image being invisible */
+}
+
+
+/* --- Transition Effects --- */
+
+/* 1. Fade (Default) */
+.transition-fade .slider-image {
+  transition: opacity 1.5s ease-in-out;
+}
+.transition-fade .slider-image.active {
+  opacity: 1;
+}
+
+/* 2. Slide Horizontal */
+.transition-slide-horizontal .slider-image {
+  transition: transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+  transform: translateX(100%);
+}
+.transition-slide-horizontal .slider-image.active {
+  transform: translateX(0);
+}
+/* برای اینکه عکس قبلی به چپ برود */
+.transition-slide-horizontal .slider-image:not(.active) {
+    /* این بخش نیاز به منطق JS پیچیده‌تر برای نگه داشتن عکس قبلی دارد، برای سادگی فعلا محو می‌شود */
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+
+/* 3. Slide Vertical */
+.transition-slide-vertical .slider-image {
+  transition: transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+  transform: translateY(100%);
+}
+.transition-slide-vertical .slider-image.active {
+  transform: translateY(0);
+}
+.transition-slide-vertical .slider-image:not(.active) {
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+
+/* 4. Zoom */
+.transition-zoom .slider-image {
+  transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+  transform: scale(1.1);
+}
+.transition-zoom .slider-image.active {
+  opacity: 1;
+  transform: scale(1);
+}
