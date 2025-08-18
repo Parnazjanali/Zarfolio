@@ -1,45 +1,46 @@
-/* frontend/src/pages/DashboardPage.css */
-
-.stat-card {
-  border-radius: 8px;
-  color: #fff;
-  overflow: hidden;
-  position: relative;
-  border: none;
-  transition: transform 0.3s ease;
+/* ارتفاع کارت ها را یکسان می کند و چیدمان داخلی را تنظیم می کند */
+.info-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-.stat-card:hover {
+.info-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* استایل‌های پس‌زمینه با الهام از Dashmix */
-.stat-card-primary {
-  background: linear-gradient(135deg, #4c66d7 0%, #3f51b5 100%);
+/* استایل برای بخش بالایی (عنوان) کارت */
+.card-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.stat-card-success {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+/* استایل برای بخش محتوای اصلی کارت */
+.card-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* کمی فاصله بیشتر برای خوانایی */
 }
 
-.stat-card-warning {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+.card-data-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* جلوگیری از شکستن خطوط و نمایش سه نقطه در صورت طولانی بودن */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* استایل کامپوننت Statistic */
-.stat-card .ant-statistic-title {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-}
-
-.stat-card .ant-statistic-content-prefix {
-  margin-right: 10px;
-}
-
-.stat-card-footer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.9);
-}
+/* رنگ بندی پس زمینه کارت ها */
+.color-success { background-color: #f1f8e9; }
+.color-primary { background-color: #e3f2fd; }
+.color-error { background-color: #ffebee; }
+.color-warning { background-color: #fffde7; }
+.color-info { background-color: #e1f5fe; }
+.color-secondary { background-color: #f3e5f5; }
