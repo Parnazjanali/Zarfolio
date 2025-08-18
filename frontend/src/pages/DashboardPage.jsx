@@ -26,7 +26,6 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
-  Wallet as WalletIcon,
   Group as GroupIcon,
   TrendingDown as TrendingDownIcon,
   TrendingUp as TrendingUpIcon,
@@ -55,7 +54,7 @@ const InfoCard = ({ title, icon, color, data, to }) => (
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      height: 220,
+      height: '100%', // ارتفاع رو به ۱۰۰ درصد تغییر دادیم تا هم‌اندازه بشن
       backgroundColor: `${color}.lighten-4`, // این رنگ ها باید در تم شما تعریف شده باشند یا از رنگ های پیش فرض استفاده کنید
     }}
   >
@@ -85,12 +84,11 @@ const DashboardPage = () => {
   // این داده ها باید از API شما بارگذاری شوند
   const [costData, setCostData] = useState({ today: 120, week: 850, month: 3200, year: 45000 });
   const [incomeData, setIncomeData] = useState({ today: 500, week: 2500, month: 9800, year: 115000 });
-  const [wallet, setWallet] = useState({ deposit: 75000 });
-
+  
   // وضعیت نمایش ویجت ها، مشابه فایل Vue
   const [dashboard, setDashboard] = useState({
     banks: true,
-    wallet: true,
+    // wallet: true, // کیف پول حذف شد
     buys: true,
     sells: true,
     commodities: true,
@@ -137,7 +135,7 @@ const DashboardPage = () => {
           sell: true,
           cost: true,
           income: true,
-          wallet: true,
+          // wallet: true, // کیف پول حذف شد
           persons: true,
           buy: true,
           accounting: true,
@@ -218,13 +216,10 @@ const DashboardPage = () => {
         )}
 
         {/* کارت های اطلاعاتی */}
-        {permissions.wallet && dashboard.wallet && (
-          <Grid item xs={12} sm={6} md={4}>
-            <InfoCard title="کیف پول" icon={<WalletIcon color="success"/>} color="success" data={[
-                { label: 'موجودی', value: `${Number(wallet.deposit).toLocaleString()} ریال`, icon: <TrendingUpIcon fontSize="small"/> },
-            ]}/>
-          </Grid>
-        )}
+        
+        {/* کارت کیف پول حذف شد
+        */}
+
         {permissions.persons && dashboard.persons && (
           <Grid item xs={12} sm={6} md={4}>
             <InfoCard title="اشخاص" icon={<GroupIcon color="primary"/>} color="primary" data={[
