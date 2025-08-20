@@ -12,7 +12,7 @@ import {
   FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList,
   FaPlug,
   // +++ آیکون‌های جدید برای افزونه انبارداری +++
-  FaWarehouse, FaDolly, FaTruckLoading
+  FaWarehouse, FaDolly, FaTruckLoading, FaBell
 } from 'react-icons/fa';
 
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -61,7 +61,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
         return [path];
     }
     if (path.startsWith('/invoices/')) return ['/invoices'];
-    if (path.startsWith('/settings/')) return ['settingsSubmenu'];
+    if (path.startsWith('/settings/')) return [path];
     if (['/bank-accounts', '/bank-cards', '/funds', '/cheques', '/transfers'].some(p => path.startsWith(p))) {
         return [path];
     }
@@ -97,6 +97,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     ...(inventoryMenu ? [inventoryMenu] : []),
     { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> },
     { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> },
+    { key: '/admin/notifications', icon: <FaBell />, label: <Link to="/admin/notifications">مدیریت اعلانات</Link> },
     {
       key: 'pluginsSubmenu',
       icon: <FaPlug />,
@@ -136,6 +137,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
         { key: '/settings/logs', icon: <FaHistory />, label: <Link to="/settings/logs">تاریخچه رویدادها</Link> },
         { key: '/settings/currencies', icon: <FaMoneyBillWave />, label: <Link to="/settings/currencies">مدیریت ارزها</Link> },
         { key: '/settings/system', icon: <FaCogs />, label: <Link to="/settings/system">تنظیمات سیستم</Link> },
+        { key: '/settings/notifications', icon: <FaBell />, label: <Link to="/settings/notifications">اعلانات</Link> },
       ]
     },
   ];

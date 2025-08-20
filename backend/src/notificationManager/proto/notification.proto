@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package notification;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = ".;notification";
+
+message Notification {
+  uint32 id = 1;
+  uint32 sender_id = 2;
+  uint32 recipient_id = 3;
+  bool is_broadcast = 4;
+  string message = 5;
+  string type = 6;
+  string status = 7;
+  google.protobuf.Timestamp scheduled_at = 8;
+  google.protobuf.Timestamp sent_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message NotificationRead {
+  uint32 id = 1;
+  uint32 notification_id = 2;
+  uint32 user_id = 3;
+  google.protobuf.Timestamp read_at = 4;
+}
+
+message CreateNotificationRequest {
+  string message = 1;
+  string type = 2;
+  string recipient_type = 3;
+  uint32 user_id = 4;
+  google.protobuf.Timestamp scheduled_at = 5;
+}
+
+message CreateNotificationResponse {
+  Notification notification = 1;
+}
+
+message GetUserNotificationsRequest {
+  uint32 user_id = 1;
+}
+
+message GetUserNotificationsResponse {
+  repeated Notification notifications = 1;
+}
+
+message MarkNotificationAsReadRequest {
+  uint32 notification_id = 1;
+  uint32 user_id = 2;
+}
+
+message MarkNotificationAsReadResponse {
+  string status = 1;
+}
+
+message GetAllNotificationsRequest {}
+
+message GetAllNotificationsResponse {
+  repeated Notification notifications = 1;
+}
+
+message GetNotificationReadStatusRequest {
+    uint32 notification_id = 1;
+}
+
+message GetNotificationReadStatusResponse {
+    repeated NotificationRead reads = 1;
+}
+
+service NotificationService {
+  rpc CreateNotification(CreateNotificationRequest) returns (CreateNotificationResponse);
+  rpc GetUserNotifications(GetUserNotificationsRequest) returns (GetUserNotificationsResponse);
+  rpc MarkNotificationAsRead(MarkNotificationAsReadRequest) returns (MarkNotificationAsReadResponse);
+  rpc GetAllNotifications(GetAllNotificationsRequest) returns (GetAllNotificationsResponse);
+  rpc GetNotificationReadStatus(GetNotificationReadStatusRequest) returns (GetNotificationReadStatusResponse);
+}

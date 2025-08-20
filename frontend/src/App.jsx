@@ -57,6 +57,7 @@ const LogsViewer = lazy(() => import('./pages/settings/LogsViewer.jsx'));
 const ExtraCurrencies = lazy(() => import('./pages/settings/ExtraCurrencies.jsx'));
 const PriceBoardPage = lazy(() => import('./pages/settings/PriceBoardPage.jsx'));
 const PublicPriceBoard = lazy(() => import('./pages/public/PublicPriceBoard.jsx'));
+const AdminNotificationPage = lazy(() => import('./pages/admin/AdminNotificationPage.jsx'));
 
 // +++ وارد کردن کامپوننت‌های جدید افزونه +++
 const PluginMarketplacePage = lazy(() => import('./pages/PluginMarketplacePage.jsx'));
@@ -176,6 +177,7 @@ function App() {
                       <Route path="settings/logs" element={<LogsViewer />} />
                       <Route path="settings/currencies" element={<ExtraCurrencies />} />
                       <Route path="settings/price-board" element={<PriceBoardPage />} />
+                      <Route path="settings/notifications" element={<AdminNotificationPage />} />
                       <Route path="bank-accounts" element={<BankAccountsPage />} />
                       <Route path="bank-accounts/new" element={<NewBankAccountPage />} />
                       <Route path="bank-accounts/edit/:id" element={<NewBankAccountPage />} />
