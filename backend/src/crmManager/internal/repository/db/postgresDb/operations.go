@@ -4,6 +4,7 @@ import (
 	"context"
 	"crm-gold/internal/model"
 	"crm-gold/internal/repository/repo"
+	service "crm-gold/internal/service/common"
 	"errors"
 	"fmt"
 
@@ -122,4 +123,90 @@ func (r *customerRepositoryImpl) GetAllCustomerTypes(ctx context.Context) ([]mod
 		return nil, err
 	}
 	return customerTypes, nil
+}
+
+func (r *customerRepositoryImpl) FindCusTypeByLabel(ctx context.Context, label string) (*model.CusType, error) {
+    var cusType model.CusType
+    if err := r.db.WithContext(ctx).Where("label = ?", label).First(&cusType).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			return nil, service.ErrNotFound
+        }
+        r.logger.Error("failed to find customer type by label", zap.String("label", label), zap.Error(err))
+        return nil, err
+    }
+    return &cusType, nil
+}
+
+func (r *customerRepositoryImpl) CreateCustomerType(ctx context.Context, cusType *model.CusType) (*model.CusType, error) {
+    if err := r.db.WithContext(ctx).Create(cusType).Error; err != nil {
+        r.logger.Error("failed to create customer type", zap.String("label", cusType.Label), zap.Error(err))
+        return nil, err
+    }
+    r.logger.Info("Customer type created successfully in database", zap.Uint("id", cusType.ID))
+    return cusType, nil
+}
+
+func (r *customerRepositoryImpl) IsCustomerTypeInUse(ctx context.Context, code string) (bool, error) {
+    var count int64
+    // این کوئری جدول واسط (join table) بین مشتریان و انواع مشتری را چک می‌کند
+    // نام جدول واسط ممکن است متفاوت باشد (مثلاً customer_cus_types)
+    err := r.db.WithContext(ctx).Table("customer_customer_types").
+        Joins("JOIN cus_types ON cus_types.id = customer_customer_types.cus_type_id").
+        Where("cus_types.code = ?", code).
+        Count(&count).Error
+
+    if err != nil {
+        r.logger.Error("failed to check if customer type is in use", zap.String("code", code), zap.Error(err))
+        return false, err
+    }
+    return count > 0, nil
+}
+
+func (r *customerRepositoryImpl) DeleteCustomerTypeByCode(ctx context.Context, code string) error {
+    result := r.db.WithContext(ctx).Where("code = ?", code).Delete(&model.CusType{})
+    if result.Error != nil {
+        r.logger.Error("failed to delete customer type by code", zap.String("code", code), zap.Error(result.Error))
+        return result.Error
+    }
+    if result.RowsAffected == 0 {
+        return service.ErrNotFound
+    }
+    return nil
+}
+
+func (r *customerRepositoryImpl) SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error) {
+    var customers []model.Customer
+    var total int64
+
+    query := r.db.WithContext(ctx).Model(&model.Customer{})
+
+    if req.Name != "" {
+        query = query.Where("name LIKE ? OR family_name LIKE ?", "%"+req.Name+"%", "%"+req.Name+"%")
+    }
+    if req.PhoneNumber != "" {
+        query = query.Where("mobile LIKE ?", "%"+req.PhoneNumber+"%")
+    }
+    if len(req.Tags) > 0 {
+
+		query = query.Joins("JOIN customer_customer_types ON customer_customer_types.customer_id = customers.id").
+            Joins("JOIN cus_types ON cus_types.id = customer_customer_types.cus_type_id").
+            Where("cus_types.label IN (?)", req.Tags)
+    }
+
+    if err := query.Count(&total).Error; err != nil {
+        r.logger.Error("failed to count search results", zap.Error(err))
+        return nil, err
+    }
+
+    offset := (req.Page - 1) * req.PageSize
+    if err := query.Offset(offset).Limit(req.PageSize).Find(&customers).Error; err != nil {
+        r.logger.Error("failed to fetch search results with pagination", zap.Error(err))
+        return nil, err
+    }
+
+    return &model.SearchResponse{
+        Data:  customers,
+        Total: total,
+    }, nil
 }

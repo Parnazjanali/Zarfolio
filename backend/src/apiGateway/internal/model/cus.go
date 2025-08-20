@@ -140,40 +140,51 @@ type CreateCustomerRequest struct {
 }
 
 type UpdateCustomerRequest struct {
-	Nikename        *string  `json:"nikename,omitempty"`
-	Name            *string  `json:"name,omitempty"`
-	FamilyName      *string  `json:"familyName,omitempty" gorm:"column:family_name"`
-	Birthday        *time.Time `json:"birthday,omitempty"`
-	Company         *string  `json:"company,omitempty"`
-	
-	Mobile          *string  `json:"mobile,omitempty"`
-	Mobile2         *string  `json:"mobile2,omitempty"`
-	Tel             *string  `json:"tel,omitempty"`
-	Fax             *string  `json:"fax,omitempty"`
-	Email           *string  `json:"email,omitempty"`
-	Website         *string  `json:"website,omitempty"`
-	
-	Address         *string  `json:"address,omitempty"`
-	Postalcode      *string  `json:"postalcode,omitempty"`
-	Shahr           *string  `json:"shahr,omitempty"`
-	Ostan           *string  `json:"ostan,omitempty"`
-	Keshvar         *string  `json:"keshvar,omitempty"`
+	Nikename   *string    `json:"nikename,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	FamilyName *string    `json:"familyName,omitempty" gorm:"column:family_name"`
+	Birthday   *time.Time `json:"birthday,omitempty"`
+	Company    *string    `json:"company,omitempty"`
 
-	Shenasemeli     *string  `json:"shenasemeli,omitempty"`
-	Codeeghtesadi   *string  `json:"codeeghtesadi,omitempty"`
-	Sabt            *string  `json:"sabt,omitempty"`
-	TaxID           *string  `json:"taxID,omitempty"`
+	Mobile  *string `json:"mobile,omitempty"`
+	Mobile2 *string `json:"mobile2,omitempty"`
+	Tel     *string `json:"tel,omitempty"`
+	Fax     *string `json:"fax,omitempty"`
+	Email   *string `json:"email,omitempty"`
+	Website *string `json:"website,omitempty"`
 
-	SpeedAccess       *bool    `json:"speedAccess,omitempty"`
-	Des               *string  `json:"des,omitempty"`
-	Status            *string  `json:"status,omitempty"`
+	Address    *string `json:"address,omitempty"`
+	Postalcode *string `json:"postalcode,omitempty"`
+	Shahr      *string `json:"shahr,omitempty"`
+	Ostan      *string `json:"ostan,omitempty"`
+	Keshvar    *string `json:"keshvar,omitempty"`
 
+	Shenasemeli   *string `json:"shenasemeli,omitempty"`
+	Codeeghtesadi *string `json:"codeeghtesadi,omitempty"`
+	Sabt          *string `json:"sabt,omitempty"`
+	TaxID         *string `json:"taxID,omitempty"`
 
-	CustomerCategory *string `json:"customerCategory,omitempty"`
-	PrelabelID       *uint   `json:"prelabelId,omitempty"`
-	AssignedEmployeeID *uint `json:"assignedEmployeeId,omitempty"`
+	SpeedAccess *bool   `json:"speedAccess,omitempty"`
+	Des         *string `json:"des,omitempty"`
+	Status      *string `json:"status,omitempty"`
 
-	BankAccounts *[]CusCard `json:"bankAccounts,omitempty"`
+	CustomerCategory   *string `json:"customerCategory,omitempty"`
+	PrelabelID         *uint   `json:"prelabelId,omitempty"`
+	AssignedEmployeeID *uint   `json:"assignedEmployeeId,omitempty"`
+
+	BankAccounts  *[]CusCard `json:"bankAccounts,omitempty"`
 	CustomerTypes *[]CusType `json:"customerTypes,omitempty"`
 }
 
+type CustomerSearchRequest struct {
+	Name        string   `json:"name"`
+	PhoneNumber string   `json:"phone_number"`
+	Tags        []string `json:"tags"`
+	Page        int      `json:"page"`
+	PageSize    int      `json:"page_size"`
+}
+
+type SearchResponse struct {
+	Data  []Customer `json:"data"`
+	Total int64      `json:"total"` 
+}

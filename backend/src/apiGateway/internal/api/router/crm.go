@@ -40,18 +40,17 @@ func SetUpCrmRoutes(
 	crmGroup.Post("/customers", authMiddleware.AuthorizeMiddleware(model.PermCRMCreateCustomer), crmHandlerAG.HandleCreateCustomer)
 	crmGroup.Put("/customers/:id", authMiddleware.AuthorizeMiddleware(model.PermCRMUpdateCustomer), crmHandlerAG.HandleUpdateCustomer)
 	crmGroup.Delete("/customers/:id", authMiddleware.AuthorizeMiddleware(model.PermCRMDeleteCustomer), crmHandlerAG.HandleDeleteCustomer)
+	crmGroup.Get("/customers/:code", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerByCode)
+	//crmGroup.Get("/customer-prelabels", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerPrelabels)
 
-	// روت‌های اطلاعات/جستجو و فیلترهای پیشرفته
 	crmGroup.Get("/customer-types", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerTypes)
 	crmGroup.Post("/customer-types", authMiddleware.AuthorizeMiddleware(model.PermCRMCreateCustomer), crmHandlerAG.HandleCreateCustomerType)
-	crmGroup.Delete("/custome-types", authMiddleware.AuthorizeMiddleware(model.PermCRMDeleteCustomer), crmHandlerAG.HandleDeleteCustomerTypes)
-	crmGroup.Get("/customers/:code", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerInfoByCode)
-	crmGroup.Get("/customer-prelabels", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetCustomerPrelabels)
-
+	crmGroup.Delete("/customer-types", authMiddleware.AuthorizeMiddleware(model.PermCRMDeleteCustomer), crmHandlerAG.HandleDeleteCustomerTypes)
+	
 	// روت‌های لیست/جستجوی پیشرفته
 	crmGroup.Post("/customers/search", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleSearchCustomers)
 	crmGroup.Post("/customers/filter", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleFilterCustomers)
-	crmGroup.Get("/customers/salespersons", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetSalespersons)
+	//crmGroup.Get("/customers/salespersons", authMiddleware.AuthorizeMiddleware(model.PermCRMReadCustomer), crmHandlerAG.HandleGetSalespersons)
 
 	// روت‌های عملیات گروهی
 	crmGroup.Post("/customers/group-update", authMiddleware.AuthorizeMiddleware(model.PermCRMUpdateCustomer), crmHandlerAG.HandleGroupUpdateCustomers)

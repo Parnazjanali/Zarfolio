@@ -5,7 +5,7 @@ import (
 	"crm-gold/internal/api/handler"
 	"crm-gold/internal/api/middleware"
 	"crm-gold/internal/repository/db/postgresDb"
-	"crm-gold/internal/service"
+	customerService "crm-gold/internal/service/customer"
 	"crm-gold/internal/utils"
 	"fmt"
 
@@ -35,7 +35,7 @@ func StartServer(port string) error {
     if err != nil {
         utils.Log.Fatal("Failed to initialize customer repository", zap.Error(err))
     }
-    customerService, err := service.NewCustomerService(customerRepo, utils.Log)
+    customerService, err := customerService.NewCustomerService(customerRepo, utils.Log)
     if err != nil {
         utils.Log.Fatal("Failed to initialize customer service", zap.Error(err))
     }
@@ -48,12 +48,10 @@ func StartServer(port string) error {
         utils.Log.Fatal("Failed to initialize AuthZMiddleware for CRM", zap.Error(err))
     }
 
-    // ⭐ STEP 1: All valid routes are set up here.
     if err := SetUpAllRoutes(app, crmHandler, authZMiddlewareForCRM); err != nil {
         utils.Log.Fatal("CRM Manager Service failed to start Fiber server", zap.Error(err))
     }
 
-    // ⭐ STEP 2: The 404 handler is registered last, as a fallback.
     app.Use(func(c *fiber.Ctx) error {
         utils.Log.Warn("Route not found", zap.String("path", c.OriginalURL()))
         return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Route not found."})

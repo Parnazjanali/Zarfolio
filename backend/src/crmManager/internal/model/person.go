@@ -176,3 +176,16 @@ type UpdateCustomerRequest struct {
 	BankAccounts *[]CusCard `json:"bankAccounts,omitempty"`
 	CustomerTypes *[]CusType `json:"customerTypes,omitempty"`
 }
+
+type CustomerSearchRequest struct {
+	Name        string   `json:"name"`
+	PhoneNumber string   `json:"phone_number"`
+	Tags        []string `json:"tags"`
+	Page        int      `json:"page"`
+	PageSize    int      `json:"page_size"`
+}
+
+type SearchResponse struct {
+	Data  []Customer `json:"data"`
+	Total int64      `json:"total"` 
+}

@@ -190,7 +190,7 @@ func (h *CrmHandler) HandleGetCustomerTypes(c *fiber.Ctx) error {
 	return c.JSON(cusTypes)
 }
 
-func (h *CrmHandler) HandleDeleteCustomerTypes (c *fiber.Ctx)error{
+func (h *CrmHandler) HandleDeleteCustomerTypes(c *fiber.Ctx) error {
 	defer h.logger.Sync()
 
 	cusCode := c.Params("cusType_Code")
@@ -217,12 +217,42 @@ func (h *CrmHandler) HandleDeleteCustomerTypes (c *fiber.Ctx)error{
 	h.logger.Info("cusType deleted successfully.", zap.String("customer_code", cusCode), zap.String("user_id", userID))
 	return c.SendStatus(fiber.StatusNoContent)
 
-
 }
 
-func (h *CrmHandler) HandleGetCustomerInfoByCode(c *fiber.Ctx) error {
-	// Implementation for getting customer info by code
-	return nil
+func (h *CrmHandler) HandleGetCustomerByCode(c *fiber.Ctx) error {
+
+	defer h.logger.Sync()
+
+	customerCode := c.Params("code")
+	if customerCode == "" {
+		h.logger.Warn("customer code is missing in Get Customer request.")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Customer code is required.",
+		})
+	}
+
+	userID, _ := c.Locals("userID").(string)
+	h.logger.Debug("Received request to get customer by code",
+		zap.String("user_id", userID),
+		zap.String("customer_code", customerCode))
+
+	customer, err := h.crmSvc.GetCustomerByCode(c.Context(), customerCode)
+	if err != nil {
+		h.logger.Error("Failed to get customer via service layer", zap.Error(err), zap.String("user_id", userID))
+		if strings.Contains(err.Error(), "not found") {
+			return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "Customer not found."})
+		}
+		if errors.Is(err, service.ErrCrmManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "CRM service is temporarily unavailable"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to get customer due to an internal error."})
+	}
+
+	h.logger.Debug("Customer retrieved successfully",
+		zap.String("customer_code", customer.Code),
+		zap.String("user_id", userID))
+
+	return c.JSON(customer)
 }
 
 func (h *CrmHandler) HandleGetCustomerPrelabels(c *fiber.Ctx) error {
@@ -231,8 +261,38 @@ func (h *CrmHandler) HandleGetCustomerPrelabels(c *fiber.Ctx) error {
 }
 
 func (h *CrmHandler) HandleSearchCustomers(c *fiber.Ctx) error {
-	// Implementation for searching customers
-	return nil
+    var req model.CustomerSearchRequest
+    if err := c.BodyParser(&req); err != nil {
+        h.logger.Warn("Failed to parse search request body", zap.Error(err))
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+            Message: "Invalid request body.",
+            Details: err.Error(),
+        })
+    }
+
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 10
+    }
+
+    userID, _ := c.Locals("userID").(string)
+    h.logger.Info("Executing customer search",
+        zap.String("user_id", userID),
+        zap.Any("search_criteria", req))
+
+    searchResponse, err := h.crmSvc.SearchCustomers(c.Context(), &req)
+    if err != nil {
+        h.logger.Error("Service layer failed to search customers", zap.Error(err), zap.String("user_id", userID))
+        if errors.Is(err, service.ErrCrmManagerDown) {
+            return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "CRM service is temporarily unavailable"})
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to search customers due to an internal error."})
+    }
+
+    h.logger.Info("Customer search completed successfully", zap.Int64("found_count", searchResponse.Total))
+    return c.Status(fiber.StatusOK).JSON(searchResponse)
 }
 
 func (h *CrmHandler) HandleFilterCustomers(c *fiber.Ctx) error {

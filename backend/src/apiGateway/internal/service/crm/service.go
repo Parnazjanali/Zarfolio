@@ -19,6 +19,8 @@ type CrmService interface {
 	CreateCustomerTypes(ctx context.Context, label string) (*model.CusType, error)
 	GetCustomerTypes(ctx context.Context) ([]model.CusType, error)
 	DeleteCustomerTypes(ctx context.Context, code string) error
+	GetCustomerByCode(ctx context.Context, code string) (*model.Customer, error)
+	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
 }
 
 type CrmServiceImpl struct {
@@ -125,5 +127,34 @@ func (s *CrmServiceImpl) DeleteCustomerTypes(ctx context.Context, code string) e
 
 	s.logger.Debug("CusType deleted successfully", zap.String("cusType_Code", code))
 	return nil
+
+}
+
+func (s *CrmServiceImpl) GetCustomerByCode(ctx context.Context, code string) (*model.Customer, error) {
+
+	customers, err := s.crmManagerClient.GetCustomerByCode(ctx, code)
+	if err != nil {
+
+		if errors.Is(err, service.ErrCustomerNotFound) {
+			return nil, fmt.Errorf("%w: cusType not found", service.ErrCustomerNotFound)
+		}
+
+		return nil, fmt.Errorf("failed to fetch customers: %w", err)
+	}
+
+	return customers, nil
+
+}
+
+func (s *CrmServiceImpl) SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error) {
+
+	customer, err := s.crmManagerClient.SearchCustomers(ctx, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to search customer: %w", err)
+
+	}
+
+	return customer, nil
 
 }

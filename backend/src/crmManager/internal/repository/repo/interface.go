@@ -16,5 +16,9 @@ type CustRepo interface {
 	UpdateCustomer(ctx context.Context, id uint, req *model.UpdateCustomerRequest) (*model.Customer, error)
 	DeleteCustomer(ctx context.Context, id uint) error
 	GetAllCustomerTypes(ctx context.Context) ([]model.CusType, error)
-	// ... سایر متدهای CRUD (Update, Delete, ListWithFilters)
+	FindCusTypeByLabel(ctx context.Context, label string) (*model.CusType, error)
+	CreateCustomerType(ctx context.Context, cusType *model.CusType) (*model.CusType, error)
+	IsCustomerTypeInUse(ctx context.Context, code string) (bool, error)
+	DeleteCustomerTypeByCode(ctx context.Context, code string) error
+	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
 }

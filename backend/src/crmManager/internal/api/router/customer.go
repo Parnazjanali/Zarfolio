@@ -24,17 +24,18 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMi
 	crmGroup.Post("/customers", crmHandler.HandleCreateCustomer)
 	crmGroup.Put("/customers/:id", crmHandler.HandleUpdateCustomer)
 	crmGroup.Delete("/customers/:id", crmHandler.HandleDeleteCustomer)
+	crmGroup.Get("/customers/:code", crmHandler.HandleGetCustomerByCode)
+	//crmGroup.Get("/customer-prelabels", crmHandler.HandleGetCustomerPrelabels)
 
 	crmGroup.Get("/customer-types", crmHandler.HandleGetCustomerTypes)
 	crmGroup.Post("/customer-types", crmHandler.HandleCreateCustomerTypes)
 	crmGroup.Delete("customer-types", crmHandler.HandleDeleteCustomerTypes)
 
-	/*crmGroup.Get("/customers/:code", crmHandler.HandleGetCustomerInfoByCode)
-	crmGroup.Get("/customer-prelabels", crmHandler.HandleGetCustomerPrelabels)
+
 
 	crmGroup.Post("/customers/search", crmHandler.HandleSearchCustomers)
 	crmGroup.Post("/customers/filter", crmHandler.HandleFilterCustomers)
-	crmGroup.Get("/customers/salespersons", crmHandler.HandleGetCustomersBySalesperson)
+	/*crmGroup.Get("/customers/salespersons", crmHandler.HandleGetCustomersBySalesperson)
 
 
 	crmGroup.Post("/customers/group-update", crmHandler.HandleGroupUpdateCustomers)
