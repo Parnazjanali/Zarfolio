@@ -15,7 +15,8 @@ type CrmManagerClient interface {
 	DeleteCustomerTypes(ctx context.Context, code string) error
 	GetCustomerByCode(ctx context.Context, code string) (*model.Customer, error)
 	//GetCustomerPrelabels() ([]model.CustomerPrelabel, error)
-	SearchCustomers(ctx context.Context,req *model.CustomerSearchRequest) (*model.SearchResponse, error)
+	CreateMultipleCustomers(ctx context.Context, req []*model.CreateCustomerRequest) (int, error)
+	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
 	/*FilterCustomers(req model.FilterCustomersRequest) ([]model.Customer, error)
 	GetSalespersons() ([]model.Salesperson, error)
 	GroupUpdateCustomers(req model.GroupUpdateCustomersRequest) error

@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios'; // Import axios for API calls
 
+// Import Icons
 import {
   FaTachometerAlt, FaFileInvoice, FaBoxes, FaUsers, FaChartBar,
   FaPlusSquare, FaFileInvoiceDollar, FaUserPlus, FaTags,
@@ -11,16 +13,15 @@ import {
   FaStore, FaUsersCog, FaPrint, FaFileContract, FaIdBadge, FaHistory, FaMoneyBillWave,
   FaCogs, FaUniversity, FaCreditCard, FaMoneyCheckAlt, FaExchangeAlt, FaPiggyBank, FaClipboardList,
   FaPlug,
-  // +++ آیکون‌های جدید برای افزونه انبارداری +++
+  // آیکون‌های جدید برای افزونه انبارداری
   FaWarehouse, FaDolly, FaTruckLoading
 } from 'react-icons/fa';
-
 import { SettingOutlined, LogoutOutlined } from '@ant-design/icons';
 
 const { Sider } = Layout;
 const { Text } = Typography;
 
-// +++ تابع جدید برای ساخت منوی افزونه انبارداری +++
+// تابع برای ساخت منوی افزونه انبارداری به صورت پویا
 const getInventoryPluginMenu = () => {
   try {
     const savedPlugins = JSON.parse(localStorage.getItem('installedPlugins') || '[]');
@@ -48,17 +49,38 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
-  const handleLogout = async () => { if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) { try { localStorage.removeItem('authToken'); localStorage.removeItem('userData'); navigate('/login'); } catch (error) { console.error("Error during logout", error); } } };
 
+  // منطق خروج از حساب کاربری بهبودیافته (شامل فراخوانی API)
+  const handleLogout = async () => {
+    if (window.confirm("آیا از خروج از حساب کاربری خود مطمئن هستید؟")) {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          // فراخوانی API برای لاگ‌اوت در سمت سرور (اختیاری ولی توصیه شده)
+          await axios.post('http://localhost:8080/api/v1/auth/logout', null, {
+            headers: {
+              Authorization: `Bearer ${authToken}`
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Logout API call failed, proceeding with client-side logout", error);
+      } finally {
+        // همیشه اطلاعات را از localStorage پاک کرده و کاربر را به صفحه لاگین هدایت می‌کند
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        navigate('/login');
+      }
+    }
+  };
+
+  // تابع انتخاب منوی فعال بر اساس آدرس فعلی (شامل منطق افزونه‌ها)
   const getSelectedKeys = () => {
     const path = location.pathname;
     
-    if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin')) {
+    // پشتیبانی از مسیرهای افزونه‌ها
+    if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin') || path.startsWith('/storeroom/')) {
         return [path]; 
-    }
-    // +++ بروزرسانی برای منوی انبارداری +++
-    if (path.startsWith('/storeroom/')) {
-        return [path];
     }
     if (path.startsWith('/invoices/')) return ['/invoices'];
     if (path.startsWith('/settings/')) return ['settingsSubmenu'];
@@ -69,31 +91,25 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     return [path];
   };
 
+  // افکت برای باز نگه داشتن منوی فعال (شامل منطق افزونه‌ها)
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/invoices/')) { setOpenKeys(['invoicesSubmenu']); }
     else if (path.startsWith('/settings/')) { setOpenKeys(['settingsSubmenu']); }
-    else if (['/bank-accounts', '/bank-cards', '/funds', '/cheques', '/transfers'].some(p => path.startsWith(p))) {
-        setOpenKeys(['bankingSubmenu']);
-    }
-    else if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin')) {
-        setOpenKeys(['pluginsSubmenu']);
-    }
-    // +++ باز نگه داشتن منوی انبارداری +++
-    else if (path.startsWith('/storeroom/')) {
-        setOpenKeys(['inventoryPluginSubmenu']);
-    }
+    else if (['/bank-accounts', '/bank-cards', '/funds', '/cheques', '/transfers'].some(p => path.startsWith(p))) { setOpenKeys(['bankingSubmenu']); }
+    else if (path.startsWith('/plugins') || path.startsWith('/purchase-plugin')) { setOpenKeys(['pluginsSubmenu']); }
+    else if (path.startsWith('/storeroom/')) { setOpenKeys(['inventoryPluginSubmenu']); }
   }, [location.pathname, isCollapsed]);
 
   const onOpenChange = (keys) => { setOpenKeys(keys); };
 
-  // +++ منوی افزونه انبارداری به صورت پویا اضافه می‌شود +++
+  // منوی افزونه انبارداری به صورت پویا اضافه می‌شود
   const inventoryMenu = getInventoryPluginMenu();
 
   const menuItems = [
     { key: '/dashboard', icon: <FaTachometerAlt />, label: <Link to="/dashboard">داشبورد</Link> },
     { key: 'invoicesSubmenu', icon: <FaFileInvoice />, label: 'فاکتورها', children: [ { key: '/invoices/new', icon: <FaPlusSquare />, label: <Link to="/invoices/new">فاکتور جدید</Link> }, { key: '/invoices', icon: <FaFileInvoiceDollar />, label: <Link to="/invoices">لیست فاکتورها</Link> }, ] },
-    // +++ اضافه کردن منوی انبارداری در صورت وجود +++
+    // اضافه کردن منوی انبارداری در صورت وجود
     ...(inventoryMenu ? [inventoryMenu] : []),
     { key: '/inventory', icon: <FaBoxes />, label: <Link to="/inventory">موجودی‌ها</Link> },
     { key: '/customers', icon: <FaUsers />, label: <Link to="/customers">مشتریان</Link> },

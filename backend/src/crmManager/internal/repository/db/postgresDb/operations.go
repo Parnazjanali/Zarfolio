@@ -100,12 +100,20 @@ func (r *customerRepositoryImpl) FindOrCreateCusType(ctx context.Context, label 
 }
 
 func (r *customerRepositoryImpl) UpdateCustomer(ctx context.Context, id uint, req *model.UpdateCustomerRequest) (*model.Customer, error) {
-	var customer model.Customer
-	if err := r.db.WithContext(ctx).Model(&customer).Where("id = ?", id).Updates(req).Error; err != nil {
-		r.logger.Error("failed to update customer", zap.Uint("id", id), zap.Error(err))
-		return nil, fmt.Errorf("failed to update customer: %w", err)
-	}
-	return &customer, nil
+
+	updates := map[string]interface{}{
+        "name":        req.Name,
+        "family_name": req.FamilyName,
+        "nikename":    req.Nikename,
+        "shenasemeli": req.Shenasemeli,
+    }
+
+    var customer model.Customer
+    if err := r.db.WithContext(ctx).Model(&customer).Where("id = ?", id).Updates(updates).Error; err != nil {
+        return nil, err
+    }
+    
+    return r.GetCustomerByID(ctx, id)
 }
 
 func (r *customerRepositoryImpl) DeleteCustomer(ctx context.Context, id uint) error {
@@ -149,8 +157,6 @@ func (r *customerRepositoryImpl) CreateCustomerType(ctx context.Context, cusType
 
 func (r *customerRepositoryImpl) IsCustomerTypeInUse(ctx context.Context, code string) (bool, error) {
     var count int64
-    // این کوئری جدول واسط (join table) بین مشتریان و انواع مشتری را چک می‌کند
-    // نام جدول واسط ممکن است متفاوت باشد (مثلاً customer_cus_types)
     err := r.db.WithContext(ctx).Table("customer_customer_types").
         Joins("JOIN cus_types ON cus_types.id = customer_customer_types.cus_type_id").
         Where("cus_types.code = ?", code).
@@ -209,4 +215,21 @@ func (r *customerRepositoryImpl) SearchCustomers(ctx context.Context, req *model
         Data:  customers,
         Total: total,
     }, nil
+}
+
+func (r *customerRepositoryImpl) CreateMultiple(ctx context.Context, customers []*model.Customer) ([]*model.Customer, error) {
+    if len(customers) == 0 {
+        return []*model.Customer{}, nil
+    }
+
+   
+    result := r.db.WithContext(ctx).CreateInBatches(customers, 100)
+    if result.Error != nil {
+        r.logger.Error("failed to create multiple customers in batch", zap.Error(result.Error))
+        return nil, result.Error
+    }
+
+
+    r.logger.Info("Successfully created multiple customers in database", zap.Int64("count", result.RowsAffected))
+    return customers, nil
 }

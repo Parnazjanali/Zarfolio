@@ -25,7 +25,6 @@ func StartServer(port string) error {
     }
     utils.Log.Info("Setting up routes for CrmManager...")
 
-    // This section remains the same, initializing dependencies
     permissionService, err := authz.NewPermissionService(utils.Log)
     if err != nil {
         utils.Log.Fatal("Failed to initialize PermissionService. Exiting application.", zap.Error(err))

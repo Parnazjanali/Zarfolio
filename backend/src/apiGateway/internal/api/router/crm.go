@@ -64,7 +64,6 @@ func SetUpCrmRoutes(
 	crmGroup.Post("/customers/import-excel", authMiddleware.AuthorizeMiddleware(model.PermCRMCreateCustomer), crmHandlerAG.HandleImportCustomersExcel)
 	crmGroup.Post("/customers/export-excel", authMiddleware.AuthorizeMiddleware(model.PermReportExportData), crmHandlerAG.HandleExportCustomersExcel)
 	crmGroup.Post("/customers/export-pdf", authMiddleware.AuthorizeMiddleware(model.PermReportExportData), crmHandlerAG.HandleExportCustomersPdf)
-	crmGroup.Post("/customers/import-excel", authMiddleware.AuthorizeMiddleware(model.PermReportImportData), crmHandlerAG.HandleImportCustomersExcel)
 
 	// روت‌های کارت حساب و تراکنش‌ها
 	crmGroup.Post("/customers/:code/export-card-excel", authMiddleware.AuthorizeMiddleware(model.PermReportExportData), crmHandlerAG.HandleExportCustomerCardExcel)

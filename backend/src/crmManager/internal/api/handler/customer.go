@@ -285,3 +285,31 @@ func (h *CrmHandler) HandleSearchCustomers(c *fiber.Ctx) error {
 func (h *CrmHandler) HandleFilterCustomers(c *fiber.Ctx) error {
 	return nil
 }
+
+func (h *CrmHandler) HandleImportCustomersExcel(c *fiber.Ctx) error {
+	   var customersToCreate []model.CreateCustomerRequest
+    if err := c.BodyParser(&customersToCreate); err != nil {
+        utils.Log.Warn("Failed to parse request body for batch customer creation", zap.Error(err))
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "Invalid JSON request body."})
+    }
+    
+    if len(customersToCreate) == 0 {
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{Message: "The list of customers to create cannot be empty."})
+    }
+
+    utils.Log.Info("Request received to create customers in batch", zap.Int("count", len(customersToCreate)))
+
+    var customerPtrs []*model.CreateCustomerRequest
+    for i := range customersToCreate {
+        customerPtrs = append(customerPtrs, &customersToCreate[i])
+    }
+  
+    createdCustomers, err := h.crmSvc.CreateMultipleCustomers(c.Context(), customerPtrs)
+    if err != nil {
+       utils.Log.Error("Service layer failed during batch customer creation", zap.Error(err))
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "An internal error occurred while creating customers."})
+    }
+
+    utils.Log.Info("Batch customer creation finished", zap.Int("successful_count", len(createdCustomers)))
+    return c.Status(fiber.StatusCreated).JSON(createdCustomers)
+}

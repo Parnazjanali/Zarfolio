@@ -26,6 +26,7 @@ type CusService interface {
 	CreateCustomerTypes(ctx context.Context, label string) (*model.CusType, error)
 	DeleteCustomerTypes(ctx context.Context, code string) error
 	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
+	CreateMultipleCustomers(ctx context.Context, customers []*model.CreateCustomerRequest) ([]*model.Customer, error)
 }
 
 type customerServiceImpl struct {
@@ -321,4 +322,105 @@ func (s *customerServiceImpl) GetCustomerByCode(ctx context.Context, code string
 
     s.logger.Info("Successfully found customer", zap.String("code", customer.Code), zap.Uint("customer_id", customer.ID))
     return customer, nil
+}
+
+func (s *customerServiceImpl) CreateMultipleCustomers(ctx context.Context, reqs []*model.CreateCustomerRequest) ([]*model.Customer, error) {
+
+    if len(reqs) == 0 {
+        return []*model.Customer{}, nil
+    }
+
+    s.logger.Info("Starting batch customer creation process", zap.Int("request_count", len(reqs)))
+
+    var customersToCreate []*model.Customer
+    seenMobiles := make(map[string]bool)
+    seenCodes := make(map[string]bool)
+
+    for i, req := range reqs {
+
+		if req.Name == "" || req.Mobile == "" {
+            s.logger.Warn("Skipping customer in batch due to missing required fields", zap.Int("row_index", i+1))
+            continue
+        }
+        if seenMobiles[req.Mobile] {
+            s.logger.Warn("Skipping duplicate customer in batch based on mobile", zap.String("mobile", req.Mobile))
+            continue
+        }
+        if req.Code != "" && seenCodes[req.Code] {
+            s.logger.Warn("Skipping duplicate customer in batch based on code", zap.String("code", req.Code))
+            continue
+        }
+        seenMobiles[req.Mobile] = true
+        if req.Code != "" {
+            seenCodes[req.Code] = true
+        }
+
+        if req.Code == "" {
+            newCode, err := s.generateUniqueCustomerCode(ctx, req.BIDID)
+            if err != nil {
+                s.logger.Error("Failed to generate unique code for customer in batch, skipping", zap.Error(err))
+                continue
+            }
+            req.Code = newCode
+        }
+
+      
+        var customerTypes []model.CusType
+        if req.CustomerCategory != "" {
+
+			cusType, err := s.customerRepo.FindOrCreateCusType(ctx, req.CustomerCategory)
+            if err != nil {
+                s.logger.Error("Failed to handle customer category for customer in batch, skipping",
+                    zap.String("mobile", req.Mobile), zap.Error(err))
+                continue 
+			}
+            customerTypes = append(customerTypes, *cusType)
+        }
+       
+        customer := &model.Customer{
+            Code:                req.Code,
+            Nikename:            req.Nikename,
+            Name:                req.Name,
+            FamilyName:          utils.PtrString(req.FamilyName),
+            Company:             utils.PtrString(req.Company),
+            Mobile:              req.Mobile,
+            Mobile2:             utils.PtrString(req.Mobile2),
+            Tel:                 utils.PtrString(req.Tel),
+            Fax:                 utils.PtrString(req.Fax),
+            Email:               utils.PtrString(req.Email),
+            Website:             utils.PtrString(req.Website),
+            Address:             utils.PtrString(req.Address),
+            Postalcode:          utils.PtrString(req.Postalcode),
+            Shahr:               utils.PtrString(req.Shahr),
+            Ostan:               utils.PtrString(req.Ostan),
+            Keshvar:             utils.PtrString(req.Keshvar),
+            Shenasemeli:         req.Shenasemeli,
+            Codeeghtesadi:       utils.PtrString(req.Codeeghtesadi),
+            Sabt:                utils.PtrString(req.Sabt),
+            TaxID:               utils.PtrString(req.TaxID),
+            BIDID:               req.BIDID,
+            InitialBalanceToman: req.InitialBalanceToman,
+            InitialBalanceGold:  req.InitialBalanceGold,
+            GoldRateType:        utils.PtrString(req.GoldRateType),
+            DefaultGoldUnit:     utils.PtrString(req.DefaultGoldUnit),
+            DefaultGoldUnitRate: utils.PtrFloat64(req.DefaultGoldUnitRate),
+            CustomerTypes:       customerTypes,
+        }
+        
+        customersToCreate = append(customersToCreate, customer)
+    }
+
+    if len(customersToCreate) == 0 {
+        s.logger.Warn("No valid customers left to create after pre-processing.")
+        return []*model.Customer{}, nil
+    }
+
+    createdCustomers, err := s.customerRepo.CreateMultiple(ctx, customersToCreate)
+    if err != nil {
+        s.logger.Error("Repository failed to create customers in batch", zap.Error(err))
+        return nil, fmt.Errorf("repository failed during batch create: %w", err)
+    }
+
+    s.logger.Info("Batch customer creation successful", zap.Int("created_count", len(createdCustomers)))
+    return createdCustomers, nil
 }

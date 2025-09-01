@@ -908,6 +908,7 @@ func (c *crmManagerHTTPClient) GetCustomerByCode(ctx context.Context, code strin
     return &customer, nil
 
 }
+
 func (c *crmManagerHTTPClient) SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error) {
     defer c.logger.Sync()
 
@@ -1016,4 +1017,120 @@ func (c *crmManagerHTTPClient) SearchCustomers(ctx context.Context, req *model.C
         zap.String("operation", "search-customers")) 
 
     return &searchResponse, nil
+}
+
+func (c *crmManagerHTTPClient) CreateMultipleCustomers(ctx context.Context, req []*model.CreateCustomerRequest) (int, error) { 
+	defer c.logger.Sync()
+
+	if len(req) == 0 {
+		return 0, nil
+	}
+	if c.baseURL == "" {
+		c.logger.Error("CRMManagerClient base URL is not set",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"))
+		return 0, fmt.Errorf("CRMManagerClient base URL is not set")
+	}
+
+	body, err := json.Marshal(req)
+	if err != nil {
+		c.logger.Error("Failed to marshal batch create request",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"),
+			zap.Error(err))
+		return 0, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	targetURL := c.baseURL + "/crm/customers/import-excel" 
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, bytes.NewBuffer(body))
+	if err != nil {
+		c.logger.Error("Failed to create batch customer request",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"),
+			zap.Error(err))
+		return 0, fmt.Errorf("failed to create http request: %w", err)
+	}
+
+	token, ok := ctx.Value("userToken").(string)
+	if !ok || token == "" {
+		c.logger.Error("User token not found in context",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"))
+		return 0, fmt.Errorf("user token not found in context")
+	}
+	internalServiceSecret := os.Getenv("CRM_MANAGER_SERVICE_SECRET")
+	if internalServiceSecret == "" {
+		c.logger.Error("CRM_MANAGER_SERVICE_SECRET env variable not set",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"))
+		return 0, fmt.Errorf("CRM_MANAGER_SERVICE_SECRET environment variable is not set")
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+token)
+	httpReq.Header.Set("X-Service-Secret", internalServiceSecret)
+
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		c.logger.Error("Failed to send batch create request to CRM Manager",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"),
+			zap.Error(err))
+        
+        if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
+            return 0, fmt.Errorf("%w: timeout connecting to CRM manager service at %s", service.ErrCrmManagerDown, c.baseURL)
+        }
+        if errors.Is(err, syscall.ECONNREFUSED) {
+            return 0, fmt.Errorf("%w: connection refused to CRM manager service at %s", service.ErrCrmManagerDown, c.baseURL)
+        }
+		return 0, fmt.Errorf("failed to send request to crm manager: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Error("Failed to read CRM Manager response body",
+			zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"),
+			zap.Error(err))
+		return 0, fmt.Errorf("failed to read response body: %w", err)
+	}
+    
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+
+		var errorResp model.ErrorResponse
+        if json.Unmarshal(respBody, &errorResp) == nil && errorResp.Message != "" {
+            c.logger.Error("CRM Manager returned error on batch create",
+                zap.String("service", "crm-manager"),
+                zap.String("operation", "create-multiple-customers"),
+                zap.Int("status", resp.StatusCode),
+                zap.String("message", errorResp.Message))
+            return 0, fmt.Errorf("CRM manager batch create failed: %s (%d)", errorResp.Message, resp.StatusCode)
+        }
+
+		c.logger.Error("CRM Manager returned non-OK status for batch create",
+            zap.String("service", "crm-manager"),
+			zap.String("operation", "create-multiple-customers"),
+			zap.Int("status", resp.StatusCode),
+			zap.ByteString("body", respBody))
+		return 0, fmt.Errorf("crm manager failed with status %d", resp.StatusCode)
+	}
+
+	  var createdCustomers []*model.Customer
+    if err := json.Unmarshal(respBody, &createdCustomers); err != nil {
+        c.logger.Error("Failed to decode successful batch response",
+            zap.String("service", "crm-manager"),
+            zap.String("operation", "create-multiple-customers"),
+            zap.Error(err), zap.ByteString("body", respBody))
+        return 0, fmt.Errorf("failed to decode success response: %w", err)
+    }
+
+    successfulCount := len(createdCustomers)
+
+    c.logger.Info("Successfully created multiple customers via CRM Manager",
+        zap.String("service", "crm-manager"),
+        zap.String("operation", "create-multiple-customers"),
+        zap.Int("count", successfulCount))
+        
+    return successfulCount, nil
 }

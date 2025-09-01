@@ -43,14 +43,14 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMi
 
 
 	crmGroup.Get("/customers/debtors/:amount", crmHandler.HandleGetDebtorCustomers)
-	crmGroup.Get("/customers/depositors/:amount", crmHandler.HandleGetDepositorCustomers)
+	crmGroup.Get("/customers/depositors/:amount", crmHandler.HandleGetDepositorCustomers)*/
 
 
 	crmGroup.Post("/customers/import-excel", crmHandler.HandleImportCustomersExcel)
-	crmGroup.Post("/customers/export-excel", crmHandler.HandleExportCustomersExcel)
-	crmGroup.Post("/customers/export-pdf", crmHandler.HandleExportCustomersPdf)
+	//crmGroup.Post("/customers/export-excel", crmHandler.HandleExportCustomersExcel)
+	//crmGroup.Post("/customers/export-pdf", crmHandler.HandleExportCustomersPdf)
 
-	crmGroup.Post("/customers/:code/export-card-excel", crmHandler.HandleExportCustomerCardExcel)
+	/*crmGroup.Post("/customers/:code/export-card-excel", crmHandler.HandleExportCustomerCardExcel)
 	crmGroup.Post("/customers/:code/export-card-pdf", crmHandler.HandleExportCustomerCardPdf)
 
 	crmGroup.Get("/customers/:code/balance", crmHandler.HandleGetCustomerBalance)

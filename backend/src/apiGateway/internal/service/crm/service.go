@@ -21,6 +21,7 @@ type CrmService interface {
 	DeleteCustomerTypes(ctx context.Context, code string) error
 	GetCustomerByCode(ctx context.Context, code string) (*model.Customer, error)
 	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
+	CreateMultipleCustomers(ctx context.Context, req []model.CreateCustomerRequest) (int, error)
 }
 
 type CrmServiceImpl struct {
@@ -110,7 +111,7 @@ func (s *CrmServiceImpl) CreateCustomerTypes(ctx context.Context, lable string) 
 		return nil, fmt.Errorf("failed to create CusType:%w", err)
 	}
 
-	s.logger.Debug("CusType Updated Successfully ", zap.String("Cus_label", lable))
+	s.logger.Debug("CusType created Successfully ", zap.String("Cus_label", lable))
 
 	return cusTypes, nil
 
@@ -136,7 +137,7 @@ func (s *CrmServiceImpl) GetCustomerByCode(ctx context.Context, code string) (*m
 	if err != nil {
 
 		if errors.Is(err, service.ErrCustomerNotFound) {
-			return nil, fmt.Errorf("%w: cusType not found", service.ErrCustomerNotFound)
+			return nil, fmt.Errorf("%w: customer not found", service.ErrCustomerNotFound)
 		}
 
 		return nil, fmt.Errorf("failed to fetch customers: %w", err)
@@ -157,4 +158,45 @@ func (s *CrmServiceImpl) SearchCustomers(ctx context.Context, req *model.Custome
 
 	return customer, nil
 
+}
+
+func (s *CrmServiceImpl) CreateMultipleCustomers(ctx context.Context, req []model.CreateCustomerRequest) (int, error) {
+
+	if len(req) == 0 {
+		return 0, nil
+	}
+
+	s.logger.Debug("Starting batch customer creation", zap.Int("initial_count", len(req)))
+	var uniqueCustomers []*model.CreateCustomerRequest
+	seenMobiles := make(map[string]struct{})
+
+	for i := range req {
+        customerReq := &req[i] 
+
+        if customerReq.Mobile == "" || customerReq.Name == "" || customerReq.FamilyName == "" {
+            s.logger.Warn("Skipping customer in batch due to empty fields")
+            continue
+        }
+        if _, seen := seenMobiles[customerReq.Mobile]; seen {
+            s.logger.Warn("Skipping duplicate customer in batch", zap.String("mobile", customerReq.Mobile))
+            continue
+        }
+
+		seenMobiles[customerReq.Mobile] = struct{}{}
+        
+        uniqueCustomers = append(uniqueCustomers, customerReq)
+	}
+
+	if len(uniqueCustomers) == 0 {
+		s.logger.Warn("No valid customers to import after filtering duplicates.")
+		return 0, nil
+	}
+
+	successfulImports, err := s.crmManagerClient.CreateMultipleCustomers(ctx, uniqueCustomers)
+	if err != nil {
+		return 0, fmt.Errorf("client failed to create multiple customers: %w", err)
+	}
+
+	s.logger.Info("Multiple customers created successfully", zap.Int("count", successfulImports))
+	return successfulImports, nil
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 )
 
@@ -261,38 +262,38 @@ func (h *CrmHandler) HandleGetCustomerPrelabels(c *fiber.Ctx) error {
 }
 
 func (h *CrmHandler) HandleSearchCustomers(c *fiber.Ctx) error {
-    var req model.CustomerSearchRequest
-    if err := c.BodyParser(&req); err != nil {
-        h.logger.Warn("Failed to parse search request body", zap.Error(err))
-        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
-            Message: "Invalid request body.",
-            Details: err.Error(),
-        })
-    }
+	var req model.CustomerSearchRequest
+	if err := c.BodyParser(&req); err != nil {
+		h.logger.Warn("Failed to parse search request body", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "Invalid request body.",
+			Details: err.Error(),
+		})
+	}
 
-    if req.Page < 1 {
-        req.Page = 1
-    }
-    if req.PageSize < 1 || req.PageSize > 100 {
-        req.PageSize = 10
-    }
+	if req.Page < 1 {
+		req.Page = 1
+	}
+	if req.PageSize < 1 || req.PageSize > 100 {
+		req.PageSize = 10
+	}
 
-    userID, _ := c.Locals("userID").(string)
-    h.logger.Info("Executing customer search",
-        zap.String("user_id", userID),
-        zap.Any("search_criteria", req))
+	userID, _ := c.Locals("userID").(string)
+	h.logger.Info("Executing customer search",
+		zap.String("user_id", userID),
+		zap.Any("search_criteria", req))
 
-    searchResponse, err := h.crmSvc.SearchCustomers(c.Context(), &req)
-    if err != nil {
-        h.logger.Error("Service layer failed to search customers", zap.Error(err), zap.String("user_id", userID))
-        if errors.Is(err, service.ErrCrmManagerDown) {
-            return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "CRM service is temporarily unavailable"})
-        }
-        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to search customers due to an internal error."})
-    }
+	searchResponse, err := h.crmSvc.SearchCustomers(c.Context(), &req)
+	if err != nil {
+		h.logger.Error("Service layer failed to search customers", zap.Error(err), zap.String("user_id", userID))
+		if errors.Is(err, service.ErrCrmManagerDown) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(model.ErrorResponse{Message: "CRM service is temporarily unavailable"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to search customers due to an internal error."})
+	}
 
-    h.logger.Info("Customer search completed successfully", zap.Int64("found_count", searchResponse.Total))
-    return c.Status(fiber.StatusOK).JSON(searchResponse)
+	h.logger.Info("Customer search completed successfully", zap.Int64("found_count", searchResponse.Total))
+	return c.Status(fiber.StatusOK).JSON(searchResponse)
 }
 
 func (h *CrmHandler) HandleFilterCustomers(c *fiber.Ctx) error {
@@ -326,8 +327,105 @@ func (h *CrmHandler) HandleGetDepositorCustomers(c *fiber.Ctx) error {
 }
 
 func (h *CrmHandler) HandleImportCustomersExcel(c *fiber.Ctx) error {
-	// Implementation for importing customers from Excel
-	return nil
+	
+	fileHeader, err := c.FormFile("excelFile")
+	if err != nil {
+		h.logger.Warn("No file uploaded or wrong form field name", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "An Excel file with the field name 'excelFile' is required.",
+		})
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		h.logger.Error("Failed to open uploaded file", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Could not process the uploaded file.",
+		})
+	}
+	defer file.Close()
+	excelFile, err := excelize.OpenReader(file)
+	if err != nil {
+		h.logger.Error("Failed to read Excel file", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "The uploaded file is not a valid Excel file.",
+		})
+	}
+	  sheetName := excelFile.GetSheetName(0)
+    if sheetName == "" {
+        h.logger.Error("Excel file does not contain any sheets")
+        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+            Message: "The uploaded Excel file is empty and does not contain any sheets.",
+        })
+    }
+    
+    rows, err := excelFile.GetRows(sheetName)
+    if err != nil {
+        h.logger.Error("Failed to get rows from the first sheet", zap.String("sheetName", sheetName), zap.Error(err))
+        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+            Message: fmt.Sprintf("Could not read data from the sheet named '%s'.", sheetName),
+        })
+    }
+	var validCustomersToCreate []model.CreateCustomerRequest
+var failedRows []model.FailedRowInfo
+
+for i, row := range rows {
+    if i == 0 { 
+        continue 
+    }
+    rowNumber := i + 1
+
+    const requiredColumns = 7 
+    if len(row) < requiredColumns {
+        failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Not enough columns", Data: row})
+        continue
+    }
+
+    name := row[0]
+    nikename := row[1]
+    mobile := row[2]
+    familyName := row[3]
+    company := row[4]
+    email := row[5]
+    shenasemeli := row[6]
+
+    if name == "" || familyName == "" || shenasemeli=="" || mobile == "" {
+        failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Name, Family Name, Shenasemeli and Mobile fields are required.", Data: row})
+        continue
+    }
+
+    validCustomersToCreate = append(validCustomersToCreate, model.CreateCustomerRequest{
+        Name:          name,
+        Nikename:      nikename,
+        Mobile:        mobile,
+        FamilyName:    familyName,
+        Company:       company,
+        Email:         email,
+        Shenasemeli:   shenasemeli,
+		
+    })
+}
+    var successfulImports int
+    if len(validCustomersToCreate) > 0 {
+        successfulImports, err = h.crmSvc.CreateMultipleCustomers(c.Context(), validCustomersToCreate)
+        if err != nil {
+            h.logger.Error("Service layer failed to create multiple customers", zap.Error(err))
+            return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+                Message: "An error occurred while saving customers to the database.",
+            })
+        }
+    }
+    
+    response := model.ImportResponse{
+        SuccessCount: successfulImports,
+        FailureCount: len(failedRows),
+        FailedRows:   failedRows,
+    }
+
+    h.logger.Info("Excel import process finished", 
+        zap.Int("successful", response.SuccessCount),
+        zap.Int("failed", response.FailureCount))
+        
+    return c.Status(fiber.StatusOK).JSON(response)
 }
 
 func (h *CrmHandler) HandleExportCustomersExcel(c *fiber.Ctx) error {

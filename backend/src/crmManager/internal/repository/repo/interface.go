@@ -21,4 +21,5 @@ type CustRepo interface {
 	IsCustomerTypeInUse(ctx context.Context, code string) (bool, error)
 	DeleteCustomerTypeByCode(ctx context.Context, code string) error
 	SearchCustomers(ctx context.Context, req *model.CustomerSearchRequest) (*model.SearchResponse, error)
+	CreateMultiple(ctx context.Context, customers []*model.Customer) ([]*model.Customer, error)
 }

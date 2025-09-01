@@ -189,3 +189,15 @@ type SearchResponse struct {
 	Data  []Customer `json:"data"`
 	Total int64      `json:"total"` 
 }
+
+type FailedRowInfo struct {
+    RowNumber int      `json:"rowNumber"`
+    Error     string   `json:"error"`
+    Data      []string `json:"data"`
+}
+
+type ImportResponse struct {
+    SuccessCount int             `json:"successCount"`
+    FailureCount int             `json:"failureCount"`
+    FailedRows   []FailedRowInfo `json:"failedRows"`
+}

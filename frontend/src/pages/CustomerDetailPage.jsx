@@ -1,13 +1,11 @@
-// frontend/src/pages/CustomerDetailPage.jsx
 import React from 'react';
 import { Card, Tabs, Avatar, Typography, Table } from 'antd';
 import { UserOutlined, FileTextOutlined, HistoryOutlined } from '@ant-design/icons';
-import ActivityFeed from '../components/ActivityFeed'; // از کامپوننت قبلی استفاده می‌کنیم
+import ActivityFeed from '../components/ActivityFeed'; 
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
-// داده‌های نمونه برای فاکتورهای این مشتری
 const customerInvoices = [
     { key: '1', invoiceNumber: 'INV-002', status: 'pending', date: '1403-05-03', amount: '850,000' },
     { key: '2', invoiceNumber: 'INV-005', status: 'paid', date: '1403-03-20', amount: '1,200,000' },
@@ -19,7 +17,6 @@ const invoiceColumns = [
 ];
 
 const CustomerDetailPage = () => {
-  // در آینده، اطلاعات مشتری از طریق URL parameter و API دریافت می‌شود
   const customer = {
     name: 'مشتری ویژه',
     email: 'vip.customer@example.com',
