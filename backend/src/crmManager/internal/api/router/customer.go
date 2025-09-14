@@ -47,8 +47,6 @@ func SetUpCustomerRoutes(app *fiber.App, crmHandler *handler.CrmHandler, AuthZMi
 
 
 	crmGroup.Post("/customers/import-excel", crmHandler.HandleImportCustomersExcel)
-	//crmGroup.Post("/customers/export-excel", crmHandler.HandleExportCustomersExcel)
-	//crmGroup.Post("/customers/export-pdf", crmHandler.HandleExportCustomersPdf)
 
 	/*crmGroup.Post("/customers/:code/export-card-excel", crmHandler.HandleExportCustomerCardExcel)
 	crmGroup.Post("/customers/:code/export-card-pdf", crmHandler.HandleExportCustomerCardPdf)

@@ -1,14 +1,18 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"gold-api/internal/model"
 	service "gold-api/internal/service/common"
 	"gold-api/internal/service/crm"
+	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jung-kurt/gofpdf"
+	"github.com/mavihq/persian"
 	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 )
@@ -327,7 +331,7 @@ func (h *CrmHandler) HandleGetDepositorCustomers(c *fiber.Ctx) error {
 }
 
 func (h *CrmHandler) HandleImportCustomersExcel(c *fiber.Ctx) error {
-	
+
 	fileHeader, err := c.FormFile("excelFile")
 	if err != nil {
 		h.logger.Warn("No file uploaded or wrong form field name", zap.Error(err))
@@ -350,99 +354,250 @@ func (h *CrmHandler) HandleImportCustomersExcel(c *fiber.Ctx) error {
 			Message: "The uploaded file is not a valid Excel file.",
 		})
 	}
-	  sheetName := excelFile.GetSheetName(0)
-    if sheetName == "" {
-        h.logger.Error("Excel file does not contain any sheets")
-        return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
-            Message: "The uploaded Excel file is empty and does not contain any sheets.",
-        })
-    }
-    
-    rows, err := excelFile.GetRows(sheetName)
-    if err != nil {
-        h.logger.Error("Failed to get rows from the first sheet", zap.String("sheetName", sheetName), zap.Error(err))
-        return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-            Message: fmt.Sprintf("Could not read data from the sheet named '%s'.", sheetName),
-        })
-    }
+	sheetName := excelFile.GetSheetName(0)
+	if sheetName == "" {
+		h.logger.Error("Excel file does not contain any sheets")
+		return c.Status(fiber.StatusBadRequest).JSON(model.ErrorResponse{
+			Message: "The uploaded Excel file is empty and does not contain any sheets.",
+		})
+	}
+
+	rows, err := excelFile.GetRows(sheetName)
+	if err != nil {
+		h.logger.Error("Failed to get rows from the first sheet", zap.String("sheetName", sheetName), zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: fmt.Sprintf("Could not read data from the sheet named '%s'.", sheetName),
+		})
+	}
 	var validCustomersToCreate []model.CreateCustomerRequest
-var failedRows []model.FailedRowInfo
+	var failedRows []model.FailedRowInfo
 
-for i, row := range rows {
-    if i == 0 { 
-        continue 
-    }
-    rowNumber := i + 1
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		rowNumber := i + 1
 
-    const requiredColumns = 7 
-    if len(row) < requiredColumns {
-        failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Not enough columns", Data: row})
-        continue
-    }
+		const requiredColumns = 7
+		if len(row) < requiredColumns {
+			failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Not enough columns", Data: row})
+			continue
+		}
 
-    name := row[0]
-    nikename := row[1]
-    mobile := row[2]
-    familyName := row[3]
-    company := row[4]
-    email := row[5]
-    shenasemeli := row[6]
+		name := row[0]
+		nikename := row[1]
+		mobile := row[2]
+		familyName := row[3]
+		company := row[4]
+		email := row[5]
+		shenasemeli := row[6]
 
-    if name == "" || familyName == "" || shenasemeli=="" || mobile == "" {
-        failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Name, Family Name, Shenasemeli and Mobile fields are required.", Data: row})
-        continue
-    }
+		if name == "" || familyName == "" || shenasemeli == "" || mobile == "" {
+			failedRows = append(failedRows, model.FailedRowInfo{RowNumber: rowNumber, Error: "Name, Family Name, Shenasemeli and Mobile fields are required.", Data: row})
+			continue
+		}
 
-    validCustomersToCreate = append(validCustomersToCreate, model.CreateCustomerRequest{
-        Name:          name,
-        Nikename:      nikename,
-        Mobile:        mobile,
-        FamilyName:    familyName,
-        Company:       company,
-        Email:         email,
-        Shenasemeli:   shenasemeli,
-		
-    })
-}
-    var successfulImports int
-    if len(validCustomersToCreate) > 0 {
-        successfulImports, err = h.crmSvc.CreateMultipleCustomers(c.Context(), validCustomersToCreate)
-        if err != nil {
-            h.logger.Error("Service layer failed to create multiple customers", zap.Error(err))
-            return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-                Message: "An error occurred while saving customers to the database.",
-            })
-        }
-    }
-    
-    response := model.ImportResponse{
-        SuccessCount: successfulImports,
-        FailureCount: len(failedRows),
-        FailedRows:   failedRows,
-    }
+		validCustomersToCreate = append(validCustomersToCreate, model.CreateCustomerRequest{
+			Name:        name,
+			Nikename:    nikename,
+			Mobile:      mobile,
+			FamilyName:  familyName,
+			Company:     company,
+			Email:       email,
+			Shenasemeli: shenasemeli,
+		})
+	}
+	var successfulImports int
+	if len(validCustomersToCreate) > 0 {
+		successfulImports, err = h.crmSvc.CreateMultipleCustomers(c.Context(), validCustomersToCreate)
+		if err != nil {
+			h.logger.Error("Service layer failed to create multiple customers", zap.Error(err))
+			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+				Message: "An error occurred while saving customers to the database.",
+			})
+		}
+	}
 
-    h.logger.Info("Excel import process finished", 
-        zap.Int("successful", response.SuccessCount),
-        zap.Int("failed", response.FailureCount))
-        
-    return c.Status(fiber.StatusOK).JSON(response)
+	response := model.ImportResponse{
+		SuccessCount: successfulImports,
+		FailureCount: len(failedRows),
+		FailedRows:   failedRows,
+	}
+
+	h.logger.Info("Excel import process finished",
+		zap.Int("successful", response.SuccessCount),
+		zap.Int("failed", response.FailureCount))
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }
 
 func (h *CrmHandler) HandleExportCustomersExcel(c *fiber.Ctx) error {
-	// Implementation for exporting customers to Excel
-	return nil
+	customers, err := h.crmSvc.GetAllCustomers(c.Context())
+	if err != nil {
+		h.logger.Error("Failed to get customers for Excel export", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+			Message: "Failed to fetch customer data.",
+		})
+	}
+
+	if len(customers) == 0 {
+		h.logger.Info("No customers to export to Excel.")
+		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{
+			Message: "No customer data available to export.",
+		})
+	}
+
+	f := excelize.NewFile()
+	sheetName := "Customers"
+
+	index, _ := f.NewSheet(sheetName)
+	f.SetActiveSheet(index)
+
+	headers := []string{"Name", "Nikename", "Mobile", "Family Name", "Company", "Email", "Shenasemeli", "Code"}
+	for i, header := range headers {
+
+		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
+		f.SetCellValue(sheetName, cell, header)
+	}
+
+	for i, customer := range customers {
+		rowIndex := i + 2
+
+		ptrToString := func(s *string) string {
+			if s == nil {
+				return ""
+			}
+			return *s
+		}
+
+		f.SetCellValue(sheetName, fmt.Sprintf("A%d", rowIndex), customer.Name)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", rowIndex), customer.Nikename)
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", rowIndex), customer.Mobile)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", rowIndex), ptrToString(customer.FamilyName))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", rowIndex), ptrToString(customer.Company))
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", rowIndex), ptrToString(customer.Email))
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", rowIndex), customer.Shenasemeli)
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", rowIndex), customer.Code)
+	}
+
+	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Set("Content-Disposition", "attachment; filename=\"customers.xlsx\"")
+
+	if err := f.Write(c); err != nil {
+		h.logger.Error("Failed to write Excel file to response", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to generate Excel file."})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func (h *CrmHandler) HandleExportCustomersPdf(c *fiber.Ctx) error {
-	// Implementation for exporting customers to PDF
-	return nil
+	customers, err := h.crmSvc.GetAllCustomers(c.Context())
+	if err != nil {
+		h.logger.Error("Failed to get customers for PDF export", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to fetch customer data."})
+	}
+
+	if len(customers) == 0 {
+		h.logger.Info("No customers to export to PDF.")
+		return c.Status(fiber.StatusNotFound).JSON(model.ErrorResponse{Message: "No customer data available to export."})
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+
+	// IMPORTANT: Make sure 'Sahel.ttf' is in the 'assets' directory
+	fontBytes, err := os.ReadFile("assets/Sahel.ttf")
+	if err != nil {
+		h.logger.Error("Failed to read font file", zap.Error(err), zap.String("font", "Sahel.ttf"))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to load font file. Make sure 'Sahel.ttf' is in the 'assets' directory."})
+	}
+	pdf.AddUTF8FontFromBytes("Sahel", "", fontBytes)
+	pdf.SetFont("Sahel", "", 14)
+
+	// --- PDF Title ---
+	pdf.SetFillColor(240, 240, 240)
+	pdf.CellFormat(190, 12, "لیست مشتریان", "1", 1, "CM", true, 0, "")
+	pdf.Ln(10)
+
+	// --- Table Header ---
+	pdf.SetFont("Sahel", "", 10)
+	pdf.SetFillColor(220, 220, 220)
+
+	headers := []string{"نام", "نام مستعار", "موبایل", "خانوادگی", "شرکت", "ایمیل", "شناسه ملی", "کد"}
+	colWidths := []float64{25, 25, 25, 25, 30, 40, 30, 20}
+
+	// Right align headers
+	pageWidth, _ := pdf.GetPageSize()
+	// اصلاح شد: استفاده از متد صحیح GetMargins
+	_, _, rightMargin, _ := pdf.GetMargins()
+	currentX := pageWidth - rightMargin
+
+	for i, header := range headers {
+		pdf.SetX(currentX - colWidths[i])
+		pdf.CellFormat(colWidths[i], 10, header, "1", 0, "CM", true, 0, "")
+		currentX -= colWidths[i]
+	}
+	pdf.Ln(10)
+
+	// --- Table Body ---
+	ptrToString := func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
+	}
+
+	pdf.SetFont("Sahel", "", 9)
+	fill := false
+
+	for _, customer := range customers {
+		data := []string{
+			customer.Name,
+			customer.Nikename,
+			persian.ToPersianDigits(customer.Mobile),
+			ptrToString(customer.FamilyName),
+			ptrToString(customer.Company),
+			ptrToString(customer.Email),
+			persian.ToPersianDigits(customer.Shenasemeli),
+			persian.ToPersianDigits(customer.Code),
+		}
+
+		if fill {
+			pdf.SetFillColor(245, 245, 245)
+		} else {
+			pdf.SetFillColor(255, 255, 255)
+		}
+
+		currentX = pageWidth - rightMargin
+		pdf.SetX(currentX)
+
+		for i, datum := range data {
+			pdf.SetX(currentX - colWidths[i])
+			pdf.CellFormat(colWidths[i], 8, datum, "1", 0, "RM", fill, 0, "")
+			currentX -= colWidths[i]
+		}
+		pdf.Ln(8)
+		fill = !fill
+	}
+
+	// --- Final Output ---
+	c.Set("Content-Type", "application/pdf")
+	c.Set("Content-Disposition", "attachment; filename=\"customers.pdf\"")
+
+	buffer := new(bytes.Buffer)
+	if err := pdf.Output(buffer); err != nil {
+		h.logger.Error("Failed to write PDF to buffer", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{Message: "Failed to generate PDF file."})
+	}
+
+	return c.Send(buffer.Bytes())
 }
 
 func (h *CrmHandler) HandleExportCustomerCardExcel(c *fiber.Ctx) error {
-	// Implementation for exporting customer card to Excel
+	// Implementation for exporting customer balance to PDF
 	return nil
 }
-
 func (h *CrmHandler) HandleExportCustomerCardPdf(c *fiber.Ctx) error {
 	// Implementation for exporting customer card to PDF
 	return nil
