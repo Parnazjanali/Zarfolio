@@ -42,6 +42,13 @@ const (
 	PermTransactionManageExpenses        = "transaction:manage_expenses"
 	PermTransactionManageCheques         = "transaction:manage_cheques"
 
+	PermTransactionManageGoldRate = "transaction:manage_gold_rate"
+	PermTransactionBulkImport     = "transaction:bulk_import"
+	PermTransactionBulkExport     = "transaction:bulk_export"
+	PermTransactionWebhook        = "transaction:webhook"
+	PermTransactionSync           = "transaction:sync"
+	
+
 	PermReportViewSalesSummary     = "report:view_sales_summary"
 	PermReportViewInventorySummary = "report:view_inventory_summary"
 	PermReportViewProfitLoss       = "report:view_profit_loss"
@@ -56,4 +63,7 @@ const (
 	PermUserChangeAnyPassword = "user:change_any_password"
 	PermSystemSettingsRead    = "system:settings_read"
 	PermSystemSettingsManage  = "system:settings_manage"
+
+	// Admin Permissions
+	PermAdminFullAccess = "admin:full_access"
 )

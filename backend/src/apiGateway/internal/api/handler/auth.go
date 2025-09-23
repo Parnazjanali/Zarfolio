@@ -19,7 +19,7 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(authSvc auth.AuthService, logger *zap.Logger) (*AuthHandler, error) {
-	defer logger.Sync() // اطمینان از flush شدن لاگ‌ها
+	defer logger.Sync() 
 
 	if authSvc == nil {
 		logger.Error("AuthService is nil when passed to NewAuthHandler",
