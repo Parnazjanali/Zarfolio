@@ -16,7 +16,7 @@ func SetUpTransactionRoutes(app *fiber.App, transactionHandler *handler.Transact
 		return fmt.Errorf("transactionHandler is nil in TransactionManager's SetUpTransactionRoutes.")
 	}
 
-	transactionGroup := app.Group("/transactions")
+	transactionGroup := app.Group("/tr")
 	logger.Info("Setting up transaction routes...")
 
 	// ----------------------

@@ -13,4 +13,7 @@ var (
 	ErrInvalidTwoFACode   = errors.New("invalid two-factor authentication code")
 	ErrCustomerNotFound   = errors.New("customer not found")
 	ErrCustomerTypesNotFound= errors.New("CustomerTypes Not Found")
+	ErrTransactionManagerDown = errors.New("transaction manager service is unavailable")
+	ErrTransactionNotFound = errors.New("transaction not found")
+	
 )

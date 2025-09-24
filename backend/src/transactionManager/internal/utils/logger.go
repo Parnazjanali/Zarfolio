@@ -13,3 +13,4 @@ func InitLogger() (*zap.Logger, error) {
 	}
 	return logger, nil
 }
+
