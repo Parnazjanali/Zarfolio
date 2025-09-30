@@ -54,3 +54,8 @@ func (h *TransactionHandler) HandleGetAllTransactions(c *fiber.Ctx) error {
 	return c.JSON(transactions)
 }
 
+func (h *TransactionHandler) HandleCreateGenericTransaction(c *fiber.Ctx) error {
+
+	return  nil
+}
+

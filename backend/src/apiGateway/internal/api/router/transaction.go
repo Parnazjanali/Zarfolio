@@ -22,28 +22,28 @@ func SetUpTransactionRoutes(app *fiber.App, transactionHandlerAG *handler.Transa
 		return fmt.Errorf("transactionHandlerAG is nil in TransactionManager's SetUpTransactionRoutes.")
 	}
 
-	transactionGroup := app.Group("/api/v1/transactions")
+	transactionGroup := app.Group("/api/v1/tr")
 	logger.Debug("Configuring /api/v1/transactions protected routes")
 
 	// ----------------------
 	// 1. عملیات اصلی CRUD
 	// ----------------------
 	
-	transactionGroup.Get("/", 
+	transactionGroup.Get("/transactions", 
 		authMiddleware.AuthorizeMiddleware(
 			model.PermTransactionReadSaleInvoice,
 			model.PermTransactionReadPurchaseInvoice,
 		), 
 		transactionHandlerAG.HandleGetAllTransactions)
 	
-	/*transactionGroup.Post("/", 
+	transactionGroup.Post("/transactions", 
 		authMiddleware.AuthorizeMiddleware(
 			model.PermTransactionCreateSaleInvoice,
 			model.PermTransactionCreatePurchaseInvoice,
 		), 
 		transactionHandlerAG.HandleCreateGenericTransaction)
 	
-	transactionGroup.Get("/:id", 
+	/*transactionGroup.Get("/:id", 
 		authMiddleware.AuthorizeMiddleware(
 			model.PermTransactionReadSaleInvoice,
 			model.PermTransactionReadPurchaseInvoice,

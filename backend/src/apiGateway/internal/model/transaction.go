@@ -39,3 +39,56 @@ type Item struct {
 	Quantity    int     `json:"quantity" bson:"quantity"`         // تعداد
 	TotalPrice  float64 `json:"total_price" bson:"total_price"`   // قیمت کل آیتم
 }
+
+
+
+
+type GenericTransactionRequest struct {
+	Description    string            `json:"description"`
+	Date           string            `json:"date"`
+	TaxPercent     *float64          `json:"taxPercent"`
+	ShippingCost   float64           `json:"shippingCost"`
+	TotalInvoice   float64           `json:"totalInvoice"`
+	DiscountType   string            `json:"discountType"`
+	DiscountPercent float64          `json:"discountPercent"`
+	TotalDiscount  *float64          `json:"totalDiscount"`
+	Customer       string            `json:"customer"`
+	GoldRate       float64           `json:"gold_rate"`       // نرخ طلا
+	Currency       string            `json:"currency"`        // واحد پول
+	CurrencyRate   float64           `json:"currency_rate"`   // نرخ تبدیل ارز
+	Items          []TransactionItem `json:"items"`
+	Payments       []Payment         `json:"payments"`
+	SendSMS        bool              `json:"sendSMS"`
+}
+
+type TransactionItem struct {
+	Name                CommodityInfo `json:"name"`
+	Count               float64       `json:"count"`
+	Price               float64       `json:"price"`
+	Weight              float64       `json:"weight"`              // وزن آیتم
+	Purity              float64       `json:"purity"`              // عیار آیتم
+	DiscountPercent     float64       `json:"discountPercent"`
+	DiscountAmount      float64       `json:"discountAmount"`
+	Total               float64       `json:"total"`
+	Description         string        `json:"description"`
+	ShowPercentDiscount bool          `json:"showPercentDiscount"`
+	Tax                 float64       `json:"tax"`
+}
+
+type CommodityInfo struct {
+	ID     uint    `json:"id"`
+	Name   string  `json:"name"`
+	Code   string  `json:"code"`
+	Weight float64 `json:"weight"` // وزن کالا
+	Purity float64 `json:"purity"` // عیار کالا
+}
+
+type Payment struct {
+	Type        string  `json:"type"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
+	Bank        *uint   `json:"bank"`
+	Cashdesk    *uint   `json:"cashdesk"`
+	Salary      *uint   `json:"salary"`
+	ChequeID    *string `json:"cheque_id"` // شناسه چک
+}

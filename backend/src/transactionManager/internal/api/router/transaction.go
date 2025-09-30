@@ -24,8 +24,8 @@ func SetUpTransactionRoutes(app *fiber.App, transactionHandler *handler.Transact
 	// ----------------------
 
 	transactionGroup.Get("/transactions", transactionHandler.HandleGetAllTransactions)
-	/*transactionGroup.Post("/", transactionHandler.HandleCreateGenericTransaction)
-	transactionGroup.Get("/:id", transactionHandler.HandleGetTransactionByID)
+	transactionGroup.Post("/transactions", transactionHandler.HandleCreateGenericTransaction)
+	/*transactionGroup.Get("/:id", transactionHandler.HandleGetTransactionByID)
 	transactionGroup.Put("/:id", transactionHandler.HandleUpdateTransaction)
 	transactionGroup.Delete("/:id", transactionHandler.HandleDeleteTransaction)
 
