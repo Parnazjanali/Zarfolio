@@ -1,55 +1,96 @@
 package postgresDb
 
 import (
-	"time"
-	"transaction-gold/internal/model"
+    "fmt"
+    "time"
+    "transaction-gold/internal/model"
 
-	"go.uber.org/zap"
-	"gorm.io/gorm"
+    "go.uber.org/zap"
+    "gorm.io/gorm"
 )
 
 func seedDB(db *gorm.DB, logger *zap.Logger) error {
-	// داده‌های اولیه برای transactions
-	transactions := []model.Transaction{
-		{
-            Code:          "tx1",
-            Type:          "sale",
-            PartyID:       "cust1", // باید به یک مشتری معتبر اشاره کنه
-            Amount:        1000.00,
+    if db == nil {
+        logger.Error("Database connection is nil", zap.String("operation", "seedDB"))
+        return fmt.Errorf("database connection cannot be nil")
+    }
+    if logger == nil {
+        logger.Error("Logger is nil", zap.String("operation", "seedDB"))
+        return fmt.Errorf("logger cannot be nil")
+    }
+
+    logger.Info("Seeding initial data into the database...",
+        zap.String("service", "database"),
+        zap.String("component", "transactions"),
+        zap.String("operation", "seedDB"))
+
+    var count int64
+    if err := db.Model(&model.Invoice{}).Count(&count).Error; err != nil {
+        logger.Error("Failed to count existing invoices",
+            zap.String("service", "database"),
+            zap.String("component", "transactions"),
+            zap.String("operation", "seedDB"),
+            zap.Error(err))
+        return err
+    }
+    if count > 0 {
+        logger.Info("Invoices already exist, skipping seeding.",
+            zap.String("service", "database"),
+            zap.String("component", "transactions"),
+            zap.String("operation", "seedDB"))
+        return nil
+    }
+
+    invoices := []model.Invoice{
+        {
+            ID:            "inv-001",
+            InvoiceNumber: "INV-001",
+            CustomerID:    "cust-001",
+            CustomerName:  "John Doe",
+            InvoiceDate:   time.Now().AddDate(0, -1, 0),
+            FlowType:      "receivable",
+            DocumentSubType: "sale_invoice",
+            GrandTotal:    400.0, 
             Currency:      "IRR",
-            GoldWeight:    10.5,
-            Purity:        18.0,
-            GoldRate:      2000.00,
-            TaxAmount:     50.00,
-            FeeAmount:     20.00,
-            TotalAmount:   1070.00,
-            Status:        "confirmed",
-            InvoiceCode:   "inv1",
-            PaymentMethod: "cash",
-            CreatedBy:     "user1",
-            ConfirmedAt:   time.Now(),
-            Items: []model.Item{
+            Status:        "pending",
+            CreatedAt:     time.Now(),
+            UpdatedAt:     time.Now(),
+            Items: []model.InvoiceItem{
                 {
-                    ItemID:      "item1",
-                    TransactionCode: "tx1",
-                    Description: "Gold ring",
-                    Weight:      5.0,
-                    Purity:      18.0,
-                    UnitPrice:   200.00,
+                    ID:          "item-001",
+                    InvoiceID:   "inv-001", 
+                    Type:        "generic", 
+                    Description: "Item 1",
+                    Quantity:    1,
+                    UnitPrice:   100.0,
+                    TotalPrice:  100.0,
+                },
+                {
+                    ID:          "item-002",
+                    InvoiceID:   "inv-001", 
+                    Type:        "generic", 
+                    Description: "Item 2",
                     Quantity:    2,
-                    TotalPrice:  400.00,
+                    UnitPrice:   150.0,
+                    TotalPrice:  300.0,
                 },
             },
         },
-	}
+    }
 
-	for _, tx := range transactions {
-		if err := db.Create(&tx).Error; err != nil {
-			logger.Error("Failed to seed transaction",
-				zap.String("transaction_code", tx.Code),
-				zap.Error(err))
-			return err
-		}
-	}
-	return nil
+    if err := db.Create(&invoices).Error; err != nil {
+        logger.Error("Failed to seed initial invoices",
+            zap.String("service", "database"),
+            zap.String("component", "transactions"),
+            zap.String("operation", "seedDB"),
+            zap.Error(err))
+        return err
+    }
+
+    logger.Info("Initial data seeded successfully",
+        zap.String("service", "database"),
+        zap.String("component", "transactions"),
+        zap.String("operation", "seedDB"))
+
+    return nil
 }

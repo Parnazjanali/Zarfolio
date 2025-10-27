@@ -7,5 +7,6 @@ import (
 )
 
 type TransactionRepo interface {
-	GetAllTransactions(ctx context.Context) ([]model.Transaction, error)
+	GetAllTransactions(ctx context.Context) ([]model.Invoice, error)
+	CreateGenericTransaction(ctx context.Context, invoice *model.Invoice) (*model.Invoice, error)
 }

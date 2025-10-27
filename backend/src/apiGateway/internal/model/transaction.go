@@ -1,94 +1,107 @@
 package model
 
-import "time"
+import (
+    "time"
+)
 
 
-type Transaction struct {
-	ID               string    `json:"id" bson:"_id"`                     // شناسه یکتا برای تراکنش
-	Type             string    `json:"type" bson:"type"`                  // نوع تراکنش (sale, purchase, payment, expense, cheque, deposit, withdraw, return)
-	PartyID          string    `json:"party_id" bson:"party_id"`          // شناسه طرف حساب (مشتری یا تامین‌کننده)
-	Amount           float64   `json:"amount" bson:"amount"`              // مبلغ کل تراکنش (در واحد ارز)
-	Currency         string    `json:"currency" bson:"currency"`          // واحد پول (مثل IRR, USD)
-	GoldWeight       float64   `json:"gold_weight" bson:"gold_weight"`    // وزن طلا (به گرم)
-	Purity           float64   `json:"purity" bson:"purity"`              // عیار طلا (مثل 18 یا 24 عیار)
-	GoldRate         float64   `json:"gold_rate" bson:"gold_rate"`        // نرخ طلا در زمان تراکنش (قیمت واحد)
-	TaxAmount        float64   `json:"tax_amount" bson:"tax_amount"`      // مبلغ مالیات
-	FeeAmount        float64   `json:"fee_amount" bson:"fee_amount"`      // کارمزد (مثل کارمزد ساخت یا تراکنش)
-	TotalAmount      float64   `json:"total_amount" bson:"total_amount"`  // مبلغ کل (شامل مالیات و کارمزد)
-	Status           string    `json:"status" bson:"status"`              // وضعیت تراکنش (pending, confirmed, cancelled)
-	InvoiceCode      string    `json:"invoice_code" bson:"invoice_code"`  // کد فاکتور مرتبط
-	Items            []Item    `json:"items" bson:"items"`                // لیست آیتم‌های تراکنش (مثل جزئیات طلا)
-	PaymentMethod    string    `json:"payment_method" bson:"payment_method"` // روش پرداخت (cash, cheque, transfer)
-	ChequeID         string    `json:"cheque_id" bson:"cheque_id"`        // شناسه چک (در صورت استفاده)
-	Notes            string    `json:"notes" bson:"notes"`                // توضیحات اضافی
-	CreatedBy        string    `json:"created_by" bson:"created_by"`      // شناسه کاربر ایجادکننده
-	ConfirmedBy      string    `json:"confirmed_by" bson:"confirmed_by"`  // شناسه کاربر تأییدکننده
-	CreatedAt        time.Time `json:"created_at" bson:"created_at"`      // زمان ایجاد
-	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`      // زمان به‌روزرسانی
-	ConfirmedAt      time.Time `json:"confirmed_at" bson:"confirmed_at"`  // زمان تأیید (در صورت تأیید)
-	AccountingEntryID string    `json:"accounting_entry_id" bson:"accounting_entry_id"` // شناسه سند حسابداری
-	Tags             []string  `json:"tags" bson:"tags"`                  // برچسب‌ها برای دسته‌بندی
+type Invoice struct {
+    ID                string        `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    InvoiceNumber     string        `json:"invoice_number" gorm:"type:varchar(50);unique"`
+    CustomerID        string        `json:"customer_id" gorm:"type:varchar(50)"`
+    CustomerName      string        `json:"customer_name" gorm:"type:varchar(255)"`
+    InvoiceDate       time.Time     `json:"invoice_date" gorm:"type:timestamp"`
+    FlowType          string        `json:"flow_type" gorm:"type:varchar(20);check:flow_type IN ('payable','receivable')"`
+    DocumentSubType   string        `json:"document_sub_type" gorm:"type:varchar(50)"`
+    Items             []InvoiceItem `json:"items" gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE"`
+    GrandTotal        float64       `json:"grand_total" gorm:"type:double precision;default:0"`
+    Currency          string        `json:"currency" gorm:"type:varchar(10);default:'IRR'"`
+    CurrencyRate      float64       `json:"currency_rate" gorm:"type:double precision;default:1"`
+    TaxAmount         float64       `json:"tax_amount" gorm:"type:double precision;default:0"`
+    DiscountAmount    float64       `json:"discount_amount" gorm:"type:double precision;default:0"`
+    Notes             string        `json:"notes" gorm:"type:text"`
+    Status            string        `json:"status" gorm:"type:varchar(20);default:'pending'"`
+    CreatedBy         string        `json:"created_by" gorm:"type:varchar(50)"`
+    ConfirmedBy       string        `json:"confirmed_by" gorm:"type:varchar(50)"`
+    CreatedAt         time.Time     `json:"created_at" gorm:"type:timestamp;default:current_timestamp"`
+    UpdatedAt         time.Time     `json:"updated_at" gorm:"type:timestamp;default:current_timestamp"`
+    Tags              []string      `json:"tags" gorm:"type:text[]"`
+    SendSMS           bool          `json:"send_sms" gorm:"default:false"`
 }
 
-type Item struct {
-	ItemID      string  `json:"item_id" bson:"item_id"`           // شناسه آیتم
-	Description string  `json:"description" bson:"description"`   // توضیحات آیتم (مثل نوع طلا یا جواهر)
-	Weight      float64 `json:"weight" bson:"weight"`             // وزن آیتم (گرم)
-	Purity      float64 `json:"purity" bson:"purity"`             // عیار آیتم
-	UnitPrice   float64 `json:"unit_price" bson:"unit_price"`     // قیمت واحد
-	Quantity    int     `json:"quantity" bson:"quantity"`         // تعداد
-	TotalPrice  float64 `json:"total_price" bson:"total_price"`   // قیمت کل آیتم
-}
-
-
-
-
-type GenericTransactionRequest struct {
-	Description    string            `json:"description"`
-	Date           string            `json:"date"`
-	TaxPercent     *float64          `json:"taxPercent"`
-	ShippingCost   float64           `json:"shippingCost"`
-	TotalInvoice   float64           `json:"totalInvoice"`
-	DiscountType   string            `json:"discountType"`
-	DiscountPercent float64          `json:"discountPercent"`
-	TotalDiscount  *float64          `json:"totalDiscount"`
-	Customer       string            `json:"customer"`
-	GoldRate       float64           `json:"gold_rate"`       // نرخ طلا
-	Currency       string            `json:"currency"`        // واحد پول
-	CurrencyRate   float64           `json:"currency_rate"`   // نرخ تبدیل ارز
-	Items          []TransactionItem `json:"items"`
-	Payments       []Payment         `json:"payments"`
-	SendSMS        bool              `json:"sendSMS"`
-}
-
-type TransactionItem struct {
-	Name                CommodityInfo `json:"name"`
-	Count               float64       `json:"count"`
-	Price               float64       `json:"price"`
-	Weight              float64       `json:"weight"`              // وزن آیتم
-	Purity              float64       `json:"purity"`              // عیار آیتم
-	DiscountPercent     float64       `json:"discountPercent"`
-	DiscountAmount      float64       `json:"discountAmount"`
-	Total               float64       `json:"total"`
-	Description         string        `json:"description"`
-	ShowPercentDiscount bool          `json:"showPercentDiscount"`
-	Tax                 float64       `json:"tax"`
-}
-
-type CommodityInfo struct {
-	ID     uint    `json:"id"`
-	Name   string  `json:"name"`
-	Code   string  `json:"code"`
-	Weight float64 `json:"weight"` // وزن کالا
-	Purity float64 `json:"purity"` // عیار کالا
+type InvoiceItem struct {
+    ID              string  `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    InvoiceID       string  `json:"invoice_id" gorm:"type:varchar(50);not null"` 
+    Type            string  `json:"type" gorm:"type:varchar(50);not null"`
+    Description     string  `json:"description" gorm:"type:text"`
+    Quantity        float64 `json:"quantity" gorm:"type:double precision;default:1"`
+    UnitPrice       float64 `json:"unit_price" gorm:"type:double precision;default:0"`
+    TotalPrice      float64 `json:"total_price" gorm:"type:double precision;default:0"`
+    Weight          float64 `json:"weight" gorm:"type:double precision;default:0"`
+    Purity          float64 `json:"purity" gorm:"type:double precision;default:0"`
+    Currency        string  `json:"currency" gorm:"type:varchar(10)"`
+    CurrencyRate    float64 `json:"currency_rate" gorm:"type:double precision;default:1"`
+    DiscountPercent float64 `json:"discount_percent" gorm:"type:double precision;default:0"`
+    DiscountAmount  float64 `json:"discount_amount" gorm:"type:double precision;default:0"`
+    TaxAmount       float64 `json:"tax_amount" gorm:"type:double precision;default:0"`
+    ChequeID        *string `json:"cheque_id" gorm:"type:varchar(50)"`
+    CommodityID     *string `json:"commodity_id" gorm:"type:varchar(50)"`
+    CommodityCode   *string `json:"commodity_code" gorm:"type:varchar(50)"`
+    Notes           string  `json:"notes" gorm:"type:text"`
 }
 
 type Payment struct {
-	Type        string  `json:"type"`
-	Amount      float64 `json:"amount"`
-	Description string  `json:"description"`
-	Bank        *uint   `json:"bank"`
-	Cashdesk    *uint   `json:"cashdesk"`
-	Salary      *uint   `json:"salary"`
-	ChequeID    *string `json:"cheque_id"` // شناسه چک
+    ID          string    `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    Type        string    `json:"type" gorm:"type:varchar(50);not null"`
+    Amount      float64   `json:"amount" gorm:"type:double precision;default:0"`
+    Description string    `json:"description" gorm:"type:text"`
+    BankID      *string   `json:"bank_id" gorm:"type:varchar(50)"`
+    CashdeskID  *string   `json:"cashdesk_id" gorm:"type:varchar(50)"`
+    ChequeID    *string   `json:"cheque_id" gorm:"type:varchar(50)"`
+    CreatedAt   time.Time `json:"created_at" gorm:"type:timestamp;default:current_timestamp"`
+}
+
+type Commodity struct {
+    ID     string  `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    Name   string  `json:"name" gorm:"type:varchar(255);not null"`
+    Code   string  `json:"code" gorm:"type:varchar(50);unique"`
+    Weight float64 `json:"weight" gorm:"type:double precision;default:0"`
+    Purity float64 `json:"purity" gorm:"type:double precision;default:0"`
+    Type   string  `json:"type" gorm:"type:varchar(50);not null"`
+}
+
+type CreateInvoiceRequest struct {
+    InvoiceNumber   string                    `json:"invoice_number" validate:"required"`
+    CustomerID      string                    `json:"customer_id" validate:"required"`
+    CustomerName    string                    `json:"customer_name" validate:"required"`
+    InvoiceDate     time.Time                 `json:"invoice_date" validate:"required"` // تاریخ فاکتور، قابل تنظیم دستی
+    FlowType        string                    `json:"flow_type" validate:"required,oneof=payable receivable"`
+    DocumentSubType string                    `json:"document_sub_type" validate:"required,oneof=payment_cash sale_invoice purchase_invoice"`
+    Items           []CreateInvoiceItemRequest `json:"items" validate:"required,dive"`
+    Currency        string                    `json:"currency" validate:"required"`
+    CurrencyRate    float64                   `json:"currency_rate" validate:"gte=0"`
+    GoldRate        float64                   `json:"gold_rate" validate:"gte=0"`
+    TaxAmount       float64                   `json:"tax_amount" validate:"gte=0"`
+    DiscountAmount  float64                   `json:"discount_amount" validate:"gte=0"`
+    Notes           string                    `json:"notes,omitempty" validate:"omitempty"`
+    Tags            []string                  `json:"tags,omitempty" validate:"omitempty"`
+    SendSMS         bool                      `json:"send_sms"`
+}
+
+type CreateInvoiceItemRequest struct {
+    Type            string  `json:"type" validate:"required,oneof=generic currency coin raw_gold fabricated stoneM cheque cash labelTag cost"`
+    Description     string  `json:"description" validate:"required"`
+    Quantity        float64 `json:"quantity" validate:"gt=0"`
+    UnitPrice       float64 `json:"unit_price" validate:"gte=0"`
+    Weight          float64 `json:"weight" validate:"gte=0"`
+    Purity          float64 `json:"purity" validate:"gte=0"`
+    Currency        string  `json:"currency,omitempty" validate:"omitempty"`
+    CurrencyRate    float64 `json:"currency_rate" validate:"gte=0"`
+    DiscountPercent float64 `json:"discount_percent" validate:"gte=0"`
+    DiscountAmount  float64 `json:"discount_amount" validate:"gte=0"`
+    TaxAmount       float64 `json:"tax_amount" validate:"gte=0"`
+    ChequeID        *string `json:"cheque_id,omitempty" validate:"omitempty"`
+    CommodityID     *string `json:"commodity_id,omitempty" validate:"omitempty"`
+    CommodityCode   *string `json:"commodity_code,omitempty" validate:"omitempty"`
+    Notes           string  `json:"notes,omitempty" validate:"omitempty"`
 }

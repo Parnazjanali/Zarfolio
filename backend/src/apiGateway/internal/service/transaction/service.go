@@ -10,10 +10,10 @@ import (
 )
 
 type TransactionService interface {
-	GetAllTransactions(ctx context.Context) ([]model.Transaction, error)
-	/*GetTransactionByID(ctx context.Context, id string) (model.Transaction, error)
-	CreateTransaction(ctx context.Context, tx model.Transaction) (model.Transaction, error)
-	UpdateTransaction(ctx context.Context, id string, tx model.Transaction) (model.Transaction, error)
+	GetAllTransactions(ctx context.Context) ([]model.Invoice, error)
+	//GetTransactionByID(ctx context.Context, id string) (model.Transaction, error)
+	CreateGenericTransaction(ctx context.Context, tx *model.CreateInvoiceRequest, userId string) (*model.Invoice, error)
+	/*  UpdateTransaction(ctx context.Context, id string, tx model.Transaction) (model.Transaction, error)
 	DeleteTransaction(ctx context.Context, id string) error*/
 }
 
@@ -37,7 +37,7 @@ func NewTransactionService(client transactionmanager.TransactionManagerClient, l
 
 }
 
-func (s *TransactionServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Transaction, error) {
+func (s *TransactionServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Invoice, error) {
 
 	s.logger.Debug("Fetching all transactions")
 
@@ -47,4 +47,15 @@ func (s *TransactionServiceImpl) GetAllTransactions(ctx context.Context) ([]mode
 		return nil, err
 	}
 	return transactions, nil
+}
+
+func (s *TransactionServiceImpl) CreateGenericTransaction(ctx context.Context, tx *model.CreateInvoiceRequest, userId string) (*model.Invoice, error) {
+	s.logger.Debug("Creating new transaction")
+
+	invoice, err := s.TransactionMngr.CreateTransaction(ctx, *tx, userId)
+	if err != nil {
+		s.logger.Error("Failed to create transaction", zap.Error(err))
+		return &model.Invoice{}, err
+	}
+	return &invoice, nil
 }

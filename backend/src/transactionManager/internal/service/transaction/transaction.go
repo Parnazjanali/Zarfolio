@@ -10,7 +10,8 @@ import (
 )
 
 type TrService interface {
-	GetAllTransactions(ctx context.Context) ([]model.Transaction, error)
+	GetAllTransactions(ctx context.Context) ([]model.Invoice, error)
+	CreateGenericTransaction(ctx context.Context, invoice *model.Invoice) (*model.Invoice, error)
 }
 
 type TrServiceImpl struct {
@@ -34,7 +35,7 @@ func NewTrService(trRepo repo.TransactionRepo, logger *zap.Logger) (*TrServiceIm
 	}, nil
 }
 
-func (s *TrServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Transaction, error) {
+func (s *TrServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Invoice, error) {
 
 	s.logger.Debug("Getting all transactions...")
 
@@ -45,4 +46,16 @@ func (s *TrServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Transac
 	}
 
 	return transactions, nil
+}
+
+func (s *TrServiceImpl) CreateGenericTransaction(ctx context.Context, invoice *model.Invoice) (*model.Invoice, error) {
+	s.logger.Debug("Creating generic transaction...")
+
+	transaction , err := s.transactionRepo.CreateGenericTransaction(ctx, invoice)
+	if err != nil {
+		s.logger.Error("Failed to create generic transaction in repository.")
+		return nil, err
+	}
+
+	return transaction, nil
 }

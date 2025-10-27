@@ -2,45 +2,70 @@ package model
 
 import (
     "time"
-
-    "gorm.io/gorm"
 )
 
-type Transaction struct {
-    gorm.Model 
-    Code              string    `gorm:"type:varchar(50);unique;not null;index" json:"code"`      // شناسه یکتا برای تراکنش
-    Type              string    `gorm:"type:varchar(20);not null" json:"type"`                   // نوع تراکنش (sale, purchase, payment, etc.)
-    PartyID           string    `gorm:"type:varchar(50);not null;index" json:"party_id"`         // شناسه طرف حساب
-    Amount            float64   `gorm:"type:decimal(15,2);not null" json:"amount"`               // مبلغ کل تراکنش
-    Currency          string    `gorm:"type:varchar(3);not null" json:"currency"`                // واحد پول (مثل IRR, USD)
-    GoldWeight        float64   `gorm:"type:decimal(10,2)" json:"gold_weight"`                   // وزن طلا (گرم)
-    Purity            float64   `gorm:"type:decimal(5,2)" json:"purity"`                         // عیار طلا
-    GoldRate          float64   `gorm:"type:decimal(15,2)" json:"gold_rate"`                     // نرخ طلا
-    TaxAmount         float64   `gorm:"type:decimal(15,2)" json:"tax_amount"`                    // مبلغ مالیات
-    FeeAmount         float64   `gorm:"type:decimal(15,2)" json:"fee_amount"`                    // کارمزد
-    TotalAmount       float64   `gorm:"type:decimal(15,2);not null" json:"total_amount"`         // مبلغ کل (با مالیات و کارمزد)
-    Status            string    `gorm:"type:varchar(20);not null" json:"status"`                 // وضعیت تراکنش
-    InvoiceCode       string    `gorm:"type:varchar(50);index" json:"invoice_code"`              // کد فاکتور مرتبط
-    Items             []Item    `gorm:"foreignKey:TransactionCode;references:Code" json:"items"` // لیست آیتم‌های تراکنش
-    PaymentMethod     string    `gorm:"type:varchar(20)" json:"payment_method"`                  // روش پرداخت
-    ChequeID          string    `gorm:"type:varchar(50);index" json:"cheque_id"`                 // شناسه چک
-    Notes             string    `gorm:"type:text" json:"notes"`                                  // توضیحات
-    CreatedBy         string    `gorm:"type:varchar(50);not null" json:"created_by"`             // شناسه کاربر ایجادکننده
-    ConfirmedBy       string    `gorm:"type:varchar(50)" json:"confirmed_by"`                    // شناسه کاربر تأییدکننده
-    ConfirmedAt       time.Time `gorm:"type:timestamp" json:"confirmed_at"`                      // زمان تأیید
-    AccountingEntryID string    `gorm:"type:varchar(50);index" json:"accounting_entry_id"`       // شناسه سند حسابداری
-    Tags              []string  `gorm:"type:jsonb" json:"tags"`                                  // برچسب‌ها
-    //Customer          *Customer `gorm:"foreignKey:PartyID;references:Code" json:"customer,omitempty"` // رابطه با مشتری
+
+type Invoice struct {
+    ID                string        `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    InvoiceNumber     string        `json:"invoice_number" gorm:"type:varchar(50);unique"`
+    CustomerID        string        `json:"customer_id" gorm:"type:varchar(50)"`
+    CustomerName      string        `json:"customer_name" gorm:"type:varchar(255)"`
+    InvoiceDate       time.Time     `json:"invoice_date" gorm:"type:timestamp"`
+    FlowType          string        `json:"flow_type" gorm:"type:varchar(20);check:flow_type IN ('payable','receivable')"`
+    DocumentSubType   string        `json:"document_sub_type" gorm:"type:varchar(50)"`
+    Items             []InvoiceItem `json:"items" gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE"`
+    GrandTotal        float64       `json:"grand_total" gorm:"type:double precision;default:0"`
+    Currency          string        `json:"currency" gorm:"type:varchar(10);default:'IRR'"`
+    CurrencyRate      float64       `json:"currency_rate" gorm:"type:double precision;default:1"`
+    TaxAmount         float64       `json:"tax_amount" gorm:"type:double precision;default:0"`
+    DiscountAmount    float64       `json:"discount_amount" gorm:"type:double precision;default:0"`
+    Notes             string        `json:"notes" gorm:"type:text"`
+    Status            string        `json:"status" gorm:"type:varchar(20);default:'pending'"`
+    CreatedBy         string        `json:"created_by" gorm:"type:varchar(50)"`
+    ConfirmedBy       string        `json:"confirmed_by" gorm:"type:varchar(50)"`
+    CreatedAt         time.Time     `json:"created_at" gorm:"type:timestamp;default:current_timestamp"`
+    UpdatedAt         time.Time     `json:"updated_at" gorm:"type:timestamp;default:current_timestamp"`
+    Tags              []string      `json:"tags" gorm:"type:text[]"`
+    SendSMS           bool          `json:"send_sms" gorm:"default:false"`
 }
 
-type Item struct {
-    gorm.Model 
-    TransactionCode string    `gorm:"type:varchar(50);not null;index" json:"transaction_code"` // کد تراکنش مرتبط (Foreign Key)
-    ItemID          string    `gorm:"type:varchar(50);index" json:"item_id"`                   // شناسه آیتم
-    Description     string    `gorm:"type:text" json:"description"`                            // توضیحات آیتم
-    Weight          float64   `gorm:"type:decimal(10,2)" json:"weight"`                        // وزن آیتم (گرم)
-    Purity          float64   `gorm:"type:decimal(5,2)" json:"purity"`                         // عیار آیتم
-    UnitPrice       float64   `gorm:"type:decimal(15,2);not null" json:"unit_price"`           // قیمت واحد
-    Quantity        int       `gorm:"not null" json:"quantity"`                                // تعداد
-    TotalPrice      float64   `gorm:"type:decimal(15,2);not null" json:"total_price"`          // قیمت کل آیتم
+type InvoiceItem struct {
+    ID              string  `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    InvoiceID       string  `json:"invoice_id" gorm:"type:varchar(50);not null"` 
+    Type            string  `json:"type" gorm:"type:varchar(50);not null"`
+    Description     string  `json:"description" gorm:"type:text"`
+    Quantity        float64 `json:"quantity" gorm:"type:double precision;default:1"`
+    UnitPrice       float64 `json:"unit_price" gorm:"type:double precision;default:0"`
+    TotalPrice      float64 `json:"total_price" gorm:"type:double precision;default:0"`
+    Weight          float64 `json:"weight" gorm:"type:double precision;default:0"`
+    Purity          float64 `json:"purity" gorm:"type:double precision;default:0"`
+    Currency        string  `json:"currency" gorm:"type:varchar(10)"`
+    CurrencyRate    float64 `json:"currency_rate" gorm:"type:double precision;default:1"`
+    DiscountPercent float64 `json:"discount_percent" gorm:"type:double precision;default:0"`
+    DiscountAmount  float64 `json:"discount_amount" gorm:"type:double precision;default:0"`
+    TaxAmount       float64 `json:"tax_amount" gorm:"type:double precision;default:0"`
+    ChequeID        *string `json:"cheque_id" gorm:"type:varchar(50)"`
+    CommodityID     *string `json:"commodity_id" gorm:"type:varchar(50)"`
+    CommodityCode   *string `json:"commodity_code" gorm:"type:varchar(50)"`
+    Notes           string  `json:"notes" gorm:"type:text"`
+}
+
+type Payment struct {
+    ID          string    `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    Type        string    `json:"type" gorm:"type:varchar(50);not null"`
+    Amount      float64   `json:"amount" gorm:"type:double precision;default:0"`
+    Description string    `json:"description" gorm:"type:text"`
+    BankID      *string   `json:"bank_id" gorm:"type:varchar(50)"`
+    CashdeskID  *string   `json:"cashdesk_id" gorm:"type:varchar(50)"`
+    ChequeID    *string   `json:"cheque_id" gorm:"type:varchar(50)"`
+    CreatedAt   time.Time `json:"created_at" gorm:"type:timestamp;default:current_timestamp"`
+}
+
+type Commodity struct {
+    ID     string  `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    Name   string  `json:"name" gorm:"type:varchar(255);not null"`
+    Code   string  `json:"code" gorm:"type:varchar(50);unique"`
+    Weight float64 `json:"weight" gorm:"type:double precision;default:0"`
+    Purity float64 `json:"purity" gorm:"type:double precision;default:0"`
+    Type   string  `json:"type" gorm:"type:varchar(50);not null"`
 }

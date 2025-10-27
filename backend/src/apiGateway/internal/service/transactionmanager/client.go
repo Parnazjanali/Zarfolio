@@ -45,7 +45,7 @@ func (c *TransactionManagerHTTPClient) BaseUrl() string {
 	return c.baseURL
 }
 
-func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) ([]model.Transaction, error) {
+func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) ([]model.Invoice, error) {
 	defer c.logger.Sync()
 
 	if c.baseURL == "" {
@@ -128,7 +128,7 @@ func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) (
 		return nil, fmt.Errorf("transaction manager get all transactions returned status %d: %s", resp.StatusCode, string(respBody))
 	}
 
-	var transactions []model.Transaction
+	var transactions []model.Invoice
 	if err:= json.Unmarshal(respBody, &transactions); err != nil {
 		c.logger.Error("Failed to unmarshal transactions from response body",
 			zap.String("service", "transaction-manager"),
@@ -144,19 +144,19 @@ func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) (
 }
 
 
-func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx model.Transaction) (model.Transaction, error) {
+func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx model.CreateInvoiceRequest, userId string) (model.Invoice, error) {
 	// Implementation for creating a transaction
-	return model.Transaction{}, nil
+	return model.Invoice{}, nil
 }
 
-func (c *TransactionManagerHTTPClient) GetTransactionByID(ctx context.Context, id string) (model.Transaction, error) {
+func (c *TransactionManagerHTTPClient) GetTransactionByID(ctx context.Context, id string) (model.Invoice, error) {
 	// Implementation for getting a transaction by ID
-	return model.Transaction{}, nil
+	return model.Invoice{}, nil
 }
 
-func (c *TransactionManagerHTTPClient) UpdateTransaction(ctx context.Context, id string, tx model.Transaction) (model.Transaction, error) {
+func (c *TransactionManagerHTTPClient) UpdateTransaction(ctx context.Context, id string, tx model.Invoice) (model.Invoice, error) {
 	// Implementation for updating a transaction
-	return model.Transaction{}, nil
+	return model.Invoice{}, nil
 }
 
 func (c *TransactionManagerHTTPClient) DeleteTransaction(ctx context.Context, id string) error {

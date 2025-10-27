@@ -40,32 +40,26 @@ func NewAuthMiddleware(permService authz.PermissionService, logger *zap.Logger, 
 func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
-		m.logger.Debug("Received Authorization header", zap.String("header", authHeader))
-		if authHeader == "" {
-			m.logger.Warn("Authorization header missing for protected route",
+
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			m.logger.Warn("Invalid or missing Authorization header",
 				zap.String("path", c.OriginalURL()),
 				zap.Strings("required_perms", requiredPermissions))
-			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Authorization header missing."})
+			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
+				Message: "Missing or invalid Authorization header.",
+			})
 		}
 
-		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-		m.logger.Debug("Received token string", zap.String("token", tokenString))
-		if tokenString == "" {
-			m.logger.Warn("Bearer token missing for protected route",
-				zap.String("path", c.OriginalURL()),
-				zap.Strings("required_perms", requiredPermissions))
-			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{Message: "Bearer token missing."})
-		}
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		claims, err := m.jwtValidator.ValidateToken(tokenString)
 		if err != nil {
-			m.logger.Error("Invalid or expired token for protected route",
+			m.logger.Warn("Invalid or expired token",
 				zap.Error(err),
 				zap.String("path", c.OriginalURL()),
 				zap.Strings("required_perms", requiredPermissions))
 			return c.Status(fiber.StatusUnauthorized).JSON(model.ErrorResponse{
-				Message: "Invalid or expired token",
-				Details: err.Error(),
+				Message: "Invalid or expired token.",
 			})
 		}
 
@@ -74,17 +68,19 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fibe
 		c.Locals("username", claims.Username)
 
 		var userRoles []string
-		if err := json.Unmarshal(claims.Roles, &userRoles); err != nil {
-			m.logger.Error("Failed to unmarshal user roles from JWT claims",
-				zap.String("userID", claims.UserID),
-				zap.Error(err))
-			return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-				Message: "Internal server error: role parsing failed.",
-			})
+		if len(claims.Roles) > 0 {
+			if err := json.Unmarshal(claims.Roles, &userRoles); err != nil {
+				m.logger.Error("Failed to parse user roles from JWT claims",
+					zap.String("userID", claims.UserID),
+					zap.Error(err))
+				return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
+					Message: "Internal server error: failed to parse roles.",
+				})
+			}
 		}
+
 		c.Locals("userRoles", userRoles)
 
-		// چک کردن permissionها (حداقل یکی از permissionها باید وجود داشته باشد)
 		hasPermission := false
 		for _, requiredPerm := range requiredPermissions {
 			if m.permissionService.HasPermission(userRoles, requiredPerm) {
@@ -94,13 +90,13 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fibe
 		}
 
 		if !hasPermission {
-			m.logger.Warn("Access denied: User does not have required permission",
+			m.logger.Warn("Access denied: insufficient permissions",
 				zap.String("userID", claims.UserID),
+				zap.String("path", c.OriginalURL()),
 				zap.Strings("user_roles", userRoles),
-				zap.Strings("required_permissions", requiredPermissions),
-				zap.String("path", c.OriginalURL()))
+				zap.Strings("required_permissions", requiredPermissions))
 			return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
-				Message: "Access denied: Insufficient permissions.",
+				Message: "Access denied: insufficient permissions.",
 			})
 		}
 
@@ -111,6 +107,7 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fibe
 		return c.Next()
 	}
 }
+
 
 /*func (m *AuthMiddleware) VerifyServiceToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
