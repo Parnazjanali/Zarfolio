@@ -75,7 +75,7 @@ type PermissionServiceImpl struct {
     logger *zap.Logger
 }
 
-func NewPermissionService(logger *zap.Logger) PermissionService { // <-- Returns the interface, not the struct pointer
+func NewPermissionService(logger *zap.Logger) PermissionService {
     if logger == nil {
         panic("Logger cannot be nil for PermissionService.")
     }

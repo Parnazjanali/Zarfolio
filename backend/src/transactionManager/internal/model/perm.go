@@ -6,7 +6,6 @@ const (
 	RoleSalesperson = "salesperson"
 	RoleAccountant  = "accountant"
 )
-
 const (
 	PermInventoryReadItem        = "inventory:read_item"
 	PermInventoryCreateItem      = "inventory:create_item"
@@ -30,7 +29,6 @@ const (
 	PermCRMViewCustomerBalance = "crm:view_customer_balance"
 	PermCRMViewSupplierBalance = "crm:view_supplier_balance"
 
-	PermTransactionReadGeneral = "transaction:read_general" 
 	PermTransactionReadSaleInvoice       = "transaction:read_sale_invoice"
 	PermTransactionCreateSaleInvoice     = "transaction:create_sale_invoice"
 	PermTransactionUpdateSaleInvoice     = "transaction:update_sale_invoice"
@@ -43,19 +41,11 @@ const (
 	PermTransactionManageExpenses        = "transaction:manage_expenses"
 	PermTransactionManageCheques         = "transaction:manage_cheques"
 
-	PermTransactionManageGoldRate = "transaction:manage_gold_rate"
-	PermTransactionBulkImport     = "transaction:bulk_import"
-	PermTransactionBulkExport     = "transaction:bulk_export"
-	PermTransactionWebhook        = "transaction:webhook"
-	PermTransactionSync           = "transaction:sync"
-	
-
 	PermReportViewSalesSummary     = "report:view_sales_summary"
 	PermReportViewInventorySummary = "report:view_inventory_summary"
 	PermReportViewProfitLoss       = "report:view_profit_loss"
 	PermReportViewBalances         = "report:view_balances"
 	PermReportExportData           = "report:export_data"
-	PermReportImportData		   = "report:import_data"
 
 	PermUserRead              = "user:read"
 	PermUserCreate            = "user:create"
@@ -64,7 +54,4 @@ const (
 	PermUserChangeAnyPassword = "user:change_any_password"
 	PermSystemSettingsRead    = "system:settings_read"
 	PermSystemSettingsManage  = "system:settings_manage"
-
-	// Admin Permissions
-	PermAdminFullAccess = "admin:full_access"
 )

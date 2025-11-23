@@ -21,6 +21,7 @@ func SetupAllRoutes(
 	crmHandlerAG *handler.CrmHandler,
 	permissionService authz.PermissionService,
 	profileHandlerAG *handler.ProfileHandler,
+	transactionHandler *handler.TransactionHandler,
 	proxyHandler *proxy.ProxyHandler,
 	logger *zap.Logger,
 ) error {
@@ -56,6 +57,11 @@ func SetupAllRoutes(
 		logger.Error("ProfileHandlerAG is nil",
 			zap.String("service", "api-gateway"))
 		return fmt.Errorf("ProfileHandlerAG is nil in SetupAllRoutes")
+	}
+	if transactionHandler == nil {
+		logger.Error("TransactionHandler is nil",
+			zap.String("service", "api-gateway"))
+		return fmt.Errorf("TransactionHandler is nil in SetupAllRoutes")
 	}
 	if proxyHandler == nil {
 		logger.Error("ProxyHandler is nil",
@@ -100,6 +106,13 @@ func SetupAllRoutes(
 		return fmt.Errorf("failed to set up CRM routes: %w", err)
 	}
 
+	if err := SetUpTransactionRoutes(apiV1, transactionHandler, authMiddleware, logger); err != nil {
+		logger.Error("Failed to set up transaction routes",
+			zap.Error(err),
+			zap.String("service", "api-gateway"))
+		return fmt.Errorf("failed to set up transaction routes: %w", err)
+	}
+
 	profileManagerServiceURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerServiceURL != "" {
 		apiV1.Get("/uploads/*", proxyHandler.HandleStaticFileProxy(profileManagerServiceURL))
@@ -119,6 +132,17 @@ func SetupAllRoutes(
 			zap.String("service", "api-gateway"))
 	} else {
 		logger.Warn("CRM_MANAGER_BASE_URL not set in env. Cannot configure proxy for CRM uploads",
+			zap.String("service", "api-gateway"))
+	}
+	
+	transactionServiceURL := os.Getenv("TRANSACTION_MANAGER_BASE_URL")
+	if transactionServiceURL != "" {
+		apiV1.Get("/tr/uploads/*", proxyHandler.HandleStaticFileProxy(transactionServiceURL))
+		logger.Debug("Configured GET proxy for /api/v1/tr/uploads/* to Transaction Manager",
+			zap.String("transaction_manager_url", transactionServiceURL),
+			zap.String("service", "api-gateway"))
+	} else {
+		logger.Warn("TRANSACTION_MANAGER_BASE_URL not set in env. Cannot configure proxy for Transaction uploads",
 			zap.String("service", "api-gateway"))
 	}
 

@@ -7,7 +7,7 @@ import AdvancedFilter from '../components/AdvancedFilter.jsx';
 const { Title } = Typography;
 
 // URL پایه API
-const API_BASE_URL = 'http://localhost:8080/api/v1/transactions';
+const API_BASE_URL = 'http://localhost:8080/api/v1/tr/transactions';
 
 const InvoicesPage = () => {
   const [filteredData, setFilteredData] = useState([]);

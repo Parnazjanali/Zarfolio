@@ -1,4 +1,3 @@
-
 package server
 
 import (
@@ -11,6 +10,8 @@ import (
 	"gold-api/internal/service/crm"
 	crmmanager "gold-api/internal/service/crmManager"
 	profilemanager "gold-api/internal/service/profilemanger"
+	"gold-api/internal/service/transaction"
+	"gold-api/internal/service/transactionmanager"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -53,11 +54,20 @@ func StartServer(address string, logger *zap.Logger) error {
 		return fmt.Errorf("CRM_MANAGER_BASE_URL is not set")
 	}
 
+	transactionManagerBaseURL := os.Getenv("TRANSACTION_MANAGER_BASE_URL")
+	if transactionManagerBaseURL == "" {
+		logger.Error("TRANSACTION_MANAGER_BASE_URL is not set",
+			zap.String("service", "api-gateway"),
+			zap.String("operation", "init-services"))
+		return fmt.Errorf("TRANSACTION_MANAGER_BASE_URL is not set")
+	}
+
 	logger.Debug("Environment variables loaded",
 		zap.String("service", "api-gateway"),
 		zap.String("operation", "init-services"),
 		zap.String("profile_manager_url", profileManagerBaseURL),
-		zap.String("crm_manager_url", crmManagerBaseURL))
+		zap.String("crm_manager_url", crmManagerBaseURL),
+		zap.String("transaction_manager_url", transactionManagerBaseURL))
 
 	profileManagerClient, err := profilemanager.NewClient(profileManagerBaseURL, logger)
 	if err != nil {
@@ -137,6 +147,33 @@ func StartServer(address string, logger *zap.Logger) error {
 		return fmt.Errorf("failed to initialize CrmHandlerAG: %w", err)
 	}
 
+	transactionManagerClient, err := transactionmanager.NewTransactionManagerClient(transactionManagerBaseURL, logger)
+	if err != nil {
+		logger.Error("Failed to initialize TransactionManagerClient",
+			zap.String("service", "api-gateway"),
+			zap.String("operation", "init-services"),
+			zap.Error(err))
+		return fmt.Errorf("failed to initialize TransactionManagerClient: %w", err)
+	}
+
+	transactionSvc, err := transaction.NewTransactionService(transactionManagerClient, logger)
+	if err != nil {
+		logger.Error("Failed to initialize TransactionService",
+			zap.String("service", "api-gateway"),
+			zap.String("operation", "init-services"),
+			zap.Error(err))
+		return fmt.Errorf("failed to initialize TransactionService: %w", err)
+	}
+
+	transactionHandlerAG, err := handler.NewTransactionHandler(transactionSvc, logger)
+	if err != nil {
+		logger.Error("Failed to initialize TransactionHandler",
+			zap.String("service", "api-gateway"),
+			zap.String("operation", "init-services"),
+			zap.Error(err))
+		return fmt.Errorf("failed to initialize TransactionHandler: %w", err)
+	}
+
 	proxyHandler := proxy.NewProxyHandler(logger)
 	if proxyHandler == nil {
 		logger.Error("Failed to initialize ProxyHandler",
@@ -152,6 +189,7 @@ func StartServer(address string, logger *zap.Logger) error {
 		crmHandlerAG,
 		permissionService,
 		profileHandlerAG,
+		transactionHandlerAG,
 		proxyHandler,
 		logger,
 	); err != nil {

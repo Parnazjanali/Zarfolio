@@ -24,7 +24,7 @@ func NewProxyHandler(logger *zap.Logger) *ProxyHandler {
 		panic("Logger cannot be nil for ProxyHandler")
 	}
 	return &ProxyHandler{
-		httpClient: &http.Client{Timeout: 30 * time.Second}, // یک HTTP client با timeout مناسب
+		httpClient: &http.Client{Timeout: 30 * time.Second}, 
 		logger:     logger,
 	}
 }
@@ -72,11 +72,10 @@ func (h *ProxyHandler) HandleStaticFileProxy(targetBaseURL string) fiber.Handler
 			}
 			return c.Status(fiber.StatusBadGateway).JSON(model.ErrorResponse{Message: "Proxy error: Could not reach backend service."})
 		}
-		defer resp.Body.Close() // حتماً بدنه پاسخ را ببندید تا منابع آزاد شوند
+		defer resp.Body.Close() 
 
 		// کپی کردن کد وضعیت HTTP از پاسخ سرویس مقصد به پاسخ کلاینت
 		c.Status(resp.StatusCode)
-		// کپی کردن هدرهای پاسخ از سرویس مقصد به پاسخ کلاینت
 		for key, values := range resp.Header {
 			for _, value := range values {
 				if key == "Content-Length" { // Fiber خودش Content-Length را هنگام SendStream تنظیم می‌کند.
