@@ -13,11 +13,11 @@ const InvoicesPage = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // دریافت توکن از localStorage (یا هر مکانیزم ذخیره‌سازی دیگر)
-  const getAuthToken = () => {
-    return localStorage.getItem('token') || '';
-  };
-
+ const getAuthToken = () => {
+  const token = localStorage.getItem('authToken');
+  console.log('توکن لود شده:', token ? 'موجود' : 'ندارد');
+  return token || '';
+};
   // دریافت لیست تراکنش‌ها از API
   const fetchTransactions = async () => {
     setLoading(true);

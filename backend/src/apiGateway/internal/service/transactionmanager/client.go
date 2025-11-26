@@ -75,13 +75,11 @@ func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) (
 		return nil, fmt.Errorf("user token not found in context")
 	}
 
-	httpReq.Header.Set("Authorization", "Bearer "+token)
+	httpReq.Header.Set("X-Internal-JWT", token)
 
 	internalServiceSecret := os.Getenv("TRANSACTION_MANAGER_SERVICE_SECRET")
 	if internalServiceSecret == "" {
-		c.logger.Error("TRANSACTION_MANAGER_SERVICE_SECRET environment variable is not set",
-			zap.String("service", "transaction-manager"),
-			zap.String("operation", "GetAllTransactions"))
+		c.logger.Error("TRANSACTION_MANAGER_SERVICE_SECRET environment variable is not set")
 		return nil, fmt.Errorf("TRANSACTION_MANAGER_SERVICE_SECRET environment variable is not set")
 	}
 
@@ -145,7 +143,7 @@ func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) (
 }
 
 func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx model.CreateInvoiceRequest, userId string) (model.Invoice, error) {
-	// 1. لاگ‌برداری و بررسی URL پایه
+
 	c.logger.Debug("Attempting to create transaction",
 		zap.String("user_id", userId))
 
@@ -157,38 +155,32 @@ func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx
 
 	targetURL := c.baseURL + "/tr/transactions"
 
-	// 2. آماده‌سازی بدنه درخواست (JSON)
 	body, err := json.Marshal(tx)
 	if err != nil {
 		c.logger.Error("Failed to marshal request body", zap.Error(err))
 		return model.Invoice{}, fmt.Errorf("failed to encode transaction request: %w", err)
 	}
 
-	// 3. ایجاد درخواست HTTP
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, bytes.NewBuffer(body))
 	if err != nil {
 		c.logger.Error("Failed to create HTTP request", zap.Error(err))
 		return model.Invoice{}, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 
-	// 4. تنظیم هدرها
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User-ID", userId) // ارسال userID به عنوان هدر در صورت نیاز
+	req.Header.Set("X-User-ID", userId)
 
-	// 5. ارسال درخواست
 	resp, err := c.client.Do(req)
 	if err != nil {
 		c.logger.Error("Failed to send HTTP request to Transaction Manager",
 			zap.String("url", targetURL),
 			zap.Error(err))
-		// در صورت خطای شبکه/اتصال، یک خطای مشخص برگردانید
 		return model.Invoice{}, service.ErrTransactionManagerDown
 	}
 	defer resp.Body.Close()
 
-	// 6. بررسی کدهای وضعیت HTTP
 	if resp.StatusCode != http.StatusCreated {
-		// لاگ و خواندن بدنه خطا برای اطلاعات بیشتر
+
 		errorBody, _ := io.ReadAll(resp.Body)
 		errorMessage := fmt.Sprintf("Transaction Manager returned non-201 status: %d. Body: %s", resp.StatusCode, string(errorBody))
 
@@ -200,11 +192,9 @@ func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx
 			return model.Invoice{}, errors.New("transaction already exists or duplicate key")
 		}
 
-		// برگرداندن یک خطای عمومی یا خطای خاص بر اساس کد وضعیت
 		return model.Invoice{}, errors.New(errorMessage)
 	}
 
-	// 7. تجزیه پاسخ موفق (201 Created)
 	var invoice model.Invoice
 	if err := json.NewDecoder(resp.Body).Decode(&invoice); err != nil {
 		c.logger.Error("Failed to decode successful response body", zap.Error(err))

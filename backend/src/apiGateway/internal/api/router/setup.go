@@ -73,7 +73,7 @@ func SetupAllRoutes(
 	logger.Debug("Base API group /api/v1 created",
 		zap.String("service", "api-gateway"))
 
-	jwtValidator := utils.NewJWTValidatorImpl("JWT_SECRET_KEY", logger)
+	jwtValidator := utils.NewJWTValidator(logger)
 
 	authMiddleware, err := middleware.NewAuthMiddleware(permissionService, logger, jwtValidator)
 	if err != nil {

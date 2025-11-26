@@ -36,12 +36,14 @@ func NewAuthMiddleware(permService authz.PermissionService, logger *zap.Logger, 
 		logger:            logger,
 	}, nil
 }
-
 func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
+		if c.Method() == "OPTIONS" {
+			return c.SendStatus(fiber.StatusNoContent) 
+		}
 
-		if !strings.HasPrefix(authHeader, "Bearer ") {
+		authHeader := c.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 			m.logger.Warn("Invalid or missing Authorization header",
 				zap.String("path", c.OriginalURL()),
 				zap.Strings("required_perms", requiredPermissions))
@@ -51,7 +53,6 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fibe
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
 		claims, err := m.jwtValidator.ValidateToken(tokenString)
 		if err != nil {
 			m.logger.Warn("Invalid or expired token",
@@ -69,45 +70,29 @@ func (m *AuthMiddleware) AuthorizeMiddleware(requiredPermissions ...string) fibe
 
 		var userRoles []string
 		if len(claims.Roles) > 0 {
-			if err := json.Unmarshal(claims.Roles, &userRoles); err != nil {
-				m.logger.Error("Failed to parse user roles from JWT claims",
-					zap.String("userID", claims.UserID),
-					zap.Error(err))
-				return c.Status(fiber.StatusInternalServerError).JSON(model.ErrorResponse{
-					Message: "Internal server error: failed to parse roles.",
-				})
-			}
+			_ = json.Unmarshal(claims.Roles, &userRoles) 
 		}
-
 		c.Locals("userRoles", userRoles)
 
-		hasPermission := false
-		for _, requiredPerm := range requiredPermissions {
-			if m.permissionService.HasPermission(userRoles, requiredPerm) {
-				hasPermission = true
-				break
+		for _, perm := range requiredPermissions {
+			if m.permissionService.HasPermission(userRoles, perm) {
+				m.logger.Debug("Permission granted",
+					zap.String("userID", claims.UserID),
+					zap.Strings("user_roles", userRoles),
+					zap.Strings("required_permissions", requiredPermissions))
+				return c.Next() 
 			}
 		}
 
-		if !hasPermission {
-			m.logger.Warn("Access denied: insufficient permissions",
-				zap.String("userID", claims.UserID),
-				zap.String("path", c.OriginalURL()),
-				zap.Strings("user_roles", userRoles),
-				zap.Strings("required_permissions", requiredPermissions))
-			return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
-				Message: "Access denied: insufficient permissions.",
-			})
-		}
-
-		m.logger.Debug("Permission granted",
+		m.logger.Warn("Access denied: insufficient permissions",
 			zap.String("userID", claims.UserID),
 			zap.Strings("user_roles", userRoles),
 			zap.Strings("required_permissions", requiredPermissions))
-		return c.Next()
+		return c.Status(fiber.StatusForbidden).JSON(model.ErrorResponse{
+			Message: "Access denied: insufficient permissions.",
+		})
 	}
 }
-
 
 /*func (m *AuthMiddleware) VerifyServiceToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {

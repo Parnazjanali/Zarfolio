@@ -23,13 +23,13 @@ type JWTValidatorImpl struct {
     logger    *zap.Logger
 }
 
-func NewJWTValidatorImpl(secretEnvVarName string, logger *zap.Logger) *JWTValidatorImpl {
-    jwtSecret := os.Getenv(secretEnvVarName)
-    if jwtSecret == "" {
-        logger.Fatal(fmt.Sprintf("%s environment variable is not set. Cannot initialize JWTValidator.", secretEnvVarName))
+func NewJWTValidator(logger *zap.Logger) *JWTValidatorImpl {
+    secret := os.Getenv("JWT_SECRET_KEY")
+    if secret == "" {
+        logger.Fatal("JWT_SECRET_KEY environment variable is not set. Cannot initialize JWTValidator.")
     }
     return &JWTValidatorImpl{
-        jwtSecret: []byte(jwtSecret),
+        jwtSecret: []byte(secret),
         logger:    logger,
     }
 }

@@ -78,6 +78,7 @@ func StartServer(port string, logger *zap.Logger) error {
 			zap.Error(err))
 		return fmt.Errorf("failed to create auth middleware: %w", err)
 	}
+	
 	app.Use(authMiddlewareForTr.VerifyServiceToken())
 	logger.Debug("Auth middleware applied",
 		zap.String("service", "transaction-manager"),

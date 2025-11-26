@@ -34,9 +34,6 @@ func StartServer(address string, logger *zap.Logger) error {
 		zap.String("operation", "start-server"))
 
 	app.Use(middleware.CorsMiddleware())
-	logger.Debug("CORS middleware applied",
-		zap.String("service", "api-gateway"),
-		zap.String("operation", "start-server"))
 
 	profileManagerBaseURL := os.Getenv("PROFILE_MANAGER_BASE_URL")
 	if profileManagerBaseURL == "" {
