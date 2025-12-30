@@ -2,17 +2,18 @@ package handler
 
 import (
 	"fmt"
-	"strings"
 	"transaction-gold/internal/model"
 	transactionService "transaction-gold/internal/service/transaction"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type TransactionHandler struct {
-	trSvc  transactionService.TrService
-	logger *zap.Logger
+	trSvc     transactionService.TrService
+	logger    *zap.Logger
+	validator *validator.Validate
 }
 
 func NewTransactionHandler(tr transactionService.TrService, logger *zap.Logger) (*TransactionHandler, error) {
@@ -57,45 +58,49 @@ func (h *TransactionHandler) HandleGetAllTransactions(c *fiber.Ctx) error {
 }
 
 func (h *TransactionHandler) HandleCreateGenericTransaction(c *fiber.Ctx) error {
-	var req model.Invoice
+    var req model.CreateInvoiceRequest
 
-	if err := c.BodyParser(&req); err != nil {
-		h.logger.Error("Failed to parse request body.",
-			zap.String("service", "transaction"),
-			zap.String("operation", "CreateGenericTransaction"),
-			zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
-	}
+    h.logger.Info("Starting to handle CreateGenericTransaction",
+        zap.String("service", "transaction"),
+        zap.String("operation", "HandleCreateGenericTransaction"))
 
-	CreatedInvoice, err := h.trSvc.CreateGenericTransaction(c.Context(), &req)
-	if err != nil {
-		h.logger.Error("Failed to create generic transaction.",
-			zap.String("service", "transaction"),
-			zap.String("operation", "CreateGenericTransaction"),
-			zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create generic transaction",
-		})
-	}
+    if err := c.BodyParser(&req); err != nil {
+        h.logger.Error("Failed to parse request body",
+            zap.String("operation", "HandleCreateGenericTransaction"),
+            zap.Error(err))
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": " format errors in request body",
+        })
+    }
 
-	if strings.Contains(CreatedInvoice.ID, "error-") {
-		h.logger.Error("Service returned an error code in CreatedInvoice.ID",
-			zap.String("service", "transaction"),
-			zap.String("operation", "CreateGenericTransaction"),
-			zap.String("error_code", CreatedInvoice.ID))
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error": fmt.Sprintf("Service error: %s", CreatedInvoice.ID),
-		})
-	}
+    if err := h.validator.Struct(req); err != nil {
+        h.logger.Warn("Validation failed for create transaction request",
+            zap.String("operation", "HandleCreateGenericTransaction"),
+            zap.String("customer", req.CustomerName),
+            zap.Error(err))
+        
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error":   "failed validation",
+            "details": err.Error(), 
+        })
+    }
 
-	h.logger.Info("Generic transaction created successfully.",
-		zap.String("service", "transaction"),
-		zap.String("operation", "CreateGenericTransaction"),
-		zap.String("invoice_id", CreatedInvoice.ID))
-	
-	c.Status(fiber.StatusCreated).JSON(CreatedInvoice)
+    createdInvoice, err := h.trSvc.CreateGenericTransaction(c.Context(), &req)
+    if err != nil {
+        h.logger.Error("Failed to create generic transaction in service layer",
+            zap.String("operation", "HandleCreateGenericTransaction"),
+            zap.String("customer_id", req.CustomerID),
+            zap.Error(err))
+            
+        return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
 
-	return nil
+    h.logger.Info("Generic transaction created successfully",
+        zap.String("operation", "HandleCreateGenericTransaction"),
+        zap.String("invoice_id", createdInvoice.ID),
+        zap.String("invoice_number", createdInvoice.InvoiceNumber))
+
+    return c.Status(fiber.StatusCreated).JSON(createdInvoice)
 }

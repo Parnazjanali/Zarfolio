@@ -70,86 +70,34 @@ func InitDB(logger *zap.Logger) error {
             zap.String("component", "transactions"))
     }
 
-    dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s sslcert=%s sslkey=%s sslrootcert=%s TimeZone=Asia/Tehran",
+   dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s sslcert=%s sslkey=%s sslrootcert=%s TimeZone=Asia/Tehran",
         dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode, dbSSLCert, dbSSLKey, dbSSLRootCert)
-
-    logger.Info("Attempting to connect to DB",
-        zap.String("service", "database"),
-        zap.String("component", "transactions"),
-        zap.String("dsn_prefix", fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s",
-            dbHost, dbPort, dbUser, dbName, dbSSLMode)))
 
     var err error
     DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
     if err != nil {
-        logger.Error("Failed to connect to PostgreSQL database",
-            zap.String("service", "database"),
-            zap.String("component", "transactions"),
-            zap.Error(err))
-        return fmt.Errorf("failed to connect to PostgreSQL database for transactions: %w", err)
+        logger.Error("Failed to connect to PostgreSQL database", zap.Error(err))
+        return fmt.Errorf("failed to connect to database: %w", err)
     }
 
-    sqlDB, err := DB.DB()
-    if err != nil {
-        logger.Error("Failed to get SQL DB instance",
-            zap.String("service", "database"),
-            zap.String("component", "transactions"),
-            zap.Error(err))
-        return fmt.Errorf("failed to get SQL DB instance for transactions: %w", err)
-    }
+    sqlDB, _ := DB.DB()
     sqlDB.SetMaxIdleConns(10)
     sqlDB.SetMaxOpenConns(100)
     sqlDB.SetConnMaxLifetime(time.Hour)
 
-    logger.Info("PostgreSQL database connected successfully",
-        zap.String("service", "database"),
-        zap.String("component", "transactions"),
-        zap.String("operation", "InitDB"))
-
-    logger.Info("Attempting AutoMigrate for transactions...",
-        zap.String("service", "database"),
-        zap.String("component", "transactions"),
-        zap.String("operation", "AutoMigrate"))
+    logger.Info("Attempting AutoMigrate for transaction service...")
+    
     err = DB.AutoMigrate(
         &model.Invoice{},
         &model.InvoiceItem{},
-        &model.Payment{},
-        &model.Commodity{},
+        &model.PaymentSnapshot{},
     )
     if err != nil {
-        logger.Error("Failed to auto-migrate database schemas",
-            zap.String("service", "database"),
-            zap.String("component", "transactions"),
-            zap.String("operation", "AutoMigrate"),
-            zap.Error(err),
-            zap.Any("models", []interface{}{&model.Invoice{}, &model.InvoiceItem{}, &model.Payment{}, &model.Commodity{}}))
-        return fmt.Errorf("failed to auto-migrate database schemas for transactions: %w", err)
+        logger.Error("Failed to auto-migrate database schemas", zap.Error(err))
+        return fmt.Errorf("failed to auto-migrate: %w", err)
     }
 
-    logger.Info("Database schemas auto-migrated successfully",
-        zap.String("service", "database"),
-        zap.String("component", "transactions"),
-        zap.String("operation", "AutoMigrate"))
-
-    if os.Getenv("RUN_DB_SEED") == "true" {
-        logger.Info("Running database seed for transactions...",
-            zap.String("service", "database"),
-            zap.String("component", "transactions"),
-            zap.String("operation", "SeedDB"))
-        err = seedDB(DB, logger)
-        if err != nil {
-            logger.Error("Failed to seed database",
-                zap.String("service", "database"),
-                zap.String("component", "transactions"),
-                zap.String("operation", "SeedDB"),
-                zap.Error(err))
-            return fmt.Errorf("failed to seed database for transactions: %w", err)
-        }
-        logger.Info("Database seeded successfully",
-            zap.String("service", "database"),
-            zap.String("component", "transactions"),
-            zap.String("operation", "SeedDB"))
-    }
+    logger.Info("Database connected and schemas migrated successfully")
 
     return nil
 }

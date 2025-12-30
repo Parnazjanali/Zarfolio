@@ -2,10 +2,13 @@ package router
 
 import (
 	"fmt"
+	"os"
 	"transaction-gold/internal/api/authz"
 	"transaction-gold/internal/api/handler"
 	"transaction-gold/internal/api/middleware"
 	"transaction-gold/internal/repository/db/postgresDb"
+	crmService "transaction-gold/internal/service/crm"
+	inventoryService "transaction-gold/internal/service/inventory"
 	transactionService "transaction-gold/internal/service/transaction"
 	"transaction-gold/internal/utils"
 
@@ -53,7 +56,42 @@ func StartServer(port string, logger *zap.Logger) error {
 			zap.Error(err))
 		return fmt.Errorf("failed to create transaction repository: %w", err)
 	}
-	transactionService, err := transactionService.NewTrService(transactionRepo, logger)
+
+	inventoryMangerBaseURL := os.Getenv("Inventory_Base_URL")
+	if inventoryMangerBaseURL == "" {
+		logger.Error("Inventory service base URL not found",
+			zap.String("service", "transaction-manager"),
+			zap.String("operation", "start-server"),
+			zap.String("Inventory_Base_URL", inventoryMangerBaseURL))
+	}
+
+	crmManagerBaseURL := os.Getenv("CRM_Base_URL")
+	if crmManagerBaseURL == "" {
+		logger.Error("CRM service base URL not found",
+			zap.String("service", "transaction-manager"),
+			zap.String("operation", "start-server"),
+			zap.String("CRM_Base_URL", crmManagerBaseURL))
+	}
+
+	inventoryManagerClient, err := inventoryService.NewInventoryManagerClient(inventoryMangerBaseURL, logger)
+	if err != nil {
+		logger.Error("failed to Initialize inventory manager client",
+			zap.String("service", "transaction-manager"),
+			zap.String("operation", "start-server"),
+			zap.Error(err))
+		return fmt.Errorf("failed to create inventory manager client: %w", err)
+	}
+
+	crmManagerClient, err := crmService.NewCrmManagerClient(crmManagerBaseURL, logger)
+	if err != nil {
+		logger.Error("failed to Initialize CRM manager client",
+			zap.String("service", "transaction-manager"),
+			zap.String("operation", "start-server"),
+			zap.Error(err))
+		return fmt.Errorf("failed to create CRM manager client: %w", err)
+	}
+
+	transactionService, err := transactionService.NewTrService(transactionRepo, inventoryManagerClient, crmManagerClient, logger)
 	if err != nil {
 		logger.Error("failed to create transaction service",
 			zap.String("service", "transaction-manager"),
@@ -78,7 +116,7 @@ func StartServer(port string, logger *zap.Logger) error {
 			zap.Error(err))
 		return fmt.Errorf("failed to create auth middleware: %w", err)
 	}
-	
+
 	app.Use(authMiddlewareForTr.VerifyServiceToken())
 	logger.Debug("Auth middleware applied",
 		zap.String("service", "transaction-manager"),

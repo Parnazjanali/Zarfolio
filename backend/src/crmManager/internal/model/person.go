@@ -54,40 +54,40 @@ type Customer struct {
 
 type CusCard struct {
     gorm.Model
-    PersonID   uint    `gorm:"not null;index" json:"person_id"`                     // شناسه مشتری
-    Bank       string  `gorm:"type:varchar(100);not null" json:"bank"`              // نام بانک
-    CardNum    *string `gorm:"type:varchar(50)" json:"cardNum,omitempty"`           // شماره کارت
-    AccountNum *string `gorm:"type:varchar(50)" json:"accountNum,omitempty"`        // شماره حساب
-    ShabaNum   *string `gorm:"type:varchar(50)" json:"shabaNum,omitempty"`          // شماره شبا
-    BIDID      uint    `gorm:"column:bid_id;not null;index" json:"bidId"`          // شناسه کسب‌وکار
+    PersonID   uint    `gorm:"not null;index" json:"person_id"`                    
+    Bank       string  `gorm:"type:varchar(100);not null" json:"bank"`              
+    CardNum    *string `gorm:"type:varchar(50)" json:"cardNum,omitempty"`          
+    AccountNum *string `gorm:"type:varchar(50)" json:"accountNum,omitempty"`       
+    ShabaNum   *string `gorm:"type:varchar(50)" json:"shabaNum,omitempty"`         
+    BIDID      uint    `gorm:"column:bid_id;not null;index" json:"bidId"`         
 }
 
 type CusType struct {
     gorm.Model
-    Code  string `gorm:"type:varchar(50);unique;not null" json:"code"`        // کد نوع مشتری
-    Label string `gorm:"type:varchar(100);not null" json:"label"`             // برچسب نوع مشتری
+    Code  string `gorm:"type:varchar(50);unique;not null" json:"code"`       
+    Label string `gorm:"type:varchar(100);not null" json:"label"`            
 }
 
 type Currency struct {
     gorm.Model
-    Name   string `gorm:"type:varchar(50);unique;not null" json:"name"`        // نام ارز
-    Symbol string `gorm:"type:varchar(10);unique;not null" json:"symbol"`      // نماد ارز
+    Name   string `gorm:"type:varchar(50);unique;not null" json:"name"`        
+    Symbol string `gorm:"type:varchar(10);unique;not null" json:"symbol"`     
 }
 
 type PaymentTerm struct {
     gorm.Model
-    Name string `gorm:"type:varchar(100);unique;not null" json:"name"`       // نام شرایط پرداخت
-    Days int    `gorm:"not null" json:"days"`                                // تعداد روزها
+    Name string `gorm:"type:varchar(100);unique;not null" json:"name"`      
+    Days int    `gorm:"not null" json:"days"`                               
 }
 
 type Employee struct {
     gorm.Model
-    Name string `gorm:"type:varchar(255);not null" json:"name"`              // نام کارمند
+    Name string `gorm:"type:varchar(255);not null" json:"name"`              
 }
 
 type PersonPrelabel struct {
     gorm.Model
-    Label string `gorm:"type:varchar(100);unique;not null" json:"label"`      // برچسب
+    Label string `gorm:"type:varchar(100);unique;not null" json:"label"`     
 }
 
 type CreateCustomerRequest struct {
@@ -164,14 +164,3 @@ type SearchResponse struct {
     Total int64      `json:"total"`
 }
 
-type FailedRowInfo struct {
-    RowNumber int      `json:"rowNumber"`
-    Error     string   `json:"error"`
-    Data      []string `json:"data"`
-}
-
-type ImportResponse struct {
-    SuccessCount int             `json:"successCount"`
-    FailureCount int             `json:"failureCount"`
-    FailedRows   []FailedRowInfo `json:"failedRows"`
-}
