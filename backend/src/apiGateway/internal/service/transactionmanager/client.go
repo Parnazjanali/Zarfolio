@@ -141,70 +141,76 @@ func (c *TransactionManagerHTTPClient) GetAllTransactions(ctx context.Context) (
 		zap.Int("transaction_count", len(transactions)))
 	return transactions, nil
 }
-
 func (c *TransactionManagerHTTPClient) CreateTransaction(ctx context.Context, tx model.CreateInvoiceRequest, userId string) (model.Invoice, error) {
+    c.logger.Debug("Attempting to create transaction", zap.String("user_id", userId))
 
-	c.logger.Debug("Attempting to create transaction",
-		zap.String("user_id", userId))
+    if c.baseURL == "" {
+        c.logger.Error("TransactionManagerClient base URL is empty")
+        return model.Invoice{}, fmt.Errorf("TransactionManagerClient base URL cannot be empty")
+    }
 
-	if c.baseURL == "" {
-		c.logger.Error("TransactionManagerClient base URL is empty",
-			zap.String("service", "transaction-manager-client"))
-		return model.Invoice{}, fmt.Errorf("TransactionManagerClient base URL cannot be empty")
-	}
+    targetURL := c.baseURL + "/tr/transactions"
 
-	targetURL := c.baseURL + "/tr/transactions"
+    body, err := json.Marshal(tx)
+    if err != nil {
+        c.logger.Error("Failed to marshal request body", zap.Error(err))
+        return model.Invoice{}, fmt.Errorf("failed to encode transaction request: %w", err)
+    }
 
-	body, err := json.Marshal(tx)
-	if err != nil {
-		c.logger.Error("Failed to marshal request body", zap.Error(err))
-		return model.Invoice{}, fmt.Errorf("failed to encode transaction request: %w", err)
-	}
+    req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, bytes.NewBuffer(body))
+    if err != nil {
+        c.logger.Error("Failed to create HTTP request", zap.Error(err))
+        return model.Invoice{}, fmt.Errorf("failed to create HTTP request: %w", err)
+    }
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, bytes.NewBuffer(body))
-	if err != nil {
-		c.logger.Error("Failed to create HTTP request", zap.Error(err))
-		return model.Invoice{}, fmt.Errorf("failed to create HTTP request: %w", err)
-	}
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("X-User-ID", userId) 
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User-ID", userId)
+    userToken, ok := ctx.Value("userToken").(string)
+    if ok && userToken != "" {
+        req.Header.Set("X-Internal-JWT", userToken)
+    }
 
-	resp, err := c.client.Do(req)
-	if err != nil {
-		c.logger.Error("Failed to send HTTP request to Transaction Manager",
-			zap.String("url", targetURL),
-			zap.Error(err))
-		return model.Invoice{}, service.ErrTransactionManagerDown
-	}
-	defer resp.Body.Close()
+    internalServiceSecret := os.Getenv("TRANSACTION_MANAGER_SERVICE_SECRET")
+    if internalServiceSecret == "" {
+        c.logger.Error("TRANSACTION_MANAGER_SERVICE_SECRET environment variable is not set")
+        return model.Invoice{}, fmt.Errorf("TRANSACTION_MANAGER_SERVICE_SECRET environment variable is not set")
+    }
+    req.Header.Set("Authorization", "Bearer "+internalServiceSecret) 
 
-	if resp.StatusCode != http.StatusCreated {
+    resp, err := c.client.Do(req)
+    if err != nil {
+        c.logger.Error("Failed to send HTTP request to Transaction Manager", zap.String("url", targetURL), zap.Error(err))
+        return model.Invoice{}, service.ErrTransactionManagerDown
+    }
+    defer resp.Body.Close() 
 
-		errorBody, _ := io.ReadAll(resp.Body)
-		errorMessage := fmt.Sprintf("Transaction Manager returned non-201 status: %d. Body: %s", resp.StatusCode, string(errorBody))
+    if resp.StatusCode != http.StatusCreated {
+        errorBody, _ := io.ReadAll(resp.Body)
+        errorMessage := fmt.Sprintf("Transaction Manager returned non-201 status: %d. Body: %s", resp.StatusCode, string(errorBody))
 
-		c.logger.Error("Transaction creation failed on Transaction Manager",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("response_body", string(errorBody)))
+        c.logger.Error("Transaction creation failed on Transaction Manager",
+            zap.Int("status_code", resp.StatusCode),
+            zap.String("response_body", string(errorBody)))
 
-		if resp.StatusCode == http.StatusConflict {
-			return model.Invoice{}, errors.New("transaction already exists or duplicate key")
-		}
+        if resp.StatusCode == http.StatusConflict {
+            return model.Invoice{}, errors.New("transaction already exists or duplicate key")
+        }
 
-		return model.Invoice{}, errors.New(errorMessage)
-	}
+        return model.Invoice{}, errors.New(errorMessage)
+    }
 
-	var invoice model.Invoice
-	if err := json.NewDecoder(resp.Body).Decode(&invoice); err != nil {
-		c.logger.Error("Failed to decode successful response body", zap.Error(err))
-		return model.Invoice{}, fmt.Errorf("failed to decode successful response: %w", err)
-	}
+    var invoice model.Invoice
+    if err := json.NewDecoder(resp.Body).Decode(&invoice); err != nil {
+        c.logger.Error("Failed to decode successful response body", zap.Error(err))
+        return model.Invoice{}, fmt.Errorf("failed to decode successful response: %w", err)
+    }
 
-	c.logger.Info("Transaction successfully created by Transaction Manager",
-		zap.String("invoice_id", invoice.ID))
-	return invoice, nil
+    c.logger.Info("Transaction successfully created by Transaction Manager",
+        zap.String("invoice_id", invoice.ID))
+    return invoice, nil
 }
+
 func (c *TransactionManagerHTTPClient) GetTransactionByID(ctx context.Context, id string) (model.Invoice, error) {
 	// Implementation for getting a transaction by ID
 	return model.Invoice{}, nil

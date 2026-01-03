@@ -34,6 +34,7 @@ func NewTransactionHandler(tr transactionService.TrService, logger *zap.Logger) 
 	return &TransactionHandler{
 		trSvc:  tr,
 		logger: logger,
+		validator: validator.New(),
 	}, nil
 }
 

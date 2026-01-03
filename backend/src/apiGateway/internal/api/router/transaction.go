@@ -23,7 +23,7 @@ func SetUpTransactionRoutes(apiGroup fiber.Router, transactionHandler *handler.T
 	}
 
 	transactionGroup := apiGroup.Group("/tr")
-	logger.Debug("Configuring /api/v1/tr protected routes")
+	logger.Debug("Configuring api/v1/tr protected routes")
 
 
 	transactionGroup.Get("/transactions",

@@ -7,7 +7,7 @@ import (
 type Invoice struct {
 	ID              string        `json:"id" gorm:"primaryKey;type:varchar(50)"`
 	InvoiceNumber   string        `json:"invoice_number" gorm:"type:varchar(50);unique"`
-	CustomerID      string        `json:"customer_id" gorm:"type:varchar(50)"`
+    CustomerID      int    `gorm:"not null" json:"customer_id"`  
 	CustomerName    string        `json:"customer_name" gorm:"type:varchar(255)"`
 	InvoiceDate     time.Time     `json:"invoice_date" gorm:"type:timestamp"`
 	FlowType        string        `json:"flow_type" gorm:"type:varchar(20);check:flow_type IN ('payable','receivable')"`
@@ -16,6 +16,8 @@ type Invoice struct {
 	GrandTotal      float64       `json:"grand_total" gorm:"type:double precision;default:0"`
 	Currency        string        `json:"currency" gorm:"type:varchar(10);default:'IRR'"`
 	CurrencyRate    float64       `json:"currency_rate" gorm:"type:double precision;default:1"`
+	TotalWeight     float64       `json:"total_weight" gorm:"type:double precision;default:0"`
+    TotalPureWeight float64       `json:"total_pure_weight" gorm:"type:double precision;default:0"` // مجموع وزن ۷۵۰
 	TaxAmount       float64       `json:"tax_amount" gorm:"type:double precision;default:0"`
 	DiscountAmount  float64       `json:"discount_amount" gorm:"type:double precision;default:0"`
 	Notes           string        `json:"notes" gorm:"type:text"`
@@ -29,59 +31,59 @@ type Invoice struct {
 }
 
 type PaymentSnapshot struct {
-    ID          string  `json:"id" gorm:"primaryKey"`
-    InvoiceID   string  `json:"invoice_id"`
-    Type        string  `json:"type"`  
-    Amount      float64 `json:"amount"` 
-    ReferenceID string  `json:"reference_id"` 
+	ID          string  `json:"id" gorm:"primaryKey"`
+	InvoiceID   string  `json:"invoice_id"`
+	Type        string  `json:"type"`
+	Amount      float64 `json:"amount"`
+	ReferenceID string  `json:"reference_id"`
 }
 
-
 type InvoiceItem struct {
-    ID            string  `json:"id" gorm:"primaryKey"`
-    InvoiceID     string  `json:"invoice_id"`
-    CommodityID   *string `json:"commodity_id"`
-    CommodityCode *string `json:"commodity_code"`
+	ID            string  `json:"id" gorm:"primaryKey"`
+	InvoiceID     string  `json:"invoice_id"`
+	CommodityID   *string `json:"commodity_id"`
+	CommodityCode *string `json:"commodity_code"`
 
-    Type          string  `json:"type"` 
-    Description   string  `json:"description"`
-    Quantity      float64 `json:"quantity"`
-    Weight        float64 `json:"weight"`
-    Purity        float64 `json:"purity"`
-    ItemWeightNet float64 `json:"item_weight_net"`
+	Type          string  `json:"type"`
+	Description   string  `json:"description"`
+	Quantity      float64 `json:"quantity"`
+	Weight        float64 `json:"weight"`
+	Purity        float64 `json:"purity"`
+	ItemWeightNet float64 `json:"item_weight_net"`
 
-    BaseGoldPrice   float64 `json:"base_gold_price"`
-    LaborFee        float64 `json:"labor_fee"`
-    StoneValue      float64 `json:"stone_value"`
-    UnitPrice       float64 `json:"unit_price"`
-    DiscountPercent float64 `json:"discount_percent"` 
-    DiscountAmount  float64 `json:"discount_amount"`
-    TaxAmount       float64 `json:"tax_amount"`
-    TotalPrice      float64 `json:"total_price"`
-    
-    Notes           string  `json:"notes"`
+	BaseGoldPrice   float64 `json:"base_gold_price"`
+	LaborFee        float64 `json:"labor_fee"`
+	StoneValue      float64 `json:"stone_value"`
+	UnitPrice       float64 `json:"unit_price"`
+	DiscountPercent float64 `json:"discount_percent"`
+	DiscountAmount  float64 `json:"discount_amount"`
+	TaxAmount       float64 `json:"tax_amount"`
+	TotalPrice      float64 `json:"total_price"`
+
+	Notes string `json:"notes"`
 }
 
 type StockChangeItem struct {
 	CommodityID     string  `json:"commodity_id"`
-	TransactionType string  `json:"transaction_type"`  
-	NetWeightChange float64 `json:"net_weight_change"` 
-	Purity          float64 `json:"purity"`            
+	TransactionType string  `json:"transaction_type"`
+	NetWeightChange float64 `json:"net_weight_change"`
+	Purity          float64 `json:"purity"`
 }
 
 type CreateInvoiceRequest struct {
+	UserID          string    `json:"user_id" validate:"required`
 	InvoiceNumber   string    `json:"invoice_number" validate:"required"`
 	CustomerID      string    `json:"customer_id" validate:"required"`
 	CustomerName    string    `json:"customer_name" validate:"required"`
 	InvoiceDate     time.Time `json:"invoice_date" validate:"required"`
-	FlowType        string    `json:"flow_type" validate:"required,oneof=payable receivable"` 
-	DocumentSubType string    `json:"document_sub_type" validate:"required"`                  
+	FlowType        string    `json:"flow_type" validate:"required,oneof=payable receivable"`
+	DocumentSubType string    `json:"document_sub_type" validate:"required"`
 
-	Items []CreateInvoiceItemRequest `json:"items" validate:"required,gt=0,dive"`
-	Currency       string  `json:"currency" validate:"required"`          
-	CurrencyRate   float64 `json:"currency_rate" validate:"required,gt=0"` 
-	DiscountAmount float64 `json:"discount_amount" validate:"gte=0"`
-	TaxAmount      float64 `json:"tax_amount" validate:"gte=0"`
+	Items          []CreateInvoiceItemRequest `json:"items" validate:"required,gt=0,dive"`
+	Currency       string                     `json:"currency" validate:"required"`
+	CurrencyRate   float64                    `json:"currency_rate" validate:"required,gt=0"`
+	DiscountAmount float64                    `json:"discount_amount" validate:"gte=0"`
+	TaxAmount      float64                    `json:"tax_amount" validate:"gte=0"`
 
 	Notes   string   `json:"notes,omitempty"`
 	Tags    []string `json:"tags,omitempty"`
@@ -89,26 +91,24 @@ type CreateInvoiceRequest struct {
 }
 
 type CreateInvoiceItemRequest struct {
-	Type        string  `json:"type" validate:"required,oneof=gold_fabricated gold_raw coin stone service"`
-	Description string  `json:"description" validate:"required"`
-	CommodityID *string `json:"commodity_id,omitempty"` 
-    	CommodityCode *string `json:"commodity_code" gorm:"type:varchar(50)"`
-
+	Type          string  `json:"type" validate:"required,oneof=gold_fabricated gold_raw coin stone service"`
+	Description   string  `json:"description" validate:"required"`
+	CommodityID   *string `json:"commodity_id,omitempty"`
+	CommodityCode *string `json:"commodity_code" gorm:"type:varchar(50)"`
 
 	Quantity      float64 `json:"quantity" validate:"required,gt=0"`
 	Weight        float64 `json:"weight" validate:"required,gte=0"`
-	Purity        float64 `json:"purity" validate:"required,gt=0"`  
-	ItemWeightNet float64 `json:"item_weight_net" validate:"gte=0"` 
+	Purity        float64 `json:"purity" validate:"required,gt=0"`
+	ItemWeightNet float64 `json:"item_weight_net" validate:"gte=0"`
 
-	BaseGoldPrice float64 `json:"base_gold_price" validate:"required,gt=0"` 
-    	LaborFee      float64 `json:"labor_fee" validate:"gte=0"`            
-	StoneValue    float64 `json:"stone_value" validate:"gte=0"`            
+	BaseGoldPrice float64 `json:"base_gold_price" validate:"required,gt=0"`
+	LaborFee      float64 `json:"labor_fee" validate:"gte=0"`
+	StoneValue    float64 `json:"stone_value" validate:"gte=0"`
 
 	UnitPrice       float64 `json:"unit_price" validate:"required,gte=0"`
 	DiscountPercent float64 `json:"discount_percent" validate:"gte=0,lte=100"`
 	TaxAmount       float64 `json:"tax_amount" validate:"gte=0"`
-    DiscountAmount  float64 `json:"discount_amount" validate:"gte=0"` 
+	DiscountAmount  float64 `json:"discount_amount" validate:"gte=0"`
 
-    Notes           string  `json:"notes,omitempty"`
-
+	Notes string `json:"notes,omitempty"`
 }

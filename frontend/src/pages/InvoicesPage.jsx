@@ -1,4 +1,3 @@
-// frontend/src/pages/InvoicesPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Typography, message } from 'antd';
 import axios from 'axios';
@@ -6,18 +5,18 @@ import AdvancedFilter from '../components/AdvancedFilter.jsx';
 
 const { Title } = Typography;
 
-// URL پایه API
 const API_BASE_URL = 'http://localhost:8080/api/v1/tr/transactions';
 
 const InvoicesPage = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
 
- const getAuthToken = () => {
-  const token = localStorage.getItem('authToken');
-  console.log('توکن لود شده:', token ? 'موجود' : 'ندارد');
-  return token || '';
-};
+  const getAuthToken = () => {
+    const token = localStorage.getItem('authToken');
+    console.log('توکن لود شده:', token ? 'موجود' : 'ندارد');
+    return token || '';
+  };
+
   // دریافت لیست تراکنش‌ها از API
   const fetchTransactions = async () => {
     setLoading(true);
@@ -27,7 +26,14 @@ const InvoicesPage = () => {
           Authorization: `Bearer ${getAuthToken()}`,
         },
       });
-      setFilteredData(response.data); // فرض می‌کنیم API آرایه‌ای از تراکنش‌ها برمی‌گرداند
+
+      // بررسی داده‌ها قبل از تنظیم آنها
+      const validData = response.data.map(item => ({
+        ...item,
+        total_amount: item.total_amount != null ? item.total_amount : 0, // در صورت نداشتن مقدار، 0 قرار می‌دهیم
+      }));
+
+      setFilteredData(validData); // به‌روزرسانی داده‌ها
     } catch (error) {
       console.error('Error fetching transactions:', error);
       message.error('خطا در دریافت فاکتورها');
@@ -36,7 +42,6 @@ const InvoicesPage = () => {
     }
   };
 
-  // اجرای درخواست هنگام لود شدن کامپوننت
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -60,7 +65,6 @@ const InvoicesPage = () => {
     }
   };
 
-  // تعریف ستون‌های جدول
   const columns = [
     {
       title: 'شماره فاکتور',
@@ -94,7 +98,12 @@ const InvoicesPage = () => {
       title: 'مبلغ (تومان)',
       dataIndex: 'total_amount',
       key: 'total_amount',
-      render: (amount) => amount.toLocaleString('fa-IR'),
+      render: (amount) => {
+        if (amount == null) {
+          return 'مقدار نامعتبر';
+        }
+        return amount.toLocaleString('fa-IR');
+      },
     },
     {
       title: 'نوع تراکنش',

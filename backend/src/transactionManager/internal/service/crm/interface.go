@@ -6,7 +6,7 @@ import (
 )
 
 type CrmServiceClient interface {
-	GetOrCreateCustomer(ctx context.Context, customerID string, customerName string) (*model.SlimCustomer, error)
-		BaseUrl() string
-
+	CreateCustomer(ctx context.Context, req string) (*model.SlimCustomer, error)
+	GetCustomer(ctx context.Context, customerID, customerName string) ([]model.SlimCustomer, error)
+	BaseUrl() string
 }

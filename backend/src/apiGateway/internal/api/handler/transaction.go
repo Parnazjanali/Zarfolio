@@ -49,7 +49,7 @@ func NewTransactionHandler(trSvc transaction.TransactionService, logger *zap.Log
 	logger.Debug("TransactionHandler initialized successfully",
 		zap.String("service", "api-gateway"),
 		zap.String("operation", "new-transaction-handler"))
-	return &TransactionHandler{TrSvc: trSvc, logger: logger, validator: validator.New()}, // ایجاد نمونه جدید از validator
+	return &TransactionHandler{TrSvc: trSvc, logger: logger, validator: validator.New()}, 
 		nil
 }
 

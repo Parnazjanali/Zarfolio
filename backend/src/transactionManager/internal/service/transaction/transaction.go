@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 	"transaction-gold/internal/model"
 	"transaction-gold/internal/repository/repo"
@@ -42,6 +43,7 @@ func NewTrService(trRepo repo.TransactionRepo, inventoryClient inventoryService.
 	return &TrServiceImpl{
 		transactionRepo: trRepo,
 		inventoryClient: inventoryClient,
+		customerClient:  customerClient,
 		logger:          logger,
 	}, nil
 }
@@ -58,26 +60,42 @@ func (s *TrServiceImpl) GetAllTransactions(ctx context.Context) ([]model.Invoice
 
 	return transactions, nil
 }
-
 func (s *TrServiceImpl) CreateGenericTransaction(ctx context.Context, req *model.CreateInvoiceRequest) (*model.Invoice, error) {
-	s.logger.Info("Attempting to create a new generic transaction in service layer.",
-		zap.String("customer_id", req.CustomerID),
+	s.logger.Info("Starting CreateGenericTransaction",
+		zap.String("user_id", req.UserID),
 		zap.String("flow_type", req.FlowType))
 
 	if req.CustomerID == "" {
-		return nil, errors.New("customer ID is required for the invoice")
+		return nil, errors.New("customer ID is required")
 	}
 	if len(req.Items) == 0 {
-		return nil, errors.New("invoice must contain at least one item")
+		return nil, errors.New("invoice must have items")
+	}
+	if s.customerClient == nil {
+		return nil, errors.New("system error: customer client not initialized")
+	}
+
+	slimCustomer, err := s.resolveCustomer(ctx, req.CustomerID, req.CustomerName)
+	if err != nil {
+		return nil, err
+	}
+	if slimCustomer.Status != "Active" {
+		return nil, errors.New("customer is not active")
 	}
 
 	invoiceID := utils.GenerateUUID()
+
+	invoiceDate := req.InvoiceDate
+	if invoiceDate.IsZero() {
+		invoiceDate = time.Now()
+	}
+
 	invoice := &model.Invoice{
 		ID:              invoiceID,
 		InvoiceNumber:   req.InvoiceNumber,
-		CustomerID:      req.CustomerID,
-		CustomerName:    req.CustomerName,
-		InvoiceDate:     req.InvoiceDate,
+		CustomerID:      slimCustomer.ID,
+		CustomerName:    slimCustomer.Name,
+		InvoiceDate:     invoiceDate,
 		FlowType:        req.FlowType,
 		DocumentSubType: req.DocumentSubType,
 		Currency:        req.Currency,
@@ -85,17 +103,15 @@ func (s *TrServiceImpl) CreateGenericTransaction(ctx context.Context, req *model
 		TaxAmount:       req.TaxAmount,
 		DiscountAmount:  req.DiscountAmount,
 		Notes:           req.Notes,
+		CreatedBy:       req.UserID,
 		Status:          "pending_inventory",
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
-	}
-
-	if invoice.InvoiceDate.IsZero() {
-		invoice.InvoiceDate = time.Now()
+		Items:           make([]model.InvoiceItem, 0, len(req.Items)),
 	}
 
 	for _, itemReq := range req.Items {
-		invoiceItem := model.InvoiceItem{
+		invoice.Items = append(invoice.Items, model.InvoiceItem{
 			ID:              utils.GenerateUUID(),
 			InvoiceID:       invoiceID,
 			Type:            itemReq.Type,
@@ -113,119 +129,109 @@ func (s *TrServiceImpl) CreateGenericTransaction(ctx context.Context, req *model
 			Notes:           itemReq.Notes,
 			ItemWeightNet:   itemReq.ItemWeightNet,
 			LaborFee:        itemReq.LaborFee,
-			StoneValue:      itemReq.StoneValue, 
-		}
-		invoice.Items = append(invoice.Items, invoiceItem)
+			StoneValue:      itemReq.StoneValue,
+		})
 	}
 
-	err := s.calculateInvoiceTotals(invoice)
-	if err != nil {
-		s.logger.Error("Failed to calculate invoice totals.", zap.Error(err))
-		return nil, fmt.Errorf("failed to calculate invoice totals: %w", err)
+	if err := s.calculateInvoiceTotals(invoice); err != nil {
+		s.logger.Error("Calculation failed", zap.Error(err))
+		return nil, fmt.Errorf("calculation error: %w", err)
 	}
 
 	if invoice.InvoiceNumber == "" {
-		newNumber, err := s.GenerateUniqueInvoiceNumber(ctx)
+		newNum, err := s.GenerateUniqueInvoiceNumber(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to generate unique invoice number: %w", err)
+			return nil, fmt.Errorf("number generation failed: %w", err)
 		}
-		invoice.InvoiceNumber = newNumber
+		invoice.InvoiceNumber = newNum
 	}
-
-	slimCustomer, err := s.customerClient.GetOrCreateCustomer(ctx, req.CustomerID, req.CustomerName)
-	if err != nil {
-		return nil, fmt.Errorf("crm service error: %w", err)
-	}
-
-	if slimCustomer.Status != "Active" {
-		return nil, errors.New("customer is not active")
-	}
-
-	invoice.CustomerID = slimCustomer.ID
-	invoice.CustomerName = slimCustomer.Name
 
 	createdInvoice, err := s.transactionRepo.CreateGenericTransaction(ctx, invoice)
 	if err != nil {
-		s.logger.Error("Failed to save transaction.", zap.Error(err))
-		return nil, fmt.Errorf("failed to save transaction: %w", err)
+		s.logger.Error("DB Save failed", zap.Error(err))
+		return nil, fmt.Errorf("database save failed: %w", err)
 	}
 
 	stockItems := s.mapToStockItems(createdInvoice)
-
 	var inventoryErr error
 
+	// Payable (خرید) -> افزایش موجودی
+	// Receivable (فروش) -> کاهش موجودی
 	if req.FlowType == "payable" {
-
-		inventoryErr = s.inventoryClient.DecreaseStock(ctx, stockItems)
-
-	} else {
-
 		inventoryErr = s.inventoryClient.IncreaseStock(ctx, stockItems)
+	} else {
+		inventoryErr = s.inventoryClient.DecreaseStock(ctx, stockItems)
 	}
 
 	if inventoryErr != nil {
-		s.logger.Error("Inventory update failed, rolling back invoice status",
+		s.logger.Error("Inventory update failed, rolling back status",
 			zap.String("id", createdInvoice.ID),
 			zap.Error(inventoryErr))
 
-		updateErr := s.transactionRepo.UpdateInvoiceStatus(ctx, createdInvoice.ID, "FAILED_INVENTORY")
-		if updateErr != nil {
-			s.logger.Error("CRITICAL: Failed to update invoice status after inventory failure", zap.Error(updateErr))
+		// وضعیت فاکتور را به "خطا" تغییر می‌دهیم تا بعدا ادمین بررسی کند
+		if upErr := s.transactionRepo.UpdateInvoiceStatus(ctx, createdInvoice.ID, "FAILED_INVENTORY"); upErr != nil {
+			s.logger.Error("CRITICAL: Failed to update status to FAILED", zap.Error(upErr))
 		}
 
-		return nil, errors.New("transaction created but inventory update failed: " + inventoryErr.Error())
+		return nil, fmt.Errorf("transaction saved but inventory failed: %w", inventoryErr)
 	}
 
+	// 7. Final Success
+	// آپدیت وضعیت به completed
+	// نکته: اگر این آپدیت فیل شود، فاکتور در حالت pending می‌ماند که در انبار اعمال شده.
+	// معمولا یک جاب پس‌زمینه (Cron Job) این موارد را چک می‌کند.
 	s.transactionRepo.UpdateInvoiceStatus(ctx, createdInvoice.ID, "completed")
 	createdInvoice.Status = "completed"
 
-	s.logger.Info("Generic transaction completed successfully.",
-		zap.String("invoice_id", createdInvoice.ID))
-
+	s.logger.Info("Transaction finalized successfully", zap.String("id", createdInvoice.ID))
 	return createdInvoice, nil
 }
 
-func (s *TrServiceImpl) calculateInvoiceTotals(invoice *model.Invoice) error {
-	var grandTotal, totalTax, totalDiscount float64
+func (s *TrServiceImpl) calculateInvoiceTotals(inv *model.Invoice) error {
+	var runningTotal float64
+	var totalTax float64
+	var totalWeight float64
+	var totalPureWeight float64
 
-	for i := range invoice.Items {
-		item := &invoice.Items[i]
+	for i := range inv.Items {
+		item := &inv.Items[i]
 
-		// ۱. محاسبه UnitPrice بر اساس منطق طلا (اگر صفر باشد)
-		// فرمول: ((وزن خالص * قیمت خام طلا) + اجرت + ارزش سنگ) / تعداد
+		// ۱. محاسبه UnitPrice (قیمت واحد هر گرم یا عدد)
 		if item.UnitPrice == 0 {
-			goldValue := item.ItemWeightNet * item.BaseGoldPrice
-			// قیمت واحد برای هر عدد کالا
-			item.UnitPrice = (goldValue + item.LaborFee + item.StoneValue) / item.Quantity
+			// (قیمت پایه طلا + اجرت) + ارزش سنگ
+			item.UnitPrice = (item.Weight * item.BaseGoldPrice) + item.LaborFee + item.StoneValue
 		}
 
-		// ۲. محاسبه قیمت کل ردیف قبل از تخفیف
-		rowTotalBeforeDiscount := item.Quantity * item.UnitPrice
-
-		// ۳. محاسبه تخفیف (اولویت با مبلغ مستقیم، سپس درصد)
-		if item.DiscountAmount == 0 && item.DiscountPercent > 0 {
-			item.DiscountAmount = rowTotalBeforeDiscount * (item.DiscountPercent / 100.0)
+		// ۲. محاسبات وزنی
+		totalWeight += item.Weight
+		// محاسبه وزن خالص (مثلاً اگر عیار ۱۸ یا ۷۵۰ است)
+		if item.Purity > 0 {
+			totalPureWeight += (item.Weight * item.Purity) / 750
 		}
 
-		item.TotalPrice = rowTotalBeforeDiscount - item.DiscountAmount
+		// ۳. محاسبات مالی سطر
+		lineTotal := item.UnitPrice * item.Quantity
+		lineDiscount := (lineTotal * item.DiscountPercent / 100) + item.DiscountAmount
+		lineNet := lineTotal - lineDiscount
 
-		// ۴. محاسبه مالیات (Tax) - منطق تخصصی طلا
-		// معمولاً مالیات ۹٪ فقط روی (اجرت + سود + ارزش سنگ) اعمال می‌شود، نه اصل طلا.
-		// اما برای سادگی فعلاً اگر TaxAmount صفر بود، ۹ درصد روی TotalPrice حساب می‌کنیم:
-		if item.TaxAmount == 0 {
-			// نکته: اگر TaxBase برابر با "profit_only" باشد، محاسبات متفاوت خواهد بود
-			// فعلاً استاندارد کل سطر:
-			// item.TaxAmount = item.TotalPrice * 0.09
-		}
+		// ۴. مالیات سطر
+		item.TaxAmount = lineNet * 0.09
 
-		grandTotal += item.TotalPrice
-		totalDiscount += item.DiscountAmount
+		runningTotal += lineNet
 		totalTax += item.TaxAmount
 	}
 
-	invoice.DiscountAmount = totalDiscount
-	invoice.TaxAmount = totalTax
-	invoice.GrandTotal = grandTotal + totalTax
+	// ۵. مقداردهی نهایی مدل Invoice
+	inv.TotalWeight = totalWeight
+	inv.TotalPureWeight = totalPureWeight
+	inv.TaxAmount = totalTax
+
+	// ۶. مبلغ نهایی قابل پرداخت
+	inv.GrandTotal = (runningTotal + totalTax) - inv.DiscountAmount
+
+	if inv.CurrencyRate > 0 && inv.Currency != "IRR" {
+		inv.GrandTotal = inv.GrandTotal * inv.CurrencyRate
+	}
 
 	return nil
 }
@@ -262,4 +268,39 @@ func (s *TrServiceImpl) mapToStockItems(invoice *model.Invoice) []model.StockCha
 		}
 	}
 	return items
+}
+
+func (s *TrServiceImpl) resolveCustomer(ctx context.Context, id string, name string) (*model.SlimCustomer, error) {
+	if s.customerClient == nil {
+		return nil, errors.New("crm client is not initialized")
+	}
+
+	if strings.HasPrefix(id, "temp-") {
+		return nil, fmt.Errorf("invalid customer ID: temporary IDs are not allowed")
+	}
+	if id == "" {
+		s.logger.Info("Customer ID is empty, creating new customer", zap.String("name", name))
+		return s.customerClient.CreateCustomer(ctx, name)
+	}
+
+	slimCustomers, err := s.customerClient.GetCustomer(ctx, id, name)
+	if err != nil {
+
+		if utils.IsNotFoundError(err) {
+			s.logger.Info("Customer not found, creating new one...", zap.String("name", name))
+			return s.customerClient.CreateCustomer(ctx, name)
+		}
+
+		return nil, fmt.Errorf("crm service error while getting customer: %w", err)
+	}
+
+	if len(slimCustomers) == 0 {
+		s.logger.Info("No customer found with given ID/name, creating new one...", zap.String("name", name))
+		return s.customerClient.CreateCustomer(ctx, name)
+	}
+
+	s.logger.Info("Customer resolved successfully",
+    zap.Int("customer_id", slimCustomers[0].ID), 
+    zap.String("code", slimCustomers[0].Code))
+	return &slimCustomers[0], nil
 }
